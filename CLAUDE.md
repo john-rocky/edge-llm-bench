@@ -96,8 +96,11 @@ an NPU / GPU arm's capped run pools at any fall, marked with it:
   commit to the post step: since 2026-10-18 a sitting that exits 0 is read by
   `scripts/session_check.py` and, when every dir passes, committed locally by
   `scripts/dashboard_post.py` (ledger `logs/dashboard-job/autopilot-ledger.tsv`; push and
-  publish stay behind `ops/autopilot/switch.json`, all off); a HOLD or FAIL dir carries
-  `REVIEW.md` and waits for a person (`docs/dashboard-autopilot-v1.md`). Design and rerun rules:
+  publish follow `ops/autopilot/switch.json`: push_bench and push_page on, publish off; with
+  push_bench on the post first fast-forwards this checkout's `main` to `origin/main` when `main`
+  is only behind, never over a local change or under another sitting); a HOLD or FAIL dir
+  carries `REVIEW.md` and waits for a person (`docs/dashboard-autopilot-v1.md`, the fast-forward
+  in its §2). Design and rerun rules:
   `docs/dashboard-recurring-job-v1.md`.
 
 ## Where a human is required (do not try to automate)

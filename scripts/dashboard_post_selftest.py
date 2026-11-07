@@ -22,6 +22,15 @@ tools/publish_gcs.sh writing a marker; a local bare remote). Pins:
   (vi)   a HOLD sitting: no commit, REVIEW.md in each dir, a ledger line, exit 1
   (vii)  a merge in progress: no commit; posted again once it is gone
   (viii) the name scrub rewrites text files only; a JSON record keeps every number
+  (ix)   the fast-forward before the commit, each case a checkout of its own whose origin/main a
+         second clone (the Windows lane's) moved ahead: (a) 2 commits ahead, the disk summary the
+         sitting's rebuild, another checkout's driver running: fast-forwarded, committed on origin's
+         tip, pushed, the other lane's files as they were; (b) origin's commit changes a file the
+         checkout holds an edit of, (b2) adds one where an untracked file sits: no fast-forward,
+         the push refused as before, the files as they were; (c) main holds a lane's local
+         commit: no fast-forward, refused as before; (d) a sitting runs from the checkout: no
+         fast-forward; (e) fast-forwarded and then held: the disk summary put back byte for
+         byte; (f) push_bench off: not tried; and which processes count as drivers
   and: a page check FAIL (the bench commit stands, the page repo untouched), --allow-subset,
   --dry-run (nothing written), the lock, a post over dirs already committed; the red segment (a
   stub scripts/regression_watch.py in the commit's tree: run over the sitting's dirs and the page
@@ -224,6 +233,235 @@ def sitting(raw, n, payloads=("",), reference=None, names=False, failures=False,
             write(os.path.join(d, "FAILURES.txt"), "FAIL litert-lm litert-community/Qwen3-1.7B short-chat rc=1\n")
         out.append(name)
     return ["results/raw/" + x for x in out]
+
+
+# ---------------------------------------------------------------- (ix) the fast-forward before the commit
+
+STUB_DRIVER = "import time\ntime.sleep(600)\n"
+
+
+def ff_cases(tmp):
+    """(ix): dashboard_post.fast_forward, each case in a bench checkout of its own with a bare remote and
+    a second clone of it (the Windows lane's checkout, whose pushes moved origin/main ahead of the
+    bench's main on 2026-11-07 05:40: a results commit with its summary, and a script)."""
+    import dashboard_post as dp
+    sw_on, sw_off = os.path.join(tmp, "switch-ff-on.json"), os.path.join(tmp, "switch-ff-off.json")
+    write(sw_on, json.dumps({"push_bench": True, "push_page": False, "publish": False}))
+    write(sw_off, json.dumps({"push_bench": False, "push_page": False, "publish": False}))
+    summary_rel = os.path.join("results", "summary", "device-runs.csv")
+    windows_dir = "results/raw/2026-10-19-dashboard-v1-winpc-windows"
+
+    def repo(name):
+        b, r, w = (os.path.join(tmp, name + s) for s in ("", ".git", "-winpc"))
+        new_repo(b, r)
+        write(os.path.join(b, ".gitignore"), "/logs/\n")
+        write(os.path.join(b, "README.md"), "bench\n")
+        write(os.path.join(b, "scripts", "build_summary.py"), STUB_BUILD_SUMMARY)
+        sh(b, sys.executable, "scripts/build_summary.py")
+        commit_paths(b, "initial", ".gitignore", "README.md", "scripts", "results/summary")
+        sh(tmp, "git", "clone", "-q", "-b", "main", r, w)
+        for k, v in (("user.email", "winpc@example.com"), ("user.name", "winpc"), ("commit.gpgsign", "false")):
+            sh(w, "git", "config", k, v)
+        return b, r, w, os.path.join(b, "results", "raw")
+
+    def win_commit(w, msg, files, summary=False):
+        """One commit of the Windows lane's checkout, pushed to origin main -> its sha."""
+        for p, text in files.items():
+            write(os.path.join(w, p), text)
+        if summary:
+            sh(w, sys.executable, "scripts/build_summary.py")
+        sh(w, "git", "add", "--", *files, *(["results/summary"] if summary else []))
+        sh(w, "git", "commit", "-q", "-m", msg)
+        sh(w, "git", "push", "-q", "origin", "main")
+        return sh(w, "git", "rev-parse", "HEAD")
+
+    def windows_results(w):
+        return win_commit(w, "results/raw: a Windows sitting", {windows_dir + "/rec.jsonl": "{}\n"}, summary=True)
+
+    def post_in(b, dirs, switch, *extra):
+        # LC_ALL=C: the notes quote git's own refusal, which a translated git words otherwise
+        p = subprocess.run([sys.executable, POST] + [os.path.join(b, d) for d in dirs] + ["--switch", switch] + list(extra),
+                           cwd=b, capture_output=True, text=True,
+                           env=dict({k: v for k, v in os.environ.items() if not k.startswith("GIT_")}, LC_ALL="C"))
+        return p.returncode, p.stdout + p.stderr
+
+    def last_row(b):
+        with open(os.path.join(b, "logs", "dashboard-job", "autopilot-ledger.tsv")) as fh:
+            lines = fh.read().splitlines()
+        return dict(zip(lines[0].split("\t"), lines[-1].split("\t")))
+
+    def at(b, name="HEAD"):
+        return sh(b, "git", "rev-parse", name)
+
+    def porcelain(b):
+        p = subprocess.run(["git", "status", "--porcelain", "--untracked-files=all"], cwd=b, capture_output=True, text=True)
+        return set(p.stdout.splitlines())
+
+    print("--- (ix) which processes count as a sitting or a campaign driver (dashboard_post.driver_script)")
+    for args, want in (
+            ("/opt/homebrew/opt/python@3.14/bin/python3.14 /x/edge-llm-bench/scripts/dashboard_job.py auto",
+             "/x/edge-llm-bench/scripts/dashboard_job.py"),
+            ("python3 -u scripts/dashboard_job.py s26", "scripts/dashboard_job.py"),
+            ("/usr/bin/env PYTHONUNBUFFERED=1 python3 ./bench matrix matrices/a.cells", "./bench"),
+            ("/x/Python.app/Contents/MacOS/Python /x/android/bench/run_campaign.py m.cells", "/x/android/bench/run_campaign.py"),
+            ("/bin/bash /x/scripts/bench_matrix_mac.sh run m.cells", "/x/scripts/bench_matrix_mac.sh"),
+            ("python3 ./bench doctor --platform mac", None),
+            ("claude --dangerously-skip-permissions --model x python3 scripts/dashboard_job.py auto", None),
+            ("/bin/zsh -lc export PATH=x; cd /x && ./bench dashboard-job auto", None),
+            ("gtimeout --kill-after=60 3600 /x/bench matrix m.cells", None),
+            ("python3 /x/scripts/dashboard_post_selftest.py", None)):
+        got = dp.driver_script(args)
+        ok(got == want, f"driver_script({args[:70]}…) = {got}")
+
+    print("--- (ix) a: origin/main 2 commits ahead, the disk summary the sitting's rebuild: fast-forward, commit, push")
+    b, r, w, raw = repo("ff-a")
+    h0 = at(b)
+    windows_results(w)
+    w2 = win_commit(w, "windows: a runner script", {"scripts/run_windows_matrix.py": "# windows\n"})
+    s = sitting(raw, 20)
+    # the checkout as a sitting leaves it: another lane's staged record, untracked dir and unstaged edit,
+    # and results/summary rebuilt on disk from every dir there (./bench matrix)
+    write(os.path.join(raw, "2026-10-18-other-lane-staged-mac", "rec.jsonl"), "{}\n")
+    sh(b, "git", "add", "--", "results/raw/2026-10-18-other-lane-staged-mac")
+    write(os.path.join(raw, "2026-10-18-other-lane-untracked-mac", "rec.jsonl"), "{}\n")
+    write(os.path.join(b, "README.md"), "bench, edited by another lane\n")
+    sh(b, sys.executable, "scripts/build_summary.py")
+    lane = {" M README.md", "A  results/raw/2026-10-18-other-lane-staged-mac/rec.jsonl",
+            "?? results/raw/2026-10-18-other-lane-untracked-mac/rec.jsonl"}
+    ok(" M results/summary/device-runs.csv" in porcelain(b) and lane <= porcelain(b),
+       "a: the disk summary modified (the sitting's rebuild, as at 2026-11-07 08:06), the other lane's files there")
+    foreign = os.path.join(tmp, "ff-foreign", "scripts", "dashboard_job.py")
+    write(foreign, STUB_DRIVER)
+    other = subprocess.Popen([sys.executable, foreign])    # another checkout's sitting: not this one's
+    try:
+        seen = dp.running_drivers(os.path.dirname(os.path.dirname(foreign))) or []
+        ok([what for p, what in seen if p == other.pid] == ["scripts/dashboard_job.py"] and dp.running_drivers(b) == [],
+           f"a: the probe finds the other checkout's driver there ({seen}) and none in this checkout")
+        sh(b, "git", "fetch", "-q", "origin")
+        rc, out = post_in(b, s, sw_on, "--dry-run")
+        ok(rc == 0 and at(b) == h0 and f"would fast-forward main {h0[:8]}..{w2[:8]} (2 commits) before the commit" in out
+           and " M results/summary/device-runs.csv" in porcelain(b),
+           f"a: --dry-run says it would fast-forward, moves nothing (exit {rc})")
+        rc, out = post_in(b, s, sw_on)
+    finally:
+        other.kill()
+        other.wait()
+    row, head = last_row(b), at(b)
+    phrase = f"fast-forwarded main {h0[:8]}..{w2[:8]} (2 commits) before the commit"
+    ok(rc == 0 and at(b, "HEAD~1") == w2 and remote_main(r) == head,
+       f"a: exit {rc}, the commit on origin's tip {w2[:8]}, pushed (another checkout's driver running)")
+    ok(phrase in row["note"] and phrase in out, f"a: the ledger note and the log say '{phrase}'")
+    ok(row["push_bench"] == f"pushed bench {w2[:8]}..{head[:8]} (1 commit)", f"a: the push column: {row['push_bench']}")
+    summary = sh(b, "git", "show", "HEAD:results/summary/device-runs.csv")
+    ok(all(d in summary for d in s) and windows_dir in summary and "other-lane" not in summary
+       and open(os.path.join(b, summary_rel)).read().strip() == summary,
+       "a: the committed summary holds origin's Windows rows and the sitting's, none of the other lane's; the disk reads it")
+    ok(os.path.exists(os.path.join(b, "scripts", "run_windows_matrix.py")) and lane <= porcelain(b)
+       and open(os.path.join(b, "README.md")).read() == "bench, edited by another lane\n",
+       "a: origin's files in the working tree; the other lane's staged, untracked and edited files as they were")
+
+    print("--- (ix) b: origin's commit changes a file the checkout holds an edit of: no fast-forward, refused as before")
+    b, r, w, raw = repo("ff-b")
+    h0 = at(b)
+    w1 = win_commit(w, "results/raw: a Windows sitting, and a README line",
+                    {windows_dir + "/rec.jsonl": "{}\n", "README.md": "bench\nwindows\n"}, summary=True)
+    s = sitting(raw, 21)
+    write(os.path.join(b, "README.md"), "bench, edited by another lane\n")
+    sh(b, sys.executable, "scripts/build_summary.py")
+    rc, out = post_in(b, s, sw_on)
+    row = last_row(b)
+    ok(rc == 1 and at(b, "HEAD~1") == h0 and remote_main(r) == w1
+       and windows_dir not in sh(b, "git", "show", "HEAD:results/summary/device-runs.csv"),
+       f"b: exit {rc}, the commit on the HEAD it found ({h0[:8]}), origin untouched")
+    ok(f"no fast-forward of main {h0[:8]}..{w1[:8]} (1 commit): git refused it (" in row["note"] and "README.md" in row["note"]
+       and row["push_bench"].startswith(f"push refused: origin/main {w1[:8]} is not an ancestor"),
+       f"b: the note names git's refusal and the file, the push refused as before ({row['note'][:150]})")
+    ok(open(os.path.join(b, "README.md")).read() == "bench, edited by another lane\n" and " M README.md" in porcelain(b),
+       "b: the other lane's edit as it was, unstaged")
+
+    print("--- (ix) b2: origin's commit adds a file where an untracked one sits: no fast-forward")
+    b, r, w, raw = repo("ff-b2")
+    h0 = at(b)
+    w1 = windows_results(w)
+    s = sitting(raw, 22)
+    write(os.path.join(b, windows_dir, "rec.jsonl"), '{"a copy": 1}\n')
+    rc, out = post_in(b, s, sw_on)
+    row = last_row(b)
+    ok(rc == 1 and at(b, "HEAD~1") == h0 and remote_main(r) == w1 and "untracked working tree files would be overwritten" in row["note"]
+       and open(os.path.join(b, windows_dir, "rec.jsonl")).read() == '{"a copy": 1}\n',
+       f"b2: exit {rc}, no fast-forward, the untracked file as it was ({row['note'][-120:]})")
+
+    print("--- (ix) c: main holds a lane's local commit: no fast-forward, refused as before")
+    b, r, w, raw = repo("ff-c")
+    w1 = win_commit(w, "windows: a runner script", {"scripts/run_windows_matrix.py": "# windows\n"})
+    write(os.path.join(b, "lane.txt"), "a lane's local commit\n")
+    sh(b, "git", "add", "--", "lane.txt")
+    sh(b, "git", "commit", "-q", "-m", "a lane's local commit, not pushed", "--", "lane.txt")
+    lane_commit = at(b)
+    s = sitting(raw, 23)
+    rc, out = post_in(b, s, sw_on)
+    row = last_row(b)
+    ok(rc == 1 and at(b, "HEAD~1") == lane_commit and remote_main(r) == w1
+       and f"no fast-forward of main {lane_commit[:8]}..{w1[:8]} (1 commit): main holds 1 commit origin/main lacks "
+           f"(first {lane_commit[:8]}): a person merges" in row["note"]
+       and row["push_bench"].startswith(f"push refused: origin/main {w1[:8]} is not an ancestor"),
+       f"c: exit {rc}, the commit on the lane's, origin untouched, the note says why ({row['note'][-110:]})")
+
+    print("--- (ix) d: a sitting runs from this checkout: no fast-forward")
+    b, r, w, raw = repo("ff-d")
+    h0 = at(b)
+    w1 = windows_results(w)
+    s = sitting(raw, 24)
+    write(os.path.join(b, "scripts", "dashboard_job.py"), STUB_DRIVER)
+    drv = subprocess.Popen([sys.executable, "scripts/dashboard_job.py"], cwd=b)   # relative: read from its cwd
+    try:
+        cwd = dp.process_cwd(drv.pid)
+        ok(cwd is not None and os.path.realpath(cwd) == os.path.realpath(b),
+           f"d: the relative driver's working directory read ({cwd})")
+        rc, out = post_in(b, s, sw_on)
+    finally:
+        drv.kill()
+        drv.wait()
+    row = last_row(b)
+    ok(rc == 1 and at(b, "HEAD~1") == h0 and remote_main(r) == w1
+       and f"no fast-forward of main {h0[:8]}..{w1[:8]} (1 commit): a sitting or a campaign driver runs from this "
+           f"checkout (pid {drv.pid}: scripts/dashboard_job.py)" in row["note"],
+       f"d: exit {rc}, the commit on the HEAD it found, the note names the driver ({row['note'][-120:]})")
+
+    print("--- (ix) e: fast-forwarded, then held: the disk summary put back byte for byte")
+    b, r, w, raw = repo("ff-e")
+    h0 = at(b)
+    w1 = windows_results(w)
+    s = sitting(raw, 25)
+    anchor_session = os.path.join(b, s[0], "SESSION.json")
+    sess = json.load(open(anchor_session))
+    sess["reason"] = "anchor nominal, 3% faster than the newest session"
+    write(anchor_session, json.dumps(sess, indent=1))
+    sh(b, sys.executable, "scripts/build_summary.py")
+    with open(os.path.join(b, summary_rel), "rb") as fh:
+        disk = fh.read()
+    rc, out = post_in(b, s, sw_on)
+    row = last_row(b)
+    with open(os.path.join(b, summary_rel), "rb") as fh:
+        after = fh.read()
+    ok(rc == 1 and at(b) == w1 and not row["bench_commit"] and remote_main(r) == w1
+       and f"fast-forwarded main {h0[:8]}..{w1[:8]} (1 commit) before the commit" in row["note"]
+       and "held: the generated message carries a percentage" in row["note"],
+       f"e: exit {rc}, main at origin's tip, nothing committed, the note says both ({row['note'][:90]}…)")
+    ok(after == disk and "put back the 1 results/summary file(s) set aside for the fast-forward" in out
+       and " M results/summary/device-runs.csv" in porcelain(b),
+       "e: the disk summary is the sitting's rebuild again, byte for byte (modified against the new HEAD)")
+
+    print("--- (ix) f: push_bench off: not tried, the commit on the HEAD it found")
+    b, r, w, raw = repo("ff-f")
+    h0 = at(b)
+    w1 = win_commit(w, "windows: a runner script", {"scripts/run_windows_matrix.py": "# windows\n"})
+    s = sitting(raw, 26)
+    rc, out = post_in(b, s, sw_off)
+    row = last_row(b)
+    ok(rc == 0 and at(b, "HEAD~1") == h0 and remote_main(r) == w1 and "fast-forward: not tried (push_bench off" in out
+       and "fast-forward" not in row["note"] and row["push_bench"].startswith("would push bench"),
+       f"f: exit {rc}, no fast-forward, the ledger as before ({row['push_bench'][:60]})")
 
 
 # ---------------------------------------------------------------- main
@@ -636,6 +874,8 @@ def main():
                       "1 unit), litert-lm-gpu: v0.0.1: 1/1 cells of matrices/dashboard-ddp-v1-android-s26.cells")
        and "1 Device Run session session-fake0001, 1 jobs, 5.8 device-min" in msg, msg[:160])
     write(os.path.join(bench, ".gitignore"), kept)
+
+    ff_cases(tmp)
 
     print("--- usage")
     rc, out = post([os.path.join("results", "raw", "no-such-dir")], "off")

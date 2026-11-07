@@ -55,7 +55,9 @@ The job never edits a cells file and never deletes a raw record. Since
 of its campaign dirs passes the session checker: one local commit of those dirs
 and `results/summary` rebuilt from the git index, by path (other lanes' staged
 and untracked files stay as they are). Pushing the bench, pushing the private
-page and publishing it stay behind `ops/autopilot/switch.json` (all off). A
+page and publishing it follow `ops/autopilot/switch.json` (the two pushes on,
+publish off; with the bench push on, `main` is first fast-forwarded to
+`origin/main` when it is only behind, `docs/dashboard-autopilot-v1.md` §2). A
 person is needed for a HOLD or a FAIL (the reasons are in each dir's
 `REVIEW.md`) and for the switch. The only destructive step is the storage rotation on a phone
 (§3): pushed model copies are deleted between halves, together with their

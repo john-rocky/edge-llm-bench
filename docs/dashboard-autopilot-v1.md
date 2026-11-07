@@ -3,8 +3,8 @@
 Status: written 2026-10-18 (stage 2 of the bench-autopilot lane; stage 3a, the regression
 response, the same day: §8; stage 4, the Developer Device Platform weekly slot, the same day: §9;
 the team-protocol rules in the checker and the message guard, 2026-10-19: §11; the text screen for
-the Mac and iPhone, the same day: §12);
-the push and publish keys of the switch are off (nothing is pushed or published). Code:
+the Mac and iPhone, the same day: §12; the fast-forward of `main` before the commit, 2026-11-07: §2);
+`push_bench` is on since 2026-10-19 and `push_page` since 2026-11-06, `publish` is off (§3). Code:
 `scripts/dashboard_post.py`, `scripts/regression_watch.py`; selftests
 `scripts/dashboard_post_selftest.py`, `scripts/regression_watch_selftest.py` (CI, data
 pipeline); switch `ops/autopilot/switch.json`; the page's regression rule as copied
@@ -41,6 +41,9 @@ dashboard_post.py main()                       one at a time (logs/dashboard-job
                     --dry-run: --no-text-screen)
   git_busy()        MERGE_HEAD / rebase-merge / rebase-apply / CHERRY_PICK_HEAD / REVERT_HEAD,
                     detached HEAD                               -- busy --> held, exit 1
+  fast_forward()    push_bench on, on main: fetch; main only behind origin/main, no sitting or
+                    campaign driver running from the checkout -> git merge --ff-only (the disk
+                    results/summary set aside for it); else nothing moves (§2); the ledger note
   build_tree()      temp index = HEAD + the dirs -> exported tree -> its build_summary.py
                     -> results/summary into the temp index
   commit_message()  one line, generated; REFUSED_WORDS checked, then STANDING_WORDS ('%', vs,
@@ -128,19 +131,41 @@ dashboard_post.py main()                       one at a time (logs/dashboard-job
   commit between is one the ledger records as this step's (a shared checkout's `main` can hold
   another lane's unpushed commit, and pushing `main` would publish it). Anything else is refused
   and named in the ledger.
+- **`main` is fast-forwarded to `origin/main` before the commit** (since 2026-11-07). Another
+  checkout's push moves `origin/main` while a sitting runs (the Windows lane's two commits at
+  05:40 on 2026-11-07), and a commit on the checkout's older `main` is then no fast-forward of
+  `origin/main`: the 08:07 push was refused and a person merged it. So with `push_bench` on and the
+  checkout on `main`, the post fetches `origin main` first; when `main` is behind and holds no
+  commit `origin/main` lacks, it runs `git merge --ff-only --no-overwrite-ignore` to it and commits
+  on that tip (ledger note `fast-forwarded main <old>..<new> (<n> commits) before the commit`), and
+  the push goes through under the rule above. It moves nothing, and says why in the note (`no
+  fast-forward of main <old>..<new> (<n> commits): <why>`), when `main` holds a commit `origin/main`
+  lacks (a lane's local commit, or an earlier post's whose push was refused: a person merges),
+  when a sitting or a campaign driver runs from the checkout (`dashboard_job.py`, `./bench matrix`
+  and its runners, by the process table; this post's own sitting aside — a fast-forward would
+  change another's scripts and cells files between two of its steps), or when git refuses it (a
+  path it changes holds a change, staged or not; an untracked or ignored file sits where it writes
+  one: another session's work is never overwritten). `results/summary/` is the one exception: the
+  disk copy every `./bench matrix` rebuilds from all the dirs on disk (on 2026-11-07 the sitting's
+  rebuild wrote 11 361 rows where HEAD's file had 9 201 lines, and origin's 12d46d4c changed that
+  file: a plain `merge --ff-only` would have refused) is
+  set aside for the fast-forward when it is modified in the working tree only, and put back byte
+  for byte when the post then commits nothing (a commit writes the committed summary over it, as
+  before). With `push_bench` off, on a branch other than `main`, or when the fetch fails, nothing
+  is tried and the commit goes on HEAD as before.
 
 ## 3. The switch
 
-`ops/autopilot/switch.json` (the push and publish keys committed off):
+`ops/autopilot/switch.json` (as committed since 2026-11-06):
 
 ```json
-{"push_bench": false, "push_page": false, "publish": false, "page_repo": "~/code/litert-bench-dashboard",
+{"push_bench": true, "push_page": true, "publish": false, "page_repo": "~/code/litert-bench-dashboard",
  "ddp_weekly": true, "ddp_max_sessions": 16}
 ```
 
 | key | on (`true`) | off (anything else, or no file) |
 |---|---|---|
-| `push_bench` | `git push origin <bench commit>:main` under the rule above | ledger: `would push bench <origin/main>..<commit> (<n> commits[, <k> not made by this step])` |
+| `push_bench` | `main` fast-forwarded to `origin/main` before the commit when it is only behind (§2), then `git push origin <bench commit>:main` under the rule above | ledger: `would push bench <origin/main>..<commit> (<n> commits[, <k> not made by this step])`; no fast-forward |
 | `push_page` | `git -C <page repo> push origin <page commit>:main`, same rule | ledger: `would push page <origin/main>..<commit> (…)` |
 | `publish` | `<page repo>/tools/publish_gcs.sh` after a page commit of this post | ledger: `would publish dist/index.html sha256 <…>` |
 | `page_repo` | the page repo to build and commit | none: the page step is skipped |
@@ -148,7 +173,9 @@ dashboard_post.py main()                       one at a time (logs/dashboard-job
 | `ddp_max_sessions` | the Device Run sessions one lab-unit sitting may start (its plan's count, before any is billed) | absent or not a whole number: 0, no sitting |
 
 Off is the default. Turning a key on is a person's decision (the owner's), one key at a time;
-the ledger's `would …` lines are what each key would have done on the nights before. `ddp_weekly`
+the ledger's `would …` lines are what each key would have done on the nights before. `push_bench`
+is on since 2026-10-19 (the owner's GO, b70e4f6f) and `push_page` since 2026-11-06 (D-722,
+b94541d3); `publish` is off. `ddp_weekly`
 is on since 2026-10-18 on the user's word of 2026-10-16 (DDP sessions need no GO each); it goes
 off when a Googler runs the weekly DDP set on their side (§9).
 
@@ -166,7 +193,7 @@ off when a Googler runs the weekly DDP set on their side (§9).
 | `page` | `build <exit> <s>; <check> <exit> <s>; …` (`— FAIL <check>`), or why it was skipped |
 | `page_commit` | the page repo's commit (empty: not committed, the note says why) |
 | `push_bench` / `push_page` / `publish` | what was done, refused, or would have been done |
-| `note` | the scrub count, held reasons, `--allow-subset`, errors; `page cells: cells with a number before and none now: <n> (<status> <k>, …), the reverse: <m>` (the page repo's committed `dist/cells.csv` against this build's; the same phrase in the page commit's message; it changes no verdict); `red: …` (§8: whether the page build's red points are the bench's, each red point of the sitting and what it became, each retake verdict and request) |
+| `note` | the scrub count, held reasons, `--allow-subset`, errors; `fast-forwarded main <old>..<new> (<n> commits) before the commit`, or `no fast-forward of main <old>..<new> (<n> commits): <why>` when `origin/main` was ahead and nothing moved (§2); `page cells: cells with a number before and none now: <n> (<status> <k>, …), the reverse: <m>` (the page repo's committed `dist/cells.csv` against this build's; the same phrase in the page commit's message; it changes no verdict); `red: …` (§8: whether the page build's red points are the bench's, each red point of the sitting and what it became, each retake verdict and request) |
 
 ## 5. REVIEW.md
 
@@ -185,7 +212,8 @@ message, as before, or stays uncommitted.
   allow-list line goes in only with the commit whose message gives the reason. A `pin-drift` or
   `protocol-off` FAIL takes none: the pin bump and a re-measurement (§11).
 - The switch: each key is turned on by a person; nothing else turns it on.
-- A refused push: `origin/main` moved, or the checkout's `main` holds another lane's commit —
+- A refused push: `origin/main` moved and the post could not fast-forward `main` to it (the
+  ledger note's `no fast-forward …: <why>`), or the checkout's `main` holds another lane's commit —
   rebase in a worktree, or push `<sha>:main` by hand once `git log origin/main..<sha>` lists
   only what should go.
 - The page repo with uncommitted changes, a page check FAIL: the page is not committed; the
@@ -472,7 +500,10 @@ the post's commit is made with.
 
 - The private team page: the post builds it only where the switch's `page_repo` holds a `build.py`;
   elsewhere its line reads `skipped: no build.py in <dir>`.
-- Any push or publish: the switch's keys are all off, so the commit stays local.
+- Publish: off in the switch as committed. Its `push_bench` and `push_page` are on (§3): the
+  post pushes the bench commit to that clone's `origin` under §2's rules (the fast-forward first)
+  and the ledger's `push_bench` column says what happened; with no page repo there is no page
+  commit to push. A host that keeps its commits local sets `push_bench` false in its copy.
 - Retakes: a red point's retake is a sitting of the bench host's attached phone, run by its job.
 - The bisect: a request's command runs `scripts/engine_bisect.py` (stage 3b, branch
   `bench-autopilot-bisect`, on top of PR #4's LiteRT-LM Android builds from a git ref); without the

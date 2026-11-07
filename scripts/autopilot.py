@@ -17,7 +17,8 @@ job's own functions, then what follows a sitting there, in this order:
               scripts/session_check.py, one local commit of the dir and results/summary rebuilt from the
               git index when it passes (REVIEW.md in the dir when it does not); the private page only
               where the switch's page_repo holds a build.py, else one line; the red segment's retakes and
-              bisect requests; push and publish only as the switch says (committed: all off)
+              bisect requests; push and publish only as the switch says (committed: push_bench
+              and push_page on, publish off)
   3 table     scripts/render_dashboard.py -> DASHBOARD.md and .dashboard/ (local, gitignored)
   4 red       scripts/regression_watch.py --json --markdown: the team page's red points over the summary
   5 requests  logs/dashboard-job/retakes.json and bisect-requests.json: the pending ones, and each bisect

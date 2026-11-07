@@ -21,6 +21,17 @@ repo it commits to. In this order:
            The default takes a sitting whole (the checker's pair rules hold an anchor phase whose
            payload is missing); --allow-subset commits the dirs given while the sitting's other
            dirs stay out, and names them in the message (only those links are let through)
+  ff       with push_bench on and the checkout on main: fetch origin main, and when main is behind
+           origin/main and holds no commit origin/main lacks, `git merge --ff-only` to it, so the
+           commit lands on origin/main's tip and its push goes through (another checkout's push
+           moves origin/main under a sitting: 2026-11-07 08:07, the push refused). Not while a
+           sitting or a campaign driver runs from the checkout (its scripts and cells files would
+           change between two of its steps), and never over a local change: git refuses the
+           fast-forward when a path it changes is modified or staged, or an untracked or ignored
+           file sits where it writes one. The one exception is results/summary modified on disk
+           only (the rebuild every `./bench matrix` leaves, which the commit's summary replaces):
+           set aside for the fast-forward, put back when nothing is committed. Anything else: no
+           fast-forward (the ledger note says why), the commit on HEAD as before, the push decides
   commit   one local commit of HEAD + the dirs + results/summary rebuilt from that tree (a temp
            index: never the disk, never another lane's staged files), the commit-msg hook run on
            a generated message; the tree committed is the one checked (commit-tree, then
@@ -968,6 +979,202 @@ def push(repo, sha, mine, on, what):
     return f"pushed {what} {span}" if rc == 0 else f"push failed: {short(out, 160)}"
 
 
+# ---------------------------------------------------------------- the fast-forward
+
+# a sitting or a campaign driver: the job, the autopilot, ./bench's platform runners, the DDP and
+# profile runners, and ./bench itself with a command that runs one. A fast-forward of the checkout
+# one runs from would change its scripts and cells files between two of its steps (the agent
+# operating notes: the main tree is not fast-forwarded under a night sitting)
+DRIVER_SCRIPTS = ("dashboard_job.py", "autopilot.py", "bench_matrix_mac.sh", "bench_matrix_iphone.sh",
+                  "run_campaign.py", "run_cell.py", "run_profile.py", "run_ddp.py")
+DRIVER_BENCH = ("matrix", "dashboard-job", "autopilot", "profile", "regress")
+INTERPRETER = re.compile(r"^(?:python[0-9.]*|Python|bash|sh|zsh|env)$")
+
+
+def driver_script(args):
+    """The script of a process that is a sitting or a campaign driver, read from its argv text (ps
+    args): its program, or the first operand behind its interpreters and their flags (and env's
+    assignments), when that is one of DRIVER_SCRIPTS or `bench` followed by one of DRIVER_BENCH; else
+    None. A process whose program is anything else is none, whatever its arguments name (an agent
+    CLI whose prompt names dashboard_job.py; a gtimeout or a shell -c, whose child has its own line)."""
+    toks = args.split()
+    i = 0
+    while i < len(toks) and INTERPRETER.match(os.path.basename(toks[i])):
+        i += 1
+        while i < len(toks) and (toks[i].startswith("-") or "=" in toks[i]):
+            i += 1
+    if i >= len(toks):
+        return None
+    base = os.path.basename(toks[i])
+    if base in DRIVER_SCRIPTS or (base == "bench" and i + 1 < len(toks) and toks[i + 1] in DRIVER_BENCH):
+        return toks[i]
+    return None
+
+
+def process_cwd(pid):
+    """A live process's working directory (/proc on Linux, lsof on macOS), or None."""
+    try:
+        return os.readlink(f"/proc/{pid}/cwd")
+    except OSError:
+        pass
+    try:
+        p = subprocess.run(["lsof", "-a", "-p", str(pid), "-d", "cwd", "-Fn"], capture_output=True,
+                           text=True, timeout=60)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    return next((ln[1:] for ln in p.stdout.splitlines() if ln.startswith("n/")), None)
+
+
+def running_drivers(top):
+    """[(pid, its script relative to `top` and the arguments after it)] of the sittings and campaign
+    drivers running from this checkout: driver_script inside `top` (a relative one joined to the
+    process's working directory; one whose directory cannot be read counts, as it reads), this post's
+    own ancestors aside (the sitting that handed it over is done measuring). None when the process
+    table cannot be read. `ps -Ao pid=,ppid=,args=` prints one line per process (a newline inside an
+    argument comes out escaped)."""
+    try:
+        p = subprocess.run(["ps", "-Ao", "pid=,ppid=,args="], capture_output=True, text=True, timeout=60)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if p.returncode != 0:
+        return None
+    procs = {}
+    for ln in p.stdout.splitlines():
+        m = re.match(r"\s*(\d+)\s+(\d+)\s+(.*)$", ln)
+        if m:
+            procs[int(m.group(1))] = (int(m.group(2)), m.group(3))
+    mine, pid = set(), os.getpid()
+    while pid > 1 and pid not in mine:
+        mine.add(pid)
+        pid = procs.get(pid, (0, ""))[0]
+    root = os.path.realpath(top)
+    found = []
+    for pid, (_, args) in sorted(procs.items()):
+        script = None if pid in mine else driver_script(args)
+        if not script:
+            continue
+        rest = args.split(script, 1)[1]
+        if not os.path.isabs(script):
+            cwd = process_cwd(pid)
+            if cwd is None:
+                found.append((pid, f"{script}{rest} (its working directory unread)"))
+                continue
+            script = os.path.join(cwd, script)
+        real = os.path.realpath(script)
+        if real == root or real.startswith(root + os.sep):
+            found.append((pid, os.path.relpath(real, root) + rest))
+    return found
+
+
+def put_back(top, saved):
+    """The results/summary files fast_forward set aside, back on disk byte for byte (one that was
+    missing is removed again); the index stays as git left it."""
+    for rel, kept in saved.items():
+        path = os.path.join(top, rel)
+        if kept is None:
+            if os.path.lexists(path):
+                os.remove(path)
+            continue
+        data, mode = kept
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        tmp = path + ".post-tmp"
+        with open(tmp, "wb") as fh:
+            fh.write(data)
+        os.chmod(tmp, mode)
+        os.replace(tmp, path)
+
+
+def fast_forward(top, branch, on, dry):
+    """Before the commit: main up to origin/main (the module docstring's ff step) -> (the ledger
+    note's phrase or None, the results/summary files set aside {path: (bytes, mode), or None for a
+    missing one} or None). `on`: the switch's push_bench. A dry run fetches nothing and moves
+    nothing: it reads origin/main as last fetched and says what it would do."""
+    if not on:
+        log("fast-forward: not tried (push_bench off: the commit stays local)")
+        return None, None
+    if branch != PUSH_BRANCH:
+        log(f"fast-forward: not tried (the checkout is on {branch}, not {PUSH_BRANCH})")
+        return None, None
+    if not dry:
+        rc, out = git(top, "fetch", "-q", "origin", PUSH_BRANCH, timeout=300)
+        if rc != 0:
+            log(f"fast-forward: not tried (fetch failed: {short(out, 120)})")
+            return None, None
+    head, target = rev(top, "HEAD"), rev(top, f"refs/remotes/origin/{PUSH_BRANCH}")
+    if not head or not target:
+        log(f"fast-forward: not tried (no {'HEAD' if not head else 'origin/' + PUSH_BRANCH})")
+        return None, None
+    if head == target:
+        log(f"fast-forward: not needed ({PUSH_BRANCH} is at origin/{PUSH_BRANCH} {head[:8]})")
+        return None, None
+    rc1, out1 = git(top, "rev-list", f"{head}..{target}")
+    rc2, out2 = git(top, "rev-list", f"{target}..{head}")
+    if rc1 != 0 or rc2 != 0:
+        log(f"fast-forward: not tried (rev-list failed: {short(out1 if rc1 else out2, 120)})")
+        return None, None
+    behind, ahead = out1.split(), out2.split()
+    if not behind:
+        log(f"fast-forward: not needed ({PUSH_BRANCH} holds {len(ahead)} commit{'' if len(ahead) == 1 else 's'} "
+            f"origin/{PUSH_BRANCH} lacks, and origin/{PUSH_BRANCH} none it lacks)")
+        return None, None
+    span = f"{head[:8]}..{target[:8]} ({len(behind)} commit{'' if len(behind) == 1 else 's'})"
+
+    def no(why):
+        note = f"no fast-forward of {PUSH_BRANCH} {span}: {why}"
+        log(note)
+        return note, None
+
+    if ahead:
+        return no(f"{PUSH_BRANCH} holds {len(ahead)} commit{'' if len(ahead) == 1 else 's'} origin/{PUSH_BRANCH} "
+                  f"lacks (first {ahead[-1][:8]}): a person merges")
+    drivers = running_drivers(top)
+    if drivers is None:
+        return no("the process table could not be read (ps)")
+    if drivers:
+        pid, what = drivers[0]
+        return no(f"a sitting or a campaign driver runs from this checkout (pid {pid}: {short(what, 100)}"
+                  + (f"; {len(drivers) - 1} more" if len(drivers) > 1 else "") + ")")
+    if dry:
+        log(f"would fast-forward {PUSH_BRANCH} {span} before the commit (origin/{PUSH_BRANCH} as last "
+            f"fetched) [dry-run]")
+        return None, None
+    # results/summary among the paths the fast-forward changes, modified on disk and not staged: the
+    # rebuild a sitting's `./bench matrix` left there (copy_summary replaces it after the commit)
+    rc, out = git(top, "diff", "--name-only", "-z", head, target, "--", SUMMARY_REL)
+    changed = [p for p in out.split("\0") if p] if rc == 0 else []
+    saved = {}
+    if changed:
+        rc_w, worktree = git(top, "diff", "--name-only", "-z", "--", *changed)
+        rc_s, staged = git(top, "diff", "--cached", "--name-only", "-z", head, "--", *changed)
+        if rc_w != 0 or rc_s != 0:
+            return no(f"git diff failed on {SUMMARY_REL} ({short(worktree if rc_w else staged, 120)})")
+        staged = {p for p in staged.split("\0") if p}
+        for rel in (p for p in worktree.split("\0") if p and p not in staged):
+            path = os.path.join(top, rel)
+            try:
+                with open(path, "rb") as fh:
+                    saved[rel] = (fh.read(), os.stat(path).st_mode & 0o7777)
+            except FileNotFoundError:
+                saved[rel] = None
+        if saved:
+            rc, out = git(top, "checkout", "-q", "--", *saved)
+            if rc != 0:
+                put_back(top, saved)
+                return no(f"{SUMMARY_REL} could not be set aside ({short(out, 120)})")
+    rc, out = git(top, "-c", "gc.auto=0", "-c", "maintenance.auto=false", "merge", "--ff-only",
+                  "--no-overwrite-ignore", "--no-autostash", "-q", target, timeout=600)
+    if rc != 0:
+        if saved:
+            put_back(top, saved)
+        said = " ".join(ln.strip() for ln in out.splitlines()
+                        if ln.strip() and not ln.startswith(("Please", "Aborting", "hint:")))
+        return no(f"git refused it ({short(said, 200)})")
+    note = f"fast-forwarded {PUSH_BRANCH} {span} before the commit"
+    log(note + (f"; {len(saved)} {SUMMARY_REL} file{'' if len(saved) == 1 else 's'} modified on disk set aside "
+                "for it (put back if nothing is committed)" if saved else ""))
+    return note, saved or None
+
+
 def publish(repo, committed, on):
     """The page's publish script (tools/publish_gcs.sh) when the switch is on and this step
     committed the page; off: what it would publish."""
@@ -1090,49 +1297,58 @@ def post(top, dirs, sw, args, row, tmp):
         return hold_git("HEAD is detached: the post commits onto a branch")
     if not args.dry_run:
         remove_reviews(top, dirs)
+    ff_note, set_aside = fast_forward(top, branch, sw["push_bench"], args.dry_run)
+    if ff_note:
+        notes.append(ff_note)
 
-    for attempt in (1, 2, 3):
-        head = rev(top, "HEAD")
-        work = os.path.join(tmp, f"commit-{attempt}")
-        os.makedirs(work)
-        index, tree, lines_a, lines_b = build_tree(top, head, dirs, work)
-        rc, _ = git(top, "diff", "--cached", "--quiet", head, index=index)
-        if rc == 0:
-            notes.append("nothing to commit: the dirs and the summary are in HEAD already")
-            row["note"] = "; ".join(notes)
-            log(notes[-1])
-            return 0
-        facts = sitting_facts(top, dirs, results)
-        msg = commit_message(facts, lines_a, lines_b, waived)
-        bad = REFUSED_WORDS.findall(msg)
-        if bad:
-            return hold_git(f"the generated message carries a word the commit-msg hook refuses ({bad[0]})")
-        log("message: " + msg.strip())
-        standing = [m.group(0) for m in STANDING_WORDS.finditer(msg)]
-        if standing:
-            return hold_message(f"the generated message carries a percentage or a standing word "
-                                f"({', '.join(sorted(set(standing)))}): the public repo's text carries no "
-                                f"standings; fix commit_message or the text it copies (the dirs are not at fault)")
-        log("message guard: no '%' and no standing word (vs, faster, slower, than, beats, leads, "
-            "outperforms): OK")
-        if args.dry_run:
-            row["summary_lines"] = f"{lines_a} -> {lines_b}"
-            page_step(sw, tree, args.page_out or os.path.join(top, PAGE_OUT_DEFAULT), row, True)
-            notes.append(red_step(top, tree, None, dirs, True, work))
-            log(notes[-1])
-            for key in SWITCH_KEYS:
-                row[key] = f"{'on' if sw[key] else 'off'} (dry-run)"
-            row["note"] = "; ".join(notes + ["dry-run: nothing written"])
-            return 0
-        msg_file = os.path.join(work, "message.txt")
-        with open(msg_file, "w") as fh:
-            fh.write(msg)
-        sha, why = commit_index(top, index, head, branch, msg_file, list(dirs) + [SUMMARY_REL])
-        if sha:
-            break
-        if not why.startswith("moved:") or attempt == 3:
-            return hold_git(f"not committed: {why}")
-        log(f"HEAD moved while the summary was built ({why}); building again on the new HEAD")
+    try:
+        for attempt in (1, 2, 3):
+            head = rev(top, "HEAD")
+            work = os.path.join(tmp, f"commit-{attempt}")
+            os.makedirs(work)
+            index, tree, lines_a, lines_b = build_tree(top, head, dirs, work)
+            rc, _ = git(top, "diff", "--cached", "--quiet", head, index=index)
+            if rc == 0:
+                notes.append("nothing to commit: the dirs and the summary are in HEAD already")
+                row["note"] = "; ".join(notes)
+                log(notes[-1])
+                return 0
+            facts = sitting_facts(top, dirs, results)
+            msg = commit_message(facts, lines_a, lines_b, waived)
+            bad = REFUSED_WORDS.findall(msg)
+            if bad:
+                return hold_git(f"the generated message carries a word the commit-msg hook refuses ({bad[0]})")
+            log("message: " + msg.strip())
+            standing = [m.group(0) for m in STANDING_WORDS.finditer(msg)]
+            if standing:
+                return hold_message(f"the generated message carries a percentage or a standing word "
+                                    f"({', '.join(sorted(set(standing)))}): the public repo's text carries no "
+                                    f"standings; fix commit_message or the text it copies (the dirs are not at fault)")
+            log("message guard: no '%' and no standing word (vs, faster, slower, than, beats, leads, "
+                "outperforms): OK")
+            if args.dry_run:
+                row["summary_lines"] = f"{lines_a} -> {lines_b}"
+                page_step(sw, tree, args.page_out or os.path.join(top, PAGE_OUT_DEFAULT), row, True)
+                notes.append(red_step(top, tree, None, dirs, True, work))
+                log(notes[-1])
+                for key in SWITCH_KEYS:
+                    row[key] = f"{'on' if sw[key] else 'off'} (dry-run)"
+                row["note"] = "; ".join(notes + ["dry-run: nothing written"])
+                return 0
+            msg_file = os.path.join(work, "message.txt")
+            with open(msg_file, "w") as fh:
+                fh.write(msg)
+            sha, why = commit_index(top, index, head, branch, msg_file, list(dirs) + [SUMMARY_REL])
+            if sha:
+                set_aside = None    # copy_summary below writes the committed summary in its place
+                break
+            if not why.startswith("moved:") or attempt == 3:
+                return hold_git(f"not committed: {why}")
+            log(f"HEAD moved while the summary was built ({why}); building again on the new HEAD")
+    finally:
+        if set_aside:
+            put_back(top, set_aside)
+            log(f"put back the {len(set_aside)} {SUMMARY_REL} file(s) set aside for the fast-forward: nothing committed")
     row["bench_commit"] = sha
     row["summary_lines"] = f"{lines_a} -> {lines_b}"
     copy_summary(tree, top)
