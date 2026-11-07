@@ -17,7 +17,8 @@ writes the same `schema/result.v1.json` records as the other lanes.
 
 The host needs an OpenSSH server whose default shell is Windows PowerShell (`DefaultShell` under
 `HKLM:\SOFTWARE\OpenSSH`, set to `C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe`) and a key login from the
-Mac: the executor calls `ssh <host>` for each step and each poll. The session the server gives is session 0; Direct3D 12,
+Mac: the executor calls `ssh <host>` for each step and waits for the job through one session it holds open until the
+job ends. The session the server gives is session 0; Direct3D 12,
 Vulkan and the Intel NPU all work from it, and a process started through WMI outlives the connection, which is how the
 build and the job run.
 
@@ -170,6 +171,15 @@ neither the CPU nor the GPU. The executor does not rebuild `results/summary/`; t
 
 A stopped job picks up again with `BENCH_WINDOWS_INVOCATION=<invocation>` and keeps the runs it has.
 
+While the job runs, the executor waits for it through one SSH session: a PowerShell loop on the host reads `job.log` and
+`job.done` in the job's log dir every 5 s (two file reads, no WMI), sends `job.log`'s new lines, which the executor
+prints as `host: ...`, sends a keep-alive line (`ALIVE`) after 60 s without one, and ends when `job.done` appears. The
+executor closes a session that sends nothing for 180 s; a session that ends before `job.done` is opened again 30 s later
+and goes on from the next line of `job.log`. When none of the loop's lines has come for 600 s, the executor stops with
+`error: host unreachable for 600 s` and exit 1, and the job goes on on the host for `BENCH_WINDOWS_INVOCATION` to pick
+up. The executor's own SSH connections are those that stage the job, the wait's session (one, unless it drops) and the
+copy of the logs.
+
 On a host shared with other work, `BENCH_WINDOWS_BUSY_FILE` (a path on the host) and `BENCH_WINDOWS_BUSY_LABEL` (default
 `windows-job`) name a marker file. At its start and before each run, the job waits while the file holds another label
 (one read a minute), takes it over once it is 120 min old, and writes `<label> <time>` into it; at its end it removes the
@@ -184,8 +194,9 @@ reached the host meanwhile (`conditions.sshConnections`) and the logical process
 (`conditions.hostCpu`); nothing in the harness judges either. `conditions.sshConnections` holds the SSH connections the
 host's sshd accepted from the run's start to its end: their number (`accepted`) and each one's second into the run
 (`atSeconds`), read after the run from the host's `OpenSSH/Operational` event log, where OpenSSH writes one `Accepted`
-event per connection; a session opened before the run and still open during it is not counted. The executor's own poll
-is one of them every 30 s, so a 60 s run with no other SSH client counts about two. The log is circular (1 MiB: about
+event per connection; a session opened before the run and still open during it is not counted. The executor's wait
+is such a session, opened before the job's first run, so a run with no other SSH client counts none; a wait session
+opened again after a drop counts in the run it falls in. The log is circular (1 MiB: about
 7 h of this PC's SSH traffic on 2026-11-07) and is read right after each run; a run whose start the log no longer
 reaches by then (it turned over or was cleared during the run), or a run on a host whose log cannot be read, gets
 `accepted: null` and the reason.

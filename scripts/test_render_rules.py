@@ -25,6 +25,7 @@ Fixtures live in temp dirs; results/ is neither read nor written.
   python3 scripts/test_render_rules.py
 """
 import argparse
+import base64
 from contextlib import redirect_stdout
 import csv
 import datetime
@@ -1370,7 +1371,7 @@ class WindowsSshExecutor(unittest.TestCase):
             fh.write(f"windows litert-lm org/m short-chat backend=npu file=m_intel_PTL.litertlm runs={runs}\n")
         specs = run_windows_matrix.parse_model_specs(["litert-lm:org/m=m_intel_PTL.litertlm:10"])
         plan = run_windows_matrix.plan_job([cells], "c", run_windows_matrix.load_pins(), specs)
-        seen = {"commands": [], "job": None}
+        seen = {"commands": [], "job": None, "waits": []}
         # the build's own registry entry, as build_litert_lm.ps1 writes it beside the tool
         extra = os.path.join(tmp, "pins-v.json")
         with open(extra, "w") as fh:
@@ -1380,11 +1381,21 @@ class WindowsSshExecutor(unittest.TestCase):
         def fake_ssh(command, timeout=300, check=True, runner=None):
             del timeout, check, runner
             seen["commands"].append(command)
-            if "Get-FileHash" in command and "'FILE '" in command:
+            if "Win32_Process" in command:
+                out = "0\n"
+            elif "Get-FileHash" in command and "'FILE '" in command:
                 out = f"FILE litert_lm_advanced_main_windows.exe {host_exe_sha}\nFILE x.dll {self.DLL_SHA}\n"
+            elif "job.log" in command:
+                raise AssertionError("the wait reads job.log through one ssh() per read again")
             else:
-                out = "JOBDONE OK\n" if "job.done" in command else "0\n" if "Win32_Process" in command else ""
+                out = ""
             return subprocess.CompletedProcess([], 0, out, "")
+
+        def fake_stream(command, idle_seconds=None, popen=None):
+            del idle_seconds, popen
+            seen["waits"].append(command)
+            yield from ["WAITING 2026-11-07T16:00:00 from line 0", "LOG [t] job c: 1 launches", "WAITSTAT 3 12 0.4 0",
+                        "JOBDONE OK"]
 
         def fake_up(local, remote, runner=None):
             del remote, runner
@@ -1405,7 +1416,7 @@ class WindowsSshExecutor(unittest.TestCase):
         env = {"BENCH_WINDOWS_ROOT": r"C:\b", "BENCH_WINDOWS_MODEL_DIR": r"C:\m", "BENCH_WINDOWS_INVOCATION": invocation or "",
                "BENCH_EXTRA_PINS": extra}
         with patch.dict(os.environ, env), patch.object(ex, "ssh", fake_ssh), patch.object(ex, "scp_up", fake_up), \
-                patch.object(ex, "scp_down", fake_down):
+                patch.object(ex, "scp_down", fake_down), patch.object(ex, "ssh_stream", fake_stream):
             rc = ex.run(plan, pathlib.Path(tmp) / "c", args)
         return rc, seen, plan
 
@@ -1417,6 +1428,10 @@ class WindowsSshExecutor(unittest.TestCase):
             started = [c for c in seen["commands"] if "Win32_Process" in c]
             self.assertEqual(len(started), 1)
             self.assertIn("-PurgeEngineCaches", started[0])
+            # the start removes an earlier start's job.done in its own session, and the wait is one session
+            self.assertRegex(started[0], r"^Remove-Item -LiteralPath 'C:\\b\\logs\\[^']+\\job\.done' "
+                                         r"-ErrorAction SilentlyContinue; \$r = Invoke-CimMethod ")
+            self.assertEqual(len(seen["waits"]), 1)
             with open(pathlib.Path(tmp) / "c" / f"{plan.rows[0].stem}.jsonl") as fh:
                 recs = [json.loads(line) for line in fh]
             self.assertEqual(len(recs), 2)
@@ -1444,6 +1459,7 @@ class WindowsSshExecutor(unittest.TestCase):
             rc, seen, _ = self.run_job(tmp, invocation="inv1")
             self.assertEqual(rc, 2)
             self.assertEqual(seen["commands"], [])
+            self.assertEqual(seen["waits"], [])
 
     def test_a_label_the_registries_do_not_hold_is_refused_before_the_host_is_touched(self):
         import windows_ssh_executor as ex
@@ -1479,6 +1495,136 @@ class WindowsSshExecutor(unittest.TestCase):
             def no_ssh(*a, **k):
                 raise AssertionError("the check must not reach the host for rows without LiteRT-LM")
             ex.check_litert_build(plan, "unknown", runner=no_ssh)
+
+
+class WindowsSshWait(unittest.TestCase):
+    """windows_ssh_executor.wait_job: one SSH session on the host until job.done, opened again after a drop, and the
+    unreachable limit; ssh_stream, the session's transport, with a local process in place of ssh."""
+
+    LOG_DIR = r"C:\b\logs\inv"
+
+    @staticmethod
+    def script_of(command):
+        """The host script inside an encoded command line."""
+        return base64.b64decode(command.rsplit(" ", 1)[1]).decode("utf-16-le")
+
+    def wait(self, sessions):
+        """wait_job over fake sessions (each a list of lines; an exception in it ends that session with it; the last
+        list stands for every later session); returns (the result or the exception, the host scripts, the sleeps,
+        stdout)."""
+        import windows_ssh_executor as ex
+        scripts, sleeps, now = [], [], [0.0]
+
+        def stream(command):
+            scripts.append(self.script_of(command))
+            lines = sessions[min(len(scripts), len(sessions)) - 1]
+
+            def session():
+                for line in lines:
+                    if isinstance(line, Exception):
+                        raise line
+                    yield line
+            return session()
+
+        def sleep(seconds):
+            sleeps.append(seconds)
+            now[0] += seconds
+
+        out = io.StringIO()
+        with redirect_stdout(out):
+            try:
+                result = ex.wait_job(self.LOG_DIR, stream=stream, sleep=sleep, clock=lambda: now[0])
+            except RuntimeError as exc:
+                result = exc
+        return result, scripts, sleeps, out.getvalue()
+
+    def test_the_wait_is_one_session_until_job_done(self):
+        result, scripts, sleeps, out = self.wait([[
+            "WAITING 2026-11-07T16:00:00 from line 0", "LOG [t1] job c: 2 launches", "ALIVE", "LOG [t2] r00_run1 exit=0",
+            "WAITSTAT 40 200 0.52 0", "JOBDONE OK"]])
+        self.assertEqual(result, "OK")
+        self.assertEqual(len(scripts), 1)
+        self.assertEqual(sleeps, [])
+        self.assertIn("$skip = 0", scripts[0])
+        self.assertIn(r"$log = 'C:\b\logs\inv\job.log'; $done = 'C:\b\logs\inv\job.done'", scripts[0])
+        for wmi in ("Cim", "Wmi", "Win32_"):  # the loop reads two files and nothing else
+            self.assertNotIn(wmi, scripts[0])
+        self.assertEqual([ln for ln in out.splitlines() if ln.startswith("  host: ")],
+                         ["  host: [t1] job c: 2 launches", "  host: [t2] r00_run1 exit=0"])
+        self.assertIn("1 SSH session(s); the last one's loop read job.log and job.done 40 times over 200 s with "
+                      "0.52 s of CPU", out)
+
+    def test_a_dropped_session_is_opened_again_from_the_next_line(self):
+        import windows_ssh_executor as ex
+        result, scripts, sleeps, out = self.wait([
+            ["WAITING t from line 0", "LOG a", "LOG b", RuntimeError("ssh winpc: exit 255: Connection reset")],
+            ["WAITING t from line 2", "LOG c", "WAITSTAT 3 15 0.1 0", "JOBDONE FAILED model file missing"]])
+        self.assertEqual(result, "FAILED model file missing")
+        self.assertEqual([("$skip = 0" in scripts[0]), ("$skip = 2" in scripts[1])], [True, True])
+        self.assertEqual(sleeps, [ex.WAIT_RECONNECT_SECONDS])
+        self.assertEqual([ln for ln in out.splitlines() if ln.startswith("  host: ")],
+                         ["  host: a", "  host: b", "  host: c"])
+        self.assertIn("session 1 ended: ssh winpc: exit 255", out)
+        self.assertIn("2 SSH session(s)", out)
+
+    def test_a_session_whose_loop_ends_by_itself_is_opened_again(self):
+        import windows_ssh_executor as ex
+        result, scripts, sleeps, _ = self.wait([["WAITING t from line 0", "LOG a", "SESSIONEND"],
+                                                ["WAITING t from line 1", "WAITSTAT 1 1 0 0", "JOBDONE OK"]])
+        self.assertEqual(result, "OK")
+        self.assertIn("$skip = 1", scripts[1])
+        self.assertEqual(sleeps, [ex.WAIT_RECONNECT_SECONDS])
+
+    def test_the_host_unreachable_past_the_limit_stops_the_wait(self):
+        import windows_ssh_executor as ex
+        result, scripts, sleeps, _ = self.wait([[RuntimeError("ssh winpc: exit 255: Operation timed out")]])
+        self.assertIsInstance(result, RuntimeError)
+        self.assertIn(f"host unreachable for {ex.UNREACHABLE_LIMIT_SECONDS} s: ssh winpc: exit 255", str(result))
+        # as before the one session: one try every WAIT_RECONNECT_SECONDS until the limit has passed
+        self.assertEqual(set(sleeps), {ex.WAIT_RECONNECT_SECONDS})
+        self.assertEqual(len(scripts), ex.UNREACHABLE_LIMIT_SECONDS // ex.WAIT_RECONNECT_SECONDS + 2)
+
+    def test_error_text_from_the_host_does_not_count_as_reaching_it(self):
+        import windows_ssh_executor as ex
+        result, _, _, _ = self.wait([["At line:3 char:5", "+ CategoryInfo : ParserError",
+                                      RuntimeError("ssh winpc: exit 1: ParserError")]])
+        self.assertIsInstance(result, RuntimeError)
+        self.assertIn(f"host unreachable for {ex.UNREACHABLE_LIMIT_SECONDS} s", str(result))
+
+    def local(self, script):
+        """A popen for ssh_stream that runs script with sh in place of ssh."""
+        procs = []
+
+        def popen(argv, **kwargs):
+            self.assertEqual(argv[0], "ssh")
+            self.assertIn("ServerAliveInterval=30", argv)
+            proc = subprocess.Popen(["sh", "-c", script], **kwargs)
+            procs.append(proc)
+            return proc
+        return popen, procs
+
+    def test_ssh_stream_yields_lines_as_they_come_and_raises_on_a_failed_exit(self):
+        import windows_ssh_executor as ex
+        popen, _ = self.local(r"printf 'WAITING x\r\nLOG a\r\nLOG b'")
+        self.assertEqual(list(ex.ssh_stream("c", idle_seconds=10, popen=popen)), ["WAITING x", "LOG a", "LOG b"])
+        popen, _ = self.local(r"printf 'LOG a\r\n'; echo 'an error' 1>&2; exit 3")
+        got = []
+        with self.assertRaises(RuntimeError) as cm:
+            for line in ex.ssh_stream("c", idle_seconds=10, popen=popen):
+                got.append(line)
+        self.assertEqual(got, ["LOG a", "an error"])
+        self.assertIn("exit 3: LOG a | an error", str(cm.exception))
+
+    def test_ssh_stream_closes_a_session_that_sends_nothing(self):
+        import windows_ssh_executor as ex
+        popen, procs = self.local("printf 'WAITING x\\n'; exec sleep 30")
+        got = []
+        with self.assertRaises(RuntimeError) as cm:
+            for line in ex.ssh_stream("c", idle_seconds=0.5, popen=popen):
+                got.append(line)
+        self.assertEqual(got, ["WAITING x"])
+        self.assertIn("nothing came for 0.5 s", str(cm.exception))
+        self.assertIsNotNone(procs[0].poll())
 
 
 class WindowsCudaRow(unittest.TestCase):

@@ -32,8 +32,9 @@ for a resumed job; at its end the job removes the caches an adapter run wrote, s
 Each run's JSON also carries two reads of the host taken around the engine process, sshConnections and hostCpu;
 neither stops or flags a run. sshConnections: the SSH connections the host's sshd accepted from the run's start to its
 end, read after the run from the event log -SshLogName names (OpenSSH logs one "Accepted" event per connection), with
-each one's second into the run; a session opened before the run is not counted. The count includes the executor's own
-poll, one connection every 30 s. A null count carries the reason the log could not be read. hostCpu: each logical
+each one's second into the run; sessions opened before the run are not counted, the executor's wait among them (one
+session from before the job's first run to its end; a wait session opened again after a drop counts in the run it
+falls in). A null count carries the reason the log could not be read. hostCpu: each logical
 processor's busy share (every process's) and its performance against its nominal performance (which can read over
 100), averaged over the run from the Processor Information counters read right before the engine starts and right
 after it exits; its lowest performance limit over the reads after the first (one every 5 s while the engine runs, and

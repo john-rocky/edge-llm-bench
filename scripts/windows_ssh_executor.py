@@ -3,8 +3,9 @@
 
 The transport of scripts/run_windows_matrix.py (`register_executor`, the runner's contract
 fn(plan, campaign_dir, args) -> int): it stages the pinned llama.cpp zips (a CUDA label's CUDA runtime zip with
-its own) and windows/run_job.ps1 on the host, starts the job detached so that it outlives the SSH connection, waits for it, pulls the logs into
-<campaign>/host-logs/<invocation>/ and writes the records with run_windows_matrix.write_records.
+its own) and windows/run_job.ps1 on the host, starts the job detached so that it outlives the SSH connection, waits for it
+through one SSH session held open until the job ends (wait_job), pulls the logs into <campaign>/host-logs/<invocation>/
+and writes the records with run_windows_matrix.write_records.
 
   scripts/windows_ssh_executor.py matrices/dashboard-windows-v1.cells --campaign <date>-windows \\
       --litert-label v0.19.0 \\
@@ -32,11 +33,13 @@ windows/engine-pins.json nor BENCH_EXTRA_PINS, or when the files in <root>\\engi
 its records would name no engine.
 """
 
+import base64
 import datetime
 import functools
 import json
 import os
 import pathlib
+import select
 import subprocess
 import sys
 import tempfile
@@ -48,7 +51,15 @@ import run_windows_matrix as rwm  # noqa: E402
 
 HARNESS = "scripts/windows_ssh_executor.py"
 RUN_JOB = rwm.REPO / "windows" / "run_job.ps1"
-POLL_SECONDS = 30
+# The wait is one SSH session: its PowerShell loop on the host (WAIT_SCRIPT) reads job.log and job.done every
+# WAIT_READ_SECONDS, prints job.log's new lines, prints ALIVE after WAIT_ALIVE_SECONDS without a line, and ends at
+# job.done, or by itself after WAIT_SESSION_MINUTES. The Mac closes a session that sends nothing for WAIT_IDLE_SECONDS;
+# a session that ends before job.done is opened again after WAIT_RECONNECT_SECONDS and goes on from the next line.
+WAIT_READ_SECONDS = 5
+WAIT_ALIVE_SECONDS = 60
+WAIT_IDLE_SECONDS = 180
+WAIT_RECONNECT_SECONDS = 30
+WAIT_SESSION_MINUTES = 240
 # The host is unreachable for this long -> stop waiting; the job goes on over there and BENCH_WINDOWS_INVOCATION
 # picks it up later.
 UNREACHABLE_LIMIT_SECONDS = 600
@@ -193,38 +204,174 @@ def run_job_command(job_dir: str, log_dir: str, purge: bool = False) -> str:
     return " ".join(words)
 
 
-def start_detached(command: str) -> None:
-    """Through WMI: the process does not belong to the SSH session and outlives it."""
+def start_detached(command: str, clear: str = "") -> None:
+    """Through WMI: the process does not belong to the SSH session and outlives it. clear names a file on the host
+    removed first in the same session: a resumed job's job.done from its earlier start, which the wait's first read
+    could otherwise take for this start's before the job itself removes it."""
     quoted = command.replace("'", "''")
-    done = ssh("$r = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments "
+    first = f"Remove-Item -LiteralPath '{clear}' -ErrorAction SilentlyContinue; " if clear else ""
+    done = ssh(first + "$r = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments "
                f"@{{ CommandLine = '{quoted}'; CurrentDirectory = '{root()}' }}; $r.ReturnValue")
     if done.stdout.strip().splitlines()[-1:] != ["0"]:
         raise RuntimeError(f"could not start the job: {done.stdout.strip()[:300]}")
 
 
-def wait_job(log_dir: str, sleep=time.sleep, clock=time.monotonic) -> str:
-    """The job's job.done text; job.log lines are echoed as they land."""
-    printed, last_seen = 0, clock()
+def ssh_stream(command: str, idle_seconds: float = WAIT_IDLE_SECONDS, popen=subprocess.Popen):
+    """One PowerShell command on the host through one SSH session held open while it runs: yields each line of its
+    output (stdout and stderr, the CR dropped) as it comes. RuntimeError when the session ends with an exit other than
+    0, or when nothing came for idle_seconds (the session is closed then); ssh's own ServerAlive checks end a session
+    whose host stopped answering after about two minutes."""
+    full = "[Console]::OutputEncoding = [Text.Encoding]::UTF8; " + command
+    proc = popen(["ssh", "-o", "ConnectTimeout=20", "-o", "BatchMode=yes", "-o", "ServerAliveInterval=30",
+                  "-o", "ServerAliveCountMax=4", host(), full],
+                 stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    fd, pending, tail = proc.stdout.fileno(), b"", []
+    try:
+        while True:
+            if not select.select([fd], [], [], idle_seconds)[0]:
+                proc.kill()
+                raise RuntimeError(f"ssh {host()}: nothing came for {idle_seconds} s")
+            chunk = os.read(fd, 65536)
+            if not chunk:
+                break
+            *whole, pending = (pending + chunk).split(b"\n")
+            for raw in whole:
+                line = raw.decode("utf-8", errors="replace").rstrip("\r")
+                tail = (tail + [line])[-3:]
+                yield line
+        if pending:
+            line = pending.decode("utf-8", errors="replace").rstrip("\r")
+            tail = (tail + [line])[-3:]
+            yield line
+        code = proc.wait(timeout=60)
+        if code != 0:
+            raise RuntimeError(f"ssh {host()}: exit {code}: {' | '.join(tail)[:500]}")
+    finally:
+        if proc.poll() is None:
+            try:
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait()
+        proc.stdout.close()
+
+
+def encoded(script: str) -> str:
+    """A PowerShell script as one command line for the host's default shell: -EncodedCommand carries it through ssh
+    with no quoting to break, and takes no arguments, so the values are written into the script."""
+    return ("powershell.exe -NoProfile -NonInteractive -EncodedCommand "
+            + base64.b64encode(script.encode("utf-16-le")).decode("ascii"))
+
+
+# The host side of wait_job, Windows PowerShell 5.1, no WMI: reads job.done, then job.log's new bytes, every @EVERY@ s;
+# prints each job.log line past the first @SKIP@ as "LOG <line>", "ALIVE" after @ALIVE@ s with nothing printed, and
+# ends at job.done with "WAITSTAT <reads> <seconds> <its CPU seconds> <failed reads>" and "JOBDONE <job.done's text>",
+# or with "SESSIONEND" after @MINUTES@ min (a session the Mac no longer reads does not outlive that).
+WAIT_SCRIPT = r"""
+$ErrorActionPreference = 'Stop'
+[Console]::OutputEncoding = [Text.Encoding]::UTF8
+$log = '@LOG@'; $done = '@DONE@'; $skip = @SKIP@
+$dec = (New-Object Text.UTF8Encoding($false)).GetDecoder()
+$out = [Console]::Out; $pos = [long]0; $n = 0; $part = ''; $reads = 0; $fails = 0
+$t0 = [DateTime]::UtcNow; $said = $t0
+$out.WriteLine('WAITING ' + (Get-Date -Format o) + ' from line ' + $skip); $out.Flush()
+while ($true) {
+    # job.done first: the job writes it after its last job.log line, so the read below then holds every line
+    $fin = [IO.File]::Exists($done)
+    if ([IO.File]::Exists($log)) {
+        $fs = $null
+        try {
+            $fs = [IO.File]::Open($log, 'Open', 'Read', 'ReadWrite')
+            if ($fs.Length -gt $pos) {
+                [void]$fs.Seek($pos, 'Begin')
+                $buf = New-Object byte[] ([int]($fs.Length - $pos))
+                $got = $fs.Read($buf, 0, $buf.Length)
+                $pos += $got
+                $chars = New-Object char[] ($dec.GetCharCount($buf, 0, $got))
+                [void]$dec.GetChars($buf, 0, $got, $chars, 0)
+                $part += -join $chars
+            }
+        } catch {
+            $fails++
+        } finally {
+            if ($fs) { $fs.Close() }
+        }
+        while (($i = $part.IndexOf([char]10)) -ge 0) {
+            $n++
+            if ($n -gt $skip) { $out.WriteLine('LOG ' + $part.Substring(0, $i).TrimEnd([char]13)); $said = [DateTime]::UtcNow }
+            $part = $part.Substring($i + 1)
+        }
+    }
+    $reads++
+    if ($fin) {
+        $t = ''
+        try { $t = [IO.File]::ReadAllText($done).Trim() } catch { $fails++ }
+        if ($t) {
+            $cpu = [Diagnostics.Process]::GetCurrentProcess().TotalProcessorTime.TotalSeconds
+            $out.WriteLine('WAITSTAT ' + $reads + ' ' + [int](([DateTime]::UtcNow - $t0).TotalSeconds) + ' ' + [Math]::Round($cpu, 2) + ' ' + $fails)
+            $out.WriteLine('JOBDONE ' + $t)
+            $out.Flush()
+            exit 0
+        }
+    }
+    if (([DateTime]::UtcNow - $t0).TotalMinutes -ge @MINUTES@) { $out.WriteLine('SESSIONEND'); $out.Flush(); exit 0 }
+    if (([DateTime]::UtcNow - $said).TotalSeconds -ge @ALIVE@) { $out.WriteLine('ALIVE'); $said = [DateTime]::UtcNow }
+    $out.Flush()
+    Start-Sleep -Seconds @EVERY@
+}
+"""
+
+
+def wait_script(log_dir: str, skip: int) -> str:
+    quoted = log_dir.replace("'", "''")
+    return (WAIT_SCRIPT.replace("@LOG@", f"{quoted}\\job.log").replace("@DONE@", f"{quoted}\\job.done")
+            .replace("@SKIP@", str(int(skip))).replace("@EVERY@", str(WAIT_READ_SECONDS))
+            .replace("@ALIVE@", str(WAIT_ALIVE_SECONDS)).replace("@MINUTES@", str(WAIT_SESSION_MINUTES)))
+
+
+WAIT_LINES = ("WAITING", "LOG", "ALIVE", "WAITSTAT", "SESSIONEND", "JOBDONE")
+
+
+def wait_job(log_dir: str, stream=None, sleep=time.sleep, clock=time.monotonic) -> str:
+    """The job's job.done text, through one SSH session held open on the host until the job ends (WAIT_SCRIPT):
+    job.log lines are echoed as they land. A session that ends first is opened again after WAIT_RECONNECT_SECONDS and
+    goes on from the next line; no line of WAIT_SCRIPT's for UNREACHABLE_LIMIT_SECONDS stops the wait (RuntimeError,
+    the job goes on on the host)."""
+    stream = stream or ssh_stream
+    printed, last_seen, sessions = 0, clock(), 0
     while True:
+        sessions += 1
+        why, stat = "the session ended before job.done", ""
+        lines = stream(encoded(wait_script(log_dir, printed)))
         try:
-            done = ssh(f"$l = '{log_dir}\\job.log'; if (Test-Path $l) {{ Get-Content $l -Encoding UTF8 }}; "
-                       f"$d = '{log_dir}\\job.done'; if (Test-Path $d) {{ 'JOBDONE ' + (Get-Content $d -Raw) }}",
-                       timeout=120)
-        except (RuntimeError, subprocess.TimeoutExpired) as exc:
-            if clock() - last_seen > UNREACHABLE_LIMIT_SECONDS:
-                raise RuntimeError(f"host unreachable for {UNREACHABLE_LIMIT_SECONDS} s: {exc}") from exc
-            sleep(POLL_SECONDS)
-            continue
-        last_seen = clock()
-        lines = done.stdout.splitlines()
-        marker = [ln for ln in lines if ln.startswith("JOBDONE ")]
-        body = [ln for ln in lines if not ln.startswith("JOBDONE ")]
-        for line in body[printed:]:
-            print("  host:", line[:300], flush=True)
-        printed = len(body)
-        if marker:
-            return marker[-1][len("JOBDONE "):].strip()
-        sleep(POLL_SECONDS)
+            for line in lines:
+                kind, _, text = line.partition(" ")
+                if kind not in WAIT_LINES:
+                    continue  # the host's error text: the session's end says it, and it is no sign of the loop
+                last_seen = clock()
+                if kind == "LOG":
+                    print("  host:", text[:300], flush=True)
+                    printed += 1
+                elif kind == "WAITSTAT":
+                    stat = text
+                elif kind == "JOBDONE":
+                    reads, seconds, cpu, *_ = (stat.split() + ["?"] * 3)[:3]
+                    print(f"== the wait: {sessions} SSH session(s); the last one's loop read job.log and job.done "
+                          f"{reads} times over {seconds} s with {cpu} s of CPU on the host", flush=True)
+                    return text.strip()
+                elif kind == "SESSIONEND":
+                    why = f"the session's loop ended after {WAIT_SESSION_MINUTES} min"
+        except (RuntimeError, subprocess.TimeoutExpired, OSError) as exc:
+            why = str(exc)
+        finally:
+            close = getattr(lines, "close", None)
+            if close:
+                close()
+        if clock() - last_seen > UNREACHABLE_LIMIT_SECONDS:
+            raise RuntimeError(f"host unreachable for {UNREACHABLE_LIMIT_SECONDS} s: {why}")
+        print(f"  (the wait's SSH session {sessions} ended: {why[:300]}; the next one in {WAIT_RECONNECT_SECONDS} s, "
+              f"from line {printed + 1} of job.log)", flush=True)
+        sleep(WAIT_RECONNECT_SECONDS)
 
 
 def run(plan: rwm.Plan, campaign_dir: pathlib.Path, args) -> int:
@@ -254,7 +401,8 @@ def run(plan: rwm.Plan, campaign_dir: pathlib.Path, args) -> int:
         write_job(plan, job_dir)
         scp_up(job_dir, f"{root()}\\jobs")
     # A new invocation starts from no engine cache (firstEver = the run that writes them); a resumed one keeps them
-    start_detached(run_job_command(job_remote, logs_remote, purge=not env("BENCH_WINDOWS_INVOCATION")))
+    start_detached(run_job_command(job_remote, logs_remote, purge=not env("BENCH_WINDOWS_INVOCATION")),
+                   clear=f"{logs_remote}\\job.done")
     status = wait_job(logs_remote)
     print(f"== job: {status}")
     logs_local.parent.mkdir(parents=True, exist_ok=True)

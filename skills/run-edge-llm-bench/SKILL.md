@@ -229,7 +229,8 @@ python3 -c "import glob, json, statistics; [print(f.split('/')[-1], g, d, 'sprea
 rule in the README's Run section from the host's own names, which come from
 `ssh <host> '(Get-CimInstance Win32_ComputerSystem).Model; (Get-CimInstance Win32_Processor).Name; (Get-CimInstance Win32_VideoController).Name'`.
 While the job runs, the executor prints the host's log as `host: ...` lines; leave the host alone meanwhile (what
-you start there runs beside the timed runs; the executor's own poll reads the job's log every 30 s). On 2026-11-06 the three runs took 2 min
+you start there runs beside the timed runs; the executor itself reads the job's log through one SSH session it holds
+open until the job ends). On 2026-11-06 the three runs took 2 min
 on the host, after a wait of at most 30 min for a quiet one (total CPU under 25 %, NVIDIA memory in use under 800 MiB).
 
 Exit 0 means every run is clean (`== 3/3 runs clean`); it does not look at the spread, which only the block's last
@@ -290,7 +291,8 @@ read the flags in the first line before the spread.
   from zero; the records written before that change (all of 2026-11-05 and the 2026-11-06 sittings up to
   `2026-11-06-windows-drift2`) leave out a process that started after the first read, so a build's compiler, one
   short process per file, is mostly missing from them. `conditions.sshConnections` counts the SSH connections the
-  host accepted during the run (the executor's poll is one every 30 s), and `conditions.hostCpu` holds each logical
+  host accepted during the run (the executor's wait is one session opened before the job's first run, so it adds
+  none unless that session drops and is opened again), and `conditions.hostCpu` holds each logical
   processor's busy, performance and performance-limit percentages and limit flags over the run (`windows/README.md`,
   Run); the harness judges neither, and records from the sittings up to `2026-11-07-windows-igpu` carry neither.
 - **Known, and none of it stops a cell or flags a run:**
