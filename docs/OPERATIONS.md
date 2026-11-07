@@ -531,6 +531,12 @@ outputs under `automation/sessions/`).
   next sitting of the same slot (15:18), which the session checker then held as
   `reference-uncommitted`. Move a stopped or refused sitting to a quarantine dir outside
   `results/raw/` (it stays on disk as audit trail), then start the next sitting.
+  A sitting the job ends at its timeout leaves the same trap, and the job does not move it: its
+  anchor dir is admitted, the payload's verdict is TIMEOUT, and nothing of the sitting is posted.
+  The Mac sitting of 2026-10-28 (02:00, the payload timed out at 07:54) stayed under
+  `results/raw/`, and the Mac's next sitting (2026-11-08 02:30) was admitted against its anchor
+  and held as `reference-uncommitted`. Move a timed-out sitting's dirs out as well before the
+  device's next sitting.
 - **A phone is shared with other lanes.** Before any Android capture, check
   the campaign flock, the conversion lane's hold file
   (`~/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold.<device>`),
