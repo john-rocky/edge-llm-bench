@@ -213,6 +213,20 @@ carries the run's values. `host.json` lists each logical processor's efficiency 
 (`llc`: processors with the same index share that cache) and `maxMhz` (`cpuSets`), by which to read the keys of
 `hostCpu`. Records from the sittings up to `2026-11-07-windows-igpu` carry neither key: the job read neither then.
 
+Each run's host log (`host-logs/<invocation>/r<NN>_run<N>.json`) also holds the NVIDIA GPU's state, one `nvidia-smi`
+read each (name, driver, P-state, temperature, graphics and memory clocks, power, utilization, memory used), taken
+right before the engine starts (`before.gpu`, which the record carries as `conditions.hostBefore.gpu`) and after it
+exits (`gpuAfter`, read after the run's CPU, top-process and SSH-log reads, a second or more later), on every row. While
+the engine runs the job takes none, unless `BENCH_WINDOWS_GPU_SAMPLE_SECONDS=N` asks for one every N s on a GPU row (an
+`adapter=igpu` one too): `gpuSamples`, with each read's start and end in seconds from the run's start in
+`gpuSampleWindows`. Each run's host log names the N it ran with (`gpuSampleSeconds`) and when the engine's process
+started (`engineStartSeconds`). The job's loop, which reads the engine's peak memory about every 500 ms and the CPU
+counters every 5 s, stops while each read runs (36 to 77 ms in most reads of the `2026-11-07-windows-gpuread-on-*`
+sittings, up to 0.86 s). The harness checks none of these values, and graphics clocks no GPU runs at appear among them
+(up to 41767 MHz in the committed 2026-11-05 host logs). The sittings up to `2026-11-07-windows-wait-session-2` ran a
+job that took one every 5 s while a GPU row's engine ran (none for a run of about 5 s), and their host logs have neither
+`gpuSampleWindows` nor `engineStartSeconds`.
+
 ## What a Windows machine does differently
 
 - **System code page.** MSVC reads BOM-less UTF-8 sources in the system code page. On a Japanese Windows (932) the

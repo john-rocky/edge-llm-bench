@@ -1451,6 +1451,25 @@ class WindowsSshExecutor(unittest.TestCase):
             with open(pathlib.Path(tmp) / "c" / f"{plan.rows[0].stem}.jsonl") as fh:
                 self.assertEqual(len([json.loads(line) for line in fh]), 2)  # run 1's records are still written
 
+    def test_the_gpu_read_interval_goes_to_the_job_and_a_bad_one_stops_before_the_host(self):
+        started = lambda seen: [c for c in seen["commands"] if "Win32_Process" in c][0]
+        for value in ("5", "0"):
+            with tempfile.TemporaryDirectory(prefix="render-rules-wingpu-") as tmp:
+                with patch.dict(os.environ, {"BENCH_WINDOWS_GPU_SAMPLE_SECONDS": value}):
+                    rc, seen, _ = self.run_job(tmp)
+                self.assertEqual(rc, 0)
+                self.assertIn(f" -GpuSampleSeconds {value}", started(seen))
+        with tempfile.TemporaryDirectory(prefix="render-rules-wingpu-") as tmp:
+            rc, seen, _ = self.run_job(tmp)  # unset: the job's own default, no word on the command line
+            self.assertEqual(rc, 0)
+            self.assertNotIn("-GpuSampleSeconds", started(seen))
+        with tempfile.TemporaryDirectory(prefix="render-rules-wingpu-") as tmp:
+            with patch.dict(os.environ, {"BENCH_WINDOWS_GPU_SAMPLE_SECONDS": "5s"}):
+                with self.assertRaises(RuntimeError) as cm:
+                    self.run_job(tmp)
+            self.assertIn("BENCH_WINDOWS_GPU_SAMPLE_SECONDS='5s'", str(cm.exception))
+            self.assertFalse((pathlib.Path(tmp) / "c" / "host-logs").exists())
+
     def test_a_resumed_job_keeps_the_caches_and_its_records_are_written_once(self):
         with tempfile.TemporaryDirectory(prefix="render-rules-winresume-") as tmp:
             rc, seen, _ = self.run_job(tmp, invocation="inv1")

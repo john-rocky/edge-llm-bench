@@ -6,7 +6,7 @@ file, the host facts and the sha256 of every engine file in host.json. Windows P
   powershell -NoProfile -ExecutionPolicy Bypass -File run_job.ps1 -JobDir <dir> -LogDir <dir>
       -ModelDir <dir> -EngineDir <dir> [-BusyFile <file> -BusyLabel <text>] [-DeviceModel <text>]
       [-LitertDirName <dir under EngineDir>] [-PurgeEngineCaches] [-QuietCpuPercent N] [-QuietGpuMiB N]
-      [-QuietGpuEnginePercent N] [-QuietWaitMinutes N]
+      [-QuietGpuEnginePercent N] [-QuietWaitMinutes N] [-GpuSampleSeconds N]
 
 EngineDir holds the tools by name: litert\litert_lm_advanced_main_windows.exe and its DLLs (another build of it
 in the dir -LitertDirName names), llama-cpu\llama-cli.exe, llama-gpu\llama-cli.exe (Vulkan),
@@ -43,6 +43,12 @@ the one after it exits); and its limit flags over all of them. The job's first r
 millisecond or two. host.json lists each logical processor's efficiency class, core, last-level cache index and
 maxMhz (cpuSets).
 
+Each run's JSON holds the NVIDIA GPU's state, one nvidia-smi read each (Get-GpuSample), right before the engine starts
+(before.gpu) and after it exits (gpuAfter). With -GpuSampleSeconds N above 0, a GPU run's JSON also holds one read every
+N s while its engine runs (gpuSamples, each labelled with its whole second into the run; gpuSampleWindows, the seconds
+into the run, to the ms, at which each read started and ended); the default 0 takes none. gpuSampleSeconds is the N the
+job ran with, engineStartSeconds when the engine's process started, in seconds from the run's start.
+
 Written for the host side of scripts/windows_ssh_executor.py; the log and JSON shapes are what
 scripts/run_windows_matrix.py write_records reads.
 #>
@@ -62,6 +68,7 @@ param(
     [int]$QuietGpuEnginePercent = 10,
     [int]$QuietWaitMinutes = 30,
     [string]$SshLogName = "OpenSSH/Operational",
+    [int]$GpuSampleSeconds = 0,
     [switch]$PurgeEngineCaches
 )
 
@@ -534,8 +541,11 @@ function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
         $peak = [int64]0
         $timedOut = $false
         $gpuSamples = @()
-        $sampleGpu = (($Launch.args -join " ") -match "--backend=gpu") -or ($Launch.tool -in "llama-gpu", "llama-cuda")
-        $nextGpu = 5.0
+        $gpuWindows = @()
+        $engineStart = $null
+        if ($engine) { try { $engineStart = [math]::Round(($engine.StartTime - $t0).TotalSeconds, 3) } catch { } }
+        $sampleGpu = ($GpuSampleSeconds -gt 0) -and (((($Launch.args -join " ") -match "--backend=gpu") -or ($Launch.tool -in "llama-gpu", "llama-cuda")))
+        $nextGpu = [double]$GpuSampleSeconds
         $nextCpu = 5.0
         while (-not $shell.HasExited) {
             if ($engine) {
@@ -549,8 +559,11 @@ function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
                 $nextCpu += 5.0
             }
             if ($sampleGpu -and $sw.Elapsed.TotalSeconds -ge $nextGpu) {
-                $gpuSamples += "$([int]$sw.Elapsed.TotalSeconds)s $(Get-GpuSample)"
-                $nextGpu += 5.0
+                $readAt = $sw.Elapsed.TotalSeconds
+                $read = Get-GpuSample
+                $gpuSamples += "$([int]$readAt)s $read"
+                $gpuWindows += , ([ordered]@{ startSeconds = [math]::Round($readAt, 3); endSeconds = [math]::Round($sw.Elapsed.TotalSeconds, 3) })
+                $nextGpu += $GpuSampleSeconds
             }
             if ($sw.Elapsed.TotalSeconds -ge $TimeoutSeconds) {
                 $timedOut = $true
@@ -593,6 +606,9 @@ function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
             after                 = $after
             gpuAfter              = Get-GpuSample
             gpuSamples            = $gpuSamples
+            gpuSampleSeconds      = $GpuSampleSeconds
+            gpuSampleWindows      = @($gpuWindows)
+            engineStartSeconds    = $engineStart
             gpuPreference         = $applied
             gpuPreferenceRemoved  = $prefGone
             gpuPreferenceLeftover = $leftover
@@ -615,6 +631,7 @@ try {
     $job = Get-Content (Join-Path $JobDir "job.json") -Raw -Encoding UTF8 | ConvertFrom-Json
     Wait-Busy
     Say "job $($job.campaign): $(@($job.launches).Count) launches"
+    Say $(if ($GpuSampleSeconds -gt 0) { "GPU reads while a GPU run's engine runs: one every $GpuSampleSeconds s" } else { "GPU reads while a GPU run's engine runs: none (-GpuSampleSeconds 0)" })
     Write-Json (Join-Path $LogDir "host.json") (Get-HostFacts)
     $cpuLoad = [Diagnostics.Stopwatch]::StartNew()
     if ($null -eq (Read-CpuCounters)) { Say "Processor Information counters not read: $CpuReadError (each run's hostCpu carries the reason)" }

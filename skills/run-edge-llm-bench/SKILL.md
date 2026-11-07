@@ -280,12 +280,14 @@ read the flags in the first line before the spread.
 - **A Windows record has no thermal state.** The start condition is each run's `conditions.hostBefore.quietGate`:
   `quiet`, or `timeout` when the run started on a host that never went quiet. `hostBefore` carries the CPU, the top
   processes and the GPU before the run, `hostAfter` the CPU and the top processes after it; the GPU after and during
-  the run is in the host log, `host-logs/<invocation>/r<NN>_run<N>.json` (`gpuAfter`, and `gpuSamples` every 5 s of a
-  GPU run, none for a run of about 5 s). Each GPU reading (`hostBefore.gpu`, `gpuAfter`, each of `gpuSamples`) is
-  one raw `nvidia-smi` read (name, driver, P-state, temperature, graphics and memory clocks, power, utilization,
-  memory used) that the harness does not check, and no step of this skill reads them: graphics clocks no GPU runs at
-  appear there (up to 41767 MHz in the committed 2026-11-05 host logs, always in a `hostBefore.gpu` or `gpuAfter`
-  line, never in `gpuSamples`). `topProcesses` is a list of up to five `<process> <CPU seconds>` strings, the
+  the run is in the host log, `host-logs/<invocation>/r<NN>_run<N>.json` (`gpuAfter`; `gpuSamples` holds reads only
+  with `BENCH_WINDOWS_GPU_SAMPLE_SECONDS=N`, one every N s of a GPU run, each read's start and end in
+  `gpuSampleWindows`; the sittings up to `2026-11-07-windows-wait-session-2` took one every 5 s, none for a run of
+  about 5 s). Each GPU
+  reading (`hostBefore.gpu`, `gpuAfter`, each of `gpuSamples`) is one raw `nvidia-smi` read (name, driver, P-state,
+  temperature, graphics and memory clocks, power, utilization, memory used) that the harness does not check, and no
+  step of this skill reads them: graphics clocks no GPU runs at appear there (up to 41767 MHz in the committed
+  2026-11-05 host logs). `topProcesses` is a list of up to five `<process> <CPU seconds>` strings, the
   processes that used 0.05 s or more of CPU in one second; the 2026-11-05 records, written before the 2026-11-06
   fix, hold a bare string where one did and `{}` where none did. A process that started within that second counts
   from zero; the records written before that change (all of 2026-11-05 and the 2026-11-06 sittings up to

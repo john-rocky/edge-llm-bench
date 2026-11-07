@@ -27,6 +27,8 @@ windows/build_litert_lm.ps1 makes that dir and that entry. The NPU row loads Ope
   BENCH_WINDOWS_VK_DEVICES    GGML_VK_VISIBLE_DEVICES for the Vulkan llama.cpp rows (a host with two GPUs)
   BENCH_WINDOWS_LITERT_DIR    the dir under <root>\\engines of the LiteRT-LM build to run (default litert)
   BENCH_WINDOWS_INVOCATION    an invocation to resume (its finished runs are kept)
+  BENCH_WINDOWS_GPU_SAMPLE_SECONDS  N: the job reads the NVIDIA GPU every N s while a GPU row's engine runs
+                              (run_job.ps1 -GpuSampleSeconds; default 0 = no read while it runs)
 
 Before anything runs on the host, a job with LiteRT-LM rows stops (exit 1) when --litert-label is in neither
 windows/engine-pins.json nor BENCH_EXTRA_PINS, or when the files in <root>\\engines\\<dir> are not that label's build:
@@ -185,6 +187,15 @@ def write_job(plan: rwm.Plan, job_dir: pathlib.Path) -> None:
         (prompts / f"{row.task}.txt").write_bytes(rwm.prompt_file(row.task).read_bytes())
 
 
+def gpu_sample_seconds() -> str:
+    """BENCH_WINDOWS_GPU_SAMPLE_SECONDS as run_job.ps1 takes it: "" when unset (the job's default, no read while the
+    engine runs), else a whole number of seconds, 0 for none."""
+    value = env("BENCH_WINDOWS_GPU_SAMPLE_SECONDS").strip()
+    if value and not value.isdigit():
+        raise RuntimeError(f"BENCH_WINDOWS_GPU_SAMPLE_SECONDS={value!r}: a whole number of seconds, 0 for none")
+    return str(int(value)) if value else ""
+
+
 def run_job_command(job_dir: str, log_dir: str, purge: bool = False) -> str:
     words = [
         "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", f'"{root()}\\run_job.ps1"',
@@ -199,6 +210,8 @@ def run_job_command(job_dir: str, log_dir: str, purge: bool = False) -> str:
                   "-BusyLabel", f'"{env("BENCH_WINDOWS_BUSY_LABEL", "windows-job")}"']
     if env("BENCH_WINDOWS_LITERT_DIR"):
         words += ["-LitertDirName", f'"{env("BENCH_WINDOWS_LITERT_DIR")}"']
+    if gpu_sample_seconds():
+        words += ["-GpuSampleSeconds", gpu_sample_seconds()]
     if purge:
         words.append("-PurgeEngineCaches")
     return " ".join(words)
@@ -388,6 +401,7 @@ def run(plan: rwm.Plan, campaign_dir: pathlib.Path, args) -> int:
     if marker.exists():
         print(f"{invocation}: its records are written already ({marker})", file=sys.stderr)
         return 2
+    gpu_sample_seconds()  # a bad value stops here, before anything reaches the host
     check_litert_build(plan, args.litert_label)
     job_remote = f"{root()}\\jobs\\{invocation}"
     logs_remote = f"{root()}\\logs\\{invocation}"
