@@ -496,3 +496,33 @@ than in `-on-2`, against -0.71 and +0.27 % between the two sittings of the same 
 and +2.53 %, against -1.34 and -0.64 %), though in those runs each read started 0.13 to 0.25 s after the engine logged
 that conversation's output, the decode's end (in `-on-1`'s run 1, the row's first process, one fell inside it); what
 makes that difference is not established. Since then the job takes no read while the engine runs unless asked (Run).
+
+Eight more sittings ran two of Gemma 4 E2B's GPU rows at a time (a cells file of those two lines, runs=5, 10 runs
+each) in four back-to-back pairs on 2026-11-08 JST (2026-11-07 in UTC, the date of the records' `timestamp` and of
+their names). Each pair is one off sitting, of the job as of commit 54a835f8, which starts the engine with no wait
+after the read before a GPU row's run (`before.gpu`), and one on sitting, of the job that waits 2 s after that read
+before it starts the engine (Run): `litert-lm-gpu` and `llama.cpp-gpu` in `2026-11-07-windows-gpuwait-off-a1` and
+`-on-a1` at 01:47 and 01:56, then in `-on-a2` and `-off-a2` at 03:58 and 04:07; `litert-lm-gpu-igpu` and
+`llama.cpp-cuda` in `-off-b1` and `-on-b1` at 06:04 and 06:13, then in `-on-b2` and `-off-b2` at 06:50 and 07:00.
+Their `host.json` lists the same 187 engine files as the `2026-11-07-windows-gpuread-*` sittings, every run was clean
+and quiet, and no run took a GPU read while its engine ran. In the on sittings every run's `gpuReadToStartSeconds`
+reads 1.996 to 2.080 s on the NVIDIA rows and 2.372 to 2.477 s on `litert-lm-gpu-igpu`, whose job also reads Windows'
+GPU Engine counters and sets the tool's GPU preference in that time; the off sittings' host logs have no such key. One
+SSH connection opened during a run, 1.4 s into `-on-a1`'s fourth `litert-lm-gpu` run, from the driving machine's
+reachability check (one every 5 minutes).
+
+Against the off sitting of its pair, the on sitting read `litert-lm-gpu`'s cold decode median 24.7 and 27.2 % lower
+and its warm decode median 8.1 and 4.4 % higher, all four sittings `out` (cold spreads 34.74 and 27.25 % off, 11.62
+and 10.90 % on); `llama.cpp-cuda`'s cold decode median 13.6 and 11.1 % lower (cold spreads 7.24 and 1.11 % off, the
+first `out`, 2.63 and 3.26 % on); `llama.cpp-gpu`'s cold decode median 2.7 % lower and 0.4 % higher (cold spreads
+4.81 and 3.29 % off, 1.65 and 1.77 % on); and `litert-lm-gpu-igpu`'s 1.6 and 3.6 % lower, all four sittings `out`
+(cold spreads 17.00 and 26.25 % off, 11.73 and 12.82 % on). The cold prefill medians read lower in every pair: 27.9
+and 32.4 % on `litert-lm-gpu`, 4.1 and 10.8 % on `llama.cpp-gpu`, 14.8 and 10.1 % on `litert-lm-gpu-igpu`, and 46.8
+and 48.0 % on `llama.cpp-cuda`. Each of `llama.cpp-cuda`'s eight counted runs in the off sittings read its cold
+decode above each of the eight in the on sittings. In each of its two off sittings one of `litert-lm-gpu`'s four
+counted runs read its cold decode 29.0 and 25.8 % below the median of the other three, in each the run whose engine's
+`Selected adapter:` line came latest after its first log line (1.54 and 0.87 s, against 0.46 to 0.51 s in the other
+six); in the on sittings that line came at 1.20 to 1.27 s in all eight counted runs. In each of its two off sittings
+one of `llama.cpp-gpu`'s four counted runs read its cold prefill 64.0 and 74.9 % above the median of the other three;
+in the on sittings none read it more than 5.0 % above its sitting's median. Since then the job waits 2 s after the
+read before it starts a GPU row's engine (Run).
