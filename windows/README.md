@@ -464,3 +464,30 @@ within 2.5 % of one another. The GPU rows read `out` with either wait: `litert-l
 second and third runs, the three that took about 4.2 s, ending before the job's first reading inside a run at 5 s (the
 CPU counters, and `nvidia-smi` on a GPU row), read 9.0 to 14.0 % above the five that took about 6.3 s, each with one
 such reading; what makes the difference is not established.
+
+Four more sittings ran Gemma 4 E2B's four GPU rows (a cells file of those four lines, 20 runs each) back to back at
+18:17, 18:37, 18:54 and 19:12 JST on 2026-11-07, alternating the job's NVIDIA reads while a GPU row's engine ran:
+`2026-11-07-windows-gpuread-on-1` and `2026-11-07-windows-gpuread-on-2` with one every 5 s, the job's default until
+then, and `2026-11-07-windows-gpuread-off-1` and `2026-11-07-windows-gpuread-off-2` with none
+(`BENCH_WINDOWS_GPU_SAMPLE_SECONDS=0`). Their `host.json` lists the same 187 engine files as the
+`2026-11-07-windows-wait-*` sittings above, and every run was clean and quiet. The on sittings took 31 and 24 reads
+inside runs: 48 of the 55 took 36 to 77 ms (`gpuSampleWindows`), five 82 to 388 ms, and the two longest 0.86 s, each in
+a row's first run. No read fell inside the cold conversation's decode of a counted `litert-lm-gpu` or `llama.cpp-gpu`
+run (the closest two, both `llama.cpp-gpu`'s, started 0.03 and 0.04 s after the decode's last line, on the engine log's
+clock); `litert-lm-gpu-igpu`'s 5 s read fell inside its cold prefill in all eight counted runs and its 10 s read within
+the last 0.3 s of its cold decode in five; `llama.cpp-cuda`'s runs all ended before 5 s, so neither of its arms took
+one, and it read `out` in the first sitting (10.10 %). Where the reads changed from one sitting to the next, the cold
+decode medians of the rows whose cold spread stayed within 5 % in both sittings moved by -1.34 to +2.17 %, and between
+the two sittings of the same arm by -1.11 to +0.82 %; `llama.cpp-cuda`, with no read in either arm (the control), moved
+by -0.12 and +0.94 % where the reads changed. `litert-lm-gpu-igpu` read 2.17 % higher in `-off-1` than in `-on-1` and
+1.34 % lower in `-on-2` than in `-off-1`, and `-off-2` reads `out` (13.02 %), its median 3.02 % below that of `-on-2`.
+Of `llama.cpp-gpu`'s counted runs, the 14 that took 5.7 to 8.4 s, seven with a read and seven without, lay within 3.2 %
+of one another; of the two that ended before 5 s, neither with a read, the one of 4.2 s (in `-on-2`) read 12.8 % above
+their median and the one of 4.7 s (in `-off-1`) 1.4 % above it. So the `nvidia-smi` read at 5 s is not what sets the
+4.2 s runs of the `2026-11-07-windows-wait-*` sittings apart; the CPU counter read at 5 s stayed in both arms and is not
+tested here. `litert-lm-gpu`'s warm decode median (the median of its five runs' second conversations, run 1's included)
+read 2.64 % higher in `-off-1` than in `-on-1`, 3.27 % lower in `-on-2` than in `-off-1` and 3.66 % higher in `-off-2`
+than in `-on-2`, against -0.71 and +0.27 % between the two sittings of the same arm (over runs 2 to 5 alone +1.81, -3.09
+and +2.53 %, against -1.34 and -0.64 %), though in those runs each read started 0.13 to 0.25 s after the engine logged
+that conversation's output, the decode's end (in `-on-1`'s run 1, the row's first process, one fell inside it); what
+makes that difference is not established. Since then the job takes no read while the engine runs unless asked (Run).
