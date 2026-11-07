@@ -160,8 +160,9 @@ written: it names the hardware, as the other lanes' model codes do (`SM-S942Q`, 
 another device there. Build it from the host's own names
 (`ssh <host> '(Get-CimInstance Win32_ComputerSystem).Model; (Get-CimInstance Win32_Processor).Name; (Get-CimInstance Win32_VideoController).Name'`),
 by the rule the 2026-11-05 rows followed: `<Win32_ComputerSystem model> (<CPU> / <GPU>)`, the CPU's name without
-`Intel(R) ` and `(TM)`, and the GPU the rows run on (the NVIDIA one) without `NVIDIA GeForce ` and its last word `GPU`;
-the Intel GPU's line is not used. On the 2026-11-05 PC the rule gives
+`Intel(R) ` and `(TM)`, and the discrete GPU, which the GPU rows without `adapter=` run on (the NVIDIA one), without
+`NVIDIA GeForce ` and its last word `GPU`; the Intel GPU's line is not used. An `adapter=igpu` row runs on the same PC and
+carries the same string: its arm says which GPU. On the 2026-11-05 PC the rule gives
 `Stealth 16 AI+ B3WI (Core Ultra 9 386H / RTX 5080 Laptop)`; a PC of the same model and parts gives the same string. The
 rule is written for the one PC the lane has run, an Intel CPU with an NVIDIA GPU: on other parts, choose one string of
 the same form and keep it for every sitting of that PC. Unset, it is the `Win32_ComputerSystem` model alone, which names
@@ -197,13 +198,25 @@ an older one over), leave the two variables unset, and remove it at the end.
 - **DirectX shader compiler.** With neither `dxcompiler.dll` nor `dxil.dll` beside the tool, Dawn's D3D12 backend does not
   create a device (`DynamicLib.Open: dxcompiler.dll Windows Error: 87`). The tag's `prebuilt/windows_x86_64` has neither,
   and the README note its build doc links to is not there; the PyPI wheel `litert-lm-api` carries both (`-DxcDir`).
-- **Two GPUs.** The rows take the discrete one, and the record keeps and checks LiteRT-LM's `Selected adapter:` line,
-  because the flag is not what picks it. `--preferred_device_substr=Intel` still selected the NVIDIA GPU: the value
-  reaches the delegate's options, nothing on the WebGPU path reads it at this tag's litert pin, and ml_drift's
-  `webgpu/environment.cc` asks Dawn by a power preference that comes from the GPU priority. Windows' per-app graphics
-  preference does move it: `GpuPreference=1;` under `HKCU:\Software\Microsoft\DirectX\UserGpuPreferences`, with the
-  tool's path as the value's name, selected `Intel(R) Graphics`. The rows do not use that. The Vulkan llama.cpp takes
-  `GGML_VK_VISIBLE_DEVICES`. The CUDA llama.cpp needs no variable: the NVIDIA GPU is the host's only CUDA device
+- **Two GPUs.** A LiteRT-LM GPU row takes the discrete one, and the record keeps and checks LiteRT-LM's
+  `Selected adapter:` line, because the flag is not what picks it. `--preferred_device_substr=Intel` still selected the
+  NVIDIA GPU: the value reaches the delegate's options, nothing on the WebGPU path reads it at this tag's litert pin, and
+  ml_drift's `webgpu/environment.cc` asks Dawn by a power preference that comes from the GPU priority. Windows' per-app
+  graphics preference does move it: `GpuPreference=1;` under `HKCU:\Software\Microsoft\DirectX\UserGpuPreferences`, with
+  the tool's path as the value's name, selected `Intel(R) Graphics`. The `adapter=igpu` rows (arm `litert-lm-gpu-igpu`)
+  use that. `run_job.ps1` sets the value right before each of their runs and removes it right after, in a `finally`,
+  and writes both to `job.log`. It stops the job when the value cannot be removed: a value left on the exe would move
+  every later run of it, the discrete GPU's rows included. Every LiteRT-LM run first removes a value it finds on the
+  tool (a job stopped mid-run leaves one). The engine's GPU caches beside a model
+  (`<file>_<n>_<n>_mldrift_program_cache.bin` and `..._mldrift_weight_cache.bin`) carry no adapter in their names. The
+  job removes them before a run on a different adapter from the one that wrote them; that run compiles and writes them
+  again and is recorded as the cache build (`firstEver`). At the job's end it removes the caches the integrated GPU's
+  runs wrote. Each GPU record keeps the adapter its log selected (`conditions.gpuAdapter`) and the preference value it
+  ran under (`conditions.gpuPreference`). A run whose log names the other GPU, or an `adapter=igpu` run without its
+  value, is flagged `backend-not-registered` and not counted. Before each `adapter=igpu` run the job's quiet gate also
+  waits until the use of every GPU engine on the host sums under 10 % (`-QuietGpuEnginePercent`): the NVIDIA memory
+  reading does not see the integrated GPU. The Vulkan llama.cpp takes `GGML_VK_VISIBLE_DEVICES`. The CUDA llama.cpp
+  needs no variable: the NVIDIA GPU is the host's only CUDA device
   (`ggml_cuda_init: found 1 CUDA devices`, then `using device CUDA0 (NVIDIA GeForce RTX 5080 Laptop GPU)`), and the
   asset carries no other GPU backend.
 - **The CUDA asset.** b11721 publishes two Windows x64 CUDA assets, built with CUDA 12.4 and with CUDA 13.4, and a CUDA

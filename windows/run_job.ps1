@@ -6,7 +6,7 @@ file, the host facts and the sha256 of every engine file in host.json. Windows P
   powershell -NoProfile -ExecutionPolicy Bypass -File run_job.ps1 -JobDir <dir> -LogDir <dir>
       -ModelDir <dir> -EngineDir <dir> [-BusyFile <file> -BusyLabel <text>] [-DeviceModel <text>]
       [-LitertDirName <dir under EngineDir>] [-PurgeEngineCaches] [-QuietCpuPercent N] [-QuietGpuMiB N]
-      [-QuietWaitMinutes N]
+      [-QuietGpuEnginePercent N] [-QuietWaitMinutes N]
 
 EngineDir holds the tools by name: litert\litert_lm_advanced_main_windows.exe and its DLLs (another build of it
 in the dir -LitertDirName names), llama-cpu\llama-cli.exe, llama-gpu\llama-cli.exe (Vulkan),
@@ -17,6 +17,17 @@ XNNPACK caches carry no engine version in their names): the first run of each ro
 which is what the record's firstEver says. Before each run the job waits (at most QuietWaitMinutes) until the host
 is quiet: total CPU under QuietCpuPercent and NVIDIA memory in use under QuietGpuMiB; a run that starts past the
 wait says so in its JSON (before.quietGate = timeout) with the load it saw.
+
+A LiteRT-LM GPU launch with an adapter (job.json gpuPreference, from a cells row's adapter=) runs under Windows'
+per-app graphics preference: the value named the tool's full path under HKCU\Software\Microsoft\DirectX\
+UserGpuPreferences is set right before the run and removed right after it, in a finally; the job stops when it cannot
+be removed (every later run of the same exe would take that GPU). Any litert launch first removes a value it finds on
+the tool (a job stopped mid-run leaves one). Such a run's gate also waits until the sum of every GPU engine's use is
+under QuietGpuEnginePercent (the NVIDIA memory reading does not see the integrated GPU). The engine's GPU caches beside
+a model carry no adapter in their names: before a GPU run whose adapter differs from the one that wrote its model's
+caches, the job removes them (gpuCachePurge), and a GPU run that starts with none of its model's caches says so
+(gpuCacheWrite: it compiles and writes them). Which adapter wrote which caches is kept in <LogDir>\gpu-caches.json
+for a resumed job; at its end the job removes the caches an adapter run wrote, so that no later job reads them.
 
 Written for the host side of scripts/windows_ssh_executor.py; the log and JSON shapes are what
 scripts/run_windows_matrix.py write_records reads.
@@ -34,12 +45,15 @@ param(
     [int]$BetweenRunsSeconds = 30,
     [int]$QuietCpuPercent = 25,
     [int]$QuietGpuMiB = 800,
+    [int]$QuietGpuEnginePercent = 10,
     [int]$QuietWaitMinutes = 30,
     [switch]$PurgeEngineCaches
 )
 
 $ErrorActionPreference = "Stop"
 $LitertExe = "litert_lm_advanced_main_windows.exe"
+$GpuPrefKey = "Software\Microsoft\DirectX\UserGpuPreferences"
+$GpuCacheAdapter = @{}   # model file -> the adapter ("" = the engine's own choice) that wrote its GPU caches
 
 function Write-Utf8([string]$Path, [string]$Text) {
     [IO.File]::WriteAllText($Path, $Text, (New-Object Text.UTF8Encoding($false)))
@@ -118,20 +132,64 @@ function Get-GpuMemoryMiB {
     try { return [int]((& $smi "--query-gpu=memory.used" "--format=csv,noheader,nounits" 2>$null) | Select-Object -First 1) } catch { return 0 }
 }
 
-# Three reads a second apart, so that one quiet instant does not open the gate.
-function Wait-Quiet {
+# The sum of every GPU engine's use (all adapters, all processes) in percent; $null when the counters do not answer.
+function Get-GpuEnginePercent {
+    try {
+        $e = @(Get-CimInstance Win32_PerfFormattedData_GPUPerformanceCounters_GPUEngine -ErrorAction Stop)
+        if ($e.Count -eq 0) { return $null }
+        return [math]::Round(($e | Measure-Object UtilizationPercentage -Sum).Sum, 1)
+    } catch { return $null }
+}
+
+# Three reads a second apart, so that one quiet instant does not open the gate. -Engines (a run on a chosen adapter)
+# also waits for the GPU engines.
+function Wait-Quiet([switch]$Engines) {
     $deadline = (Get-Date).AddMinutes($QuietWaitMinutes)
     $last = ""
     while ($true) {
         $busy = @(1..3 | ForEach-Object { Start-Sleep -Seconds 1; Get-CpuBusyPercent })
         $cpu = ($busy | Measure-Object -Maximum).Maximum
         $gpu = Get-GpuMemoryMiB
-        if ($cpu -lt $QuietCpuPercent -and $gpu -lt $QuietGpuMiB) { return "quiet" }
+        $eng = $null
+        if ($Engines) { $eng = Get-GpuEnginePercent }
+        $engOk = (-not $Engines) -or ($null -eq $eng) -or ($eng -lt $QuietGpuEnginePercent)
+        if ($cpu -lt $QuietCpuPercent -and $gpu -lt $QuietGpuMiB -and $engOk) { return "quiet" }
         $text = "host not quiet: cpu $cpu %, gpu memory $gpu MiB"
+        if ($Engines) { $text += ", gpu engines $eng %" }
         if ((Get-Date) -ge $deadline) { Say "$text, past the $QuietWaitMinutes min wait: running"; return "timeout" }
         if ($text -ne $last) { Say $text; $last = $text }
         Start-Sleep -Seconds 30
     }
+}
+
+# Windows' per-app graphics preference of one exe (the value named its full path), through the registry API: the
+# provider cmdlets read -Name as a wildcard.
+function Get-GpuPreference([string]$Exe) {
+    $k = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($GpuPrefKey)
+    if ($null -eq $k) { return $null }
+    try { return $k.GetValue($Exe) } finally { $k.Close() }
+}
+
+function Set-GpuPreference([string]$Exe, [string]$Value) {
+    $k = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey($GpuPrefKey)
+    try { $k.SetValue($Exe, $Value, [Microsoft.Win32.RegistryValueKind]::String) } finally { $k.Close() }
+}
+
+# -> $true when no value is left on the exe
+function Remove-GpuPreference([string]$Exe) {
+    $k = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($GpuPrefKey, $true)
+    if ($null -ne $k) { try { $k.DeleteValue($Exe, $false) } finally { $k.Close() } }
+    return ($null -eq (Get-GpuPreference $Exe))
+}
+
+# The engine's GPU caches of one model file (ml_drift's program and weight caches beside it). Callers wrap it in @().
+function Get-GpuCaches([string]$ModelFile) {
+    $rx = '^' + [regex]::Escape($ModelFile) + '_.+_mldrift_(program|weight)_cache\.bin$'
+    return @(Get-ChildItem $ModelDir -File | Where-Object { $_.Name -match $rx })
+}
+
+function Save-GpuCacheAdapter {
+    Write-Json (Join-Path $LogDir "gpu-caches.json") $GpuCacheAdapter
 }
 
 function Get-HostFacts {
@@ -231,61 +289,121 @@ function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
         }
     }
 
-    $gate = Wait-Quiet
+    # A LiteRT-LM GPU run on a chosen adapter (gpuPreference) and its model's GPU caches (see the head of this file).
+    $isGpu = ($Launch.tool -eq "litert") -and (($Launch.args -join " ") -match "--backend=gpu")
+    $want = [string]$Launch.gpuPreference
+    $adapter = [string]$Launch.adapter
+    $leftover = $null
+    if ($Launch.tool -eq "litert") {
+        $leftover = Get-GpuPreference $tool
+        if ($null -ne $leftover) {
+            if (-not (Remove-GpuPreference $tool)) { throw "the GpuPreference value on $tool ($leftover) could not be removed" }
+            Say "$name removed a GpuPreference value left on the tool: $leftover"
+        }
+    }
+    $purged = @()
+    $cacheWrite = $null
+    if ($isGpu -and $Launch.modelFile) {
+        $mf = [string]$Launch.modelFile
+        $have = @(Get-GpuCaches $mf)
+        $was = $null
+        if ($GpuCacheAdapter.ContainsKey($mf)) { $was = [string]$GpuCacheAdapter[$mf] }
+        # caches another adapter wrote, or of unknown origin when the run asks for an adapter, go first
+        if ($have.Count -gt 0 -and ((($null -ne $was) -and ($was -ne $adapter)) -or (($null -eq $was) -and ($adapter -ne "")))) {
+            $whose = $(if ($null -eq $was) { "an unknown" } elseif ($was) { "the $was" } else { "the default" })
+            foreach ($c in $have) {
+                Remove-Item -LiteralPath $c.FullName
+                $purged += $c.Name
+                Say "$name purged $($c.Name) ($([int]($c.Length / 1MB)) MB): written under $whose adapter, the run asks for $(if ($adapter) { $adapter } else { 'the default' })"
+            }
+            $have = @()
+        }
+        $cacheWrite = ($have.Count -eq 0)
+    }
+
+    $gate = $(if ($want) { Wait-Quiet -Engines } else { Wait-Quiet })
     $top = @(Get-TopProcesses)
     $before = [ordered]@{ quietGate = $gate; cpuBusyPercent = Get-CpuBusyPercent; topProcesses = $top; gpu = Get-GpuSample }
-    $sw = [Diagnostics.Stopwatch]::StartNew()
-    $start = Get-Date -Format o
-    Say "$name start: $envText$tool $argLine"
-    $shell = Start-Process -FilePath "$env:SystemRoot\System32\cmd.exe" -ArgumentList "/d /s /c `"$inner`"" `
-        -WorkingDirectory (Split-Path $tool) -WindowStyle Hidden -PassThru
-    $null = $shell.Handle   # keeps ExitCode readable after the exit
+    if ($want) { $before["gpuEnginePercent"] = Get-GpuEnginePercent }
+    $applied = $null
+    $prefGone = $null
+    try {
+        if ($want) {
+            Set-GpuPreference $tool $want
+            $applied = Get-GpuPreference $tool
+            Say "$name GpuPreference on the tool: $applied"
+        }
+        $sw = [Diagnostics.Stopwatch]::StartNew()
+        $start = Get-Date -Format o
+        Say "$name start: $envText$tool $argLine"
+        $shell = Start-Process -FilePath "$env:SystemRoot\System32\cmd.exe" -ArgumentList "/d /s /c `"$inner`"" `
+            -WorkingDirectory (Split-Path $tool) -WindowStyle Hidden -PassThru
+        $null = $shell.Handle   # keeps ExitCode readable after the exit
 
-    $engine = Find-Engine $shell.Id (Split-Path $tool -Leaf)
-    $peak = [int64]0
-    $timedOut = $false
-    $gpuSamples = @()
-    $sampleGpu = (($Launch.args -join " ") -match "--backend=gpu") -or ($Launch.tool -in "llama-gpu", "llama-cuda")
-    $nextGpu = 5.0
-    while (-not $shell.HasExited) {
-        if ($engine) {
-            try {
-                $engine.Refresh()
-                if (-not $engine.HasExited -and $engine.PeakWorkingSet64 -gt $peak) { $peak = $engine.PeakWorkingSet64 }
-            } catch { }
+        $engine = Find-Engine $shell.Id (Split-Path $tool -Leaf)
+        $peak = [int64]0
+        $timedOut = $false
+        $gpuSamples = @()
+        $sampleGpu = (($Launch.args -join " ") -match "--backend=gpu") -or ($Launch.tool -in "llama-gpu", "llama-cuda")
+        $nextGpu = 5.0
+        while (-not $shell.HasExited) {
+            if ($engine) {
+                try {
+                    $engine.Refresh()
+                    if (-not $engine.HasExited -and $engine.PeakWorkingSet64 -gt $peak) { $peak = $engine.PeakWorkingSet64 }
+                } catch { }
+            }
+            if ($sampleGpu -and $sw.Elapsed.TotalSeconds -ge $nextGpu) {
+                $gpuSamples += "$([int]$sw.Elapsed.TotalSeconds)s $(Get-GpuSample)"
+                $nextGpu += 5.0
+            }
+            if ($sw.Elapsed.TotalSeconds -ge $TimeoutSeconds) {
+                $timedOut = $true
+                Say "$name timed out after $TimeoutSeconds s"
+                & "$env:SystemRoot\System32\taskkill.exe" /PID $shell.Id /T /F 2>&1 | Out-Null
+                break
+            }
+            Start-Sleep -Milliseconds 500
         }
-        if ($sampleGpu -and $sw.Elapsed.TotalSeconds -ge $nextGpu) {
-            $gpuSamples += "$([int]$sw.Elapsed.TotalSeconds)s $(Get-GpuSample)"
-            $nextGpu += 5.0
+        $shell.WaitForExit()
+        $elapsed = $sw.Elapsed.TotalSeconds
+        $exit = $shell.ExitCode
+    } finally {
+        # the value outlives the process: off right after the run, whatever stopped it
+        if ($want) {
+            $prefGone = Remove-GpuPreference $tool
+            Say "$name GpuPreference removed after the run: $(if ($prefGone) { 'none left' } else { 'STILL SET' })"
         }
-        if ($sw.Elapsed.TotalSeconds -ge $TimeoutSeconds) {
-            $timedOut = $true
-            Say "$name timed out after $TimeoutSeconds s"
-            & "$env:SystemRoot\System32\taskkill.exe" /PID $shell.Id /T /F 2>&1 | Out-Null
-            break
-        }
-        Start-Sleep -Milliseconds 500
     }
-    $shell.WaitForExit()
-    $elapsed = $sw.Elapsed.TotalSeconds
-    $exit = $shell.ExitCode
 
     foreach ($k in $saved.Keys) { [Environment]::SetEnvironmentVariable($k, $saved[$k], "Process") }
     $after = [ordered]@{ cpuBusyPercent = Get-CpuBusyPercent; topProcesses = @(Get-TopProcesses) }
+    if ($isGpu -and $Launch.modelFile) {
+        $GpuCacheAdapter[[string]$Launch.modelFile] = $adapter
+        Save-GpuCacheAdapter
+    }
 
     Write-Json $metaPath ([ordered]@{
-            exitCode            = $(if ($timedOut) { $null } else { [int]$exit })
-            timedOut            = $timedOut
-            start               = $start
-            elapsedSeconds      = [math]::Round($elapsed, 3)
-            peakWorkingSetBytes = $peak
-            command             = "$envText$(Split-Path $tool -Leaf) $argLine"
-            before              = $before
-            after               = $after
-            gpuAfter            = Get-GpuSample
-            gpuSamples          = $gpuSamples
+            exitCode              = $(if ($timedOut) { $null } else { [int]$exit })
+            timedOut              = $timedOut
+            start                 = $start
+            elapsedSeconds        = [math]::Round($elapsed, 3)
+            peakWorkingSetBytes   = $peak
+            command               = "$envText$(Split-Path $tool -Leaf) $argLine"
+            before                = $before
+            after                 = $after
+            gpuAfter              = Get-GpuSample
+            gpuSamples            = $gpuSamples
+            gpuPreference         = $applied
+            gpuPreferenceRemoved  = $prefGone
+            gpuPreferenceLeftover = $leftover
+            gpuCacheWrite         = $cacheWrite
+            gpuCachePurge         = $purged
         })
     Say "$name exit=$exit timedOut=$timedOut elapsed=$([math]::Round($elapsed, 1)) peakMB=$([int]($peak / 1MB))"
+    if ($want -and -not $prefGone) {
+        throw "the GpuPreference value on $tool is still set after ${name}: every later run of the tool would take that GPU"
+    }
 }
 
 New-Item -ItemType Directory -Force $LogDir | Out-Null
@@ -303,6 +421,13 @@ try {
             Remove-Item $_.FullName
         }
     }
+    $state = Join-Path $LogDir "gpu-caches.json"
+    if (Test-Path $state) {
+        # a resumed job: which adapter wrote which model's GPU caches before it stopped
+        $o = Get-Content $state -Raw -Encoding UTF8 | ConvertFrom-Json
+        foreach ($p in $o.PSObject.Properties) { $GpuCacheAdapter[$p.Name] = [string]$p.Value }
+        Say "GPU caches by adapter from the earlier start: $((Get-Content $state -Raw) -replace '\s+', ' ')"
+    }
     foreach ($model in @($job.models)) {
         $p = Join-Path $ModelDir $model.name
         if (-not (Test-Path $p)) { throw "model file $p is not on this host" }
@@ -319,6 +444,29 @@ try {
     $failure = "$_"
     Say "job failed: $failure"
 } finally {
+    try {
+        # the caches a run on a chosen adapter wrote, so that no later job reads them on another GPU, and no value
+        # left on the tool, whatever stopped the job
+        foreach ($mf in @($GpuCacheAdapter.Keys)) {
+            if ($GpuCacheAdapter[$mf]) {
+                foreach ($c in @(Get-GpuCaches $mf)) {
+                    Remove-Item -LiteralPath $c.FullName
+                    Say "purged $($c.Name) at the end: written under the $($GpuCacheAdapter[$mf]) adapter"
+                }
+                $GpuCacheAdapter.Remove($mf)
+                Save-GpuCacheAdapter
+            }
+        }
+        $litert = Join-Path (Join-Path $EngineDir $LitertDirName) $LitertExe
+        if ($null -ne (Get-GpuPreference $litert)) {
+            $gone = Remove-GpuPreference $litert
+            Say "a GpuPreference value was on the tool at the end: $(if ($gone) { 'removed' } else { 'STILL SET' })"
+            if (-not $gone -and -not $failure) { $failure = "the GpuPreference value on $litert could not be removed" }
+        }
+    } catch {
+        Say "end of the job: $_"
+        if (-not $failure) { $failure = "end of the job: $_" }
+    }
     Clear-Busy
     Write-Utf8 $donePath $(if ($failure) { "FAILED $failure" } else { "OK" })
 }

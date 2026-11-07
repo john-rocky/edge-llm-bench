@@ -14,10 +14,15 @@
 # names on 2026-10-31; the records carry the replacement's label (scripts/bench_common.py REPLACED_FILE_LABELS).
 # Gemma 4 E4B rows: the files of the Android rows too (gemma-4-E4B-it.litertlm on both LiteRT-LM rows, as on the E2B
 # block; the unsloth Q4_K_M GGUF).
+# adapter=igpu rows (2026-11-07): each LiteRT-LM GPU row's exe and file again on the integrated GPU (Intel Graphics,
+# Xe3-LPG), the arm litert-lm-gpu-igpu. The engine takes the discrete GPU by itself and no flag of the tool moves it;
+# windows/run_job.ps1 sets Windows' per-app graphics preference (GpuPreference=1;) on the exe before each of these runs
+# and removes it after, and the record keeps the GPU the run's log selected (windows/README.md "Two GPUs").
 
 # --- Qwen3-0.6B ---
 windows litert-lm litert-community/Qwen3-0.6B short-chat backend=cpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048 runs=3
 windows litert-lm litert-community/Qwen3-0.6B short-chat backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048 runs=3
+windows litert-lm litert-community/Qwen3-0.6B short-chat backend=gpu adapter=igpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048 runs=3
 windows llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat file=Qwen3-0.6B-Q4_K_M.gguf context-tokens=2048 runs=3
 windows llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat backend=gpu file=Qwen3-0.6B-Q4_K_M.gguf context-tokens=2048 runs=3
 windows llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat backend=cuda file=Qwen3-0.6B-Q4_K_M.gguf context-tokens=2048 runs=3
@@ -25,6 +30,7 @@ windows llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat backend=cuda file=Qwen3-0.6
 # --- Qwen3-1.7B ---
 windows litert-lm litert-community/Qwen3-1.7B short-chat backend=cpu file=Qwen3_1.7B.litertlm context-tokens=2048 runs=3
 windows litert-lm litert-community/Qwen3-1.7B short-chat backend=gpu file=Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm context-tokens=2048 runs=3
+windows litert-lm litert-community/Qwen3-1.7B short-chat backend=gpu adapter=igpu file=Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm context-tokens=2048 runs=3
 windows llama.cpp unsloth/Qwen3-1.7B-GGUF short-chat file=Qwen3-1.7B-Q4_K_M.gguf context-tokens=2048 runs=3
 windows llama.cpp unsloth/Qwen3-1.7B-GGUF short-chat backend=gpu file=Qwen3-1.7B-Q4_K_M.gguf context-tokens=2048 runs=3
 windows llama.cpp unsloth/Qwen3-1.7B-GGUF short-chat backend=cuda file=Qwen3-1.7B-Q4_K_M.gguf context-tokens=2048 runs=3
@@ -32,6 +38,7 @@ windows llama.cpp unsloth/Qwen3-1.7B-GGUF short-chat backend=cuda file=Qwen3-1.7
 # --- Gemma 4 E2B ---
 windows litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=cpu file=gemma-4-E2B-it.litertlm context-tokens=2048 runs=3
 windows litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=gpu file=gemma-4-E2B-it.litertlm context-tokens=2048 runs=3
+windows litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=gpu adapter=igpu file=gemma-4-E2B-it.litertlm context-tokens=2048 runs=3
 windows litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=npu file=gemma-4-E2B-it_intel_PTL.litertlm runs=3
 windows llama.cpp unsloth/gemma-4-E2B-it-GGUF short-chat file=gemma-4-E2B-it-Q4_K_M.gguf context-tokens=2048 runs=3
 windows llama.cpp unsloth/gemma-4-E2B-it-GGUF short-chat backend=gpu file=gemma-4-E2B-it-Q4_K_M.gguf context-tokens=2048 runs=3
@@ -40,6 +47,7 @@ windows llama.cpp unsloth/gemma-4-E2B-it-GGUF short-chat backend=cuda file=gemma
 # --- Qwen3-4B ---
 windows litert-lm litert-community/Qwen3-4B short-chat backend=cpu file=qwen3_4b_mixed_int4.litertlm context-tokens=2048 runs=3
 windows litert-lm litert-community/Qwen3-4B short-chat backend=gpu file=qwen3_4b_mixed_int4.litertlm context-tokens=2048 runs=3
+windows litert-lm litert-community/Qwen3-4B short-chat backend=gpu adapter=igpu file=qwen3_4b_mixed_int4.litertlm context-tokens=2048 runs=3
 windows llama.cpp unsloth/Qwen3-4B-GGUF short-chat file=Qwen3-4B-Q4_K_M.gguf context-tokens=2048 runs=3
 windows llama.cpp unsloth/Qwen3-4B-GGUF short-chat backend=gpu file=Qwen3-4B-Q4_K_M.gguf context-tokens=2048 runs=3
 windows llama.cpp unsloth/Qwen3-4B-GGUF short-chat backend=cuda file=Qwen3-4B-Q4_K_M.gguf context-tokens=2048 runs=3
@@ -47,6 +55,7 @@ windows llama.cpp unsloth/Qwen3-4B-GGUF short-chat backend=cuda file=Qwen3-4B-Q4
 # --- Gemma 4 E4B ---
 windows litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat backend=cpu file=gemma-4-E4B-it.litertlm context-tokens=2048 runs=3
 windows litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat backend=gpu file=gemma-4-E4B-it.litertlm context-tokens=2048 runs=3
+windows litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat backend=gpu adapter=igpu file=gemma-4-E4B-it.litertlm context-tokens=2048 runs=3
 windows llama.cpp unsloth/gemma-4-E4B-it-GGUF short-chat file=gemma-4-E4B-it-Q4_K_M.gguf context-tokens=2048 runs=3
 windows llama.cpp unsloth/gemma-4-E4B-it-GGUF short-chat backend=gpu file=gemma-4-E4B-it-Q4_K_M.gguf context-tokens=2048 runs=3
 windows llama.cpp unsloth/gemma-4-E4B-it-GGUF short-chat backend=cuda file=gemma-4-E4B-it-Q4_K_M.gguf context-tokens=2048 runs=3

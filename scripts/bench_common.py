@@ -283,8 +283,8 @@ def fmt_bw(u, estimate_mark: str = "~") -> str:
 # The records' model sha256 (read 2026-11-03): every Android LiteRT-LM row of these files captured before
 # 2026-10-31 holds an earlier content, every row since the new one. The Windows rows of these files (first: the
 # sittings of 2026-11-06 UTC, whose model files' sha256 on the PC were read equal to the Hub's before them) run the
-# same litert-lm-cpu / litert-lm-gpu arms on the new content, and scripts/run_windows_matrix.py labels them by the
-# same file names. -> (model id, file, first UTC date, labels the rows carry, the label of the content they ran: the
+# same litert-lm-cpu / litert-lm-gpu arms on the new content (and litert-lm-gpu-igpu, the GPU arm on the PC's integrated
+# GPU, from 2026-11-07), and scripts/run_windows_matrix.py labels them by the same file names. -> (model id, file, first UTC date, labels the rows carry, the label of the content they ran: the
 # recipe as the Hub card states it)
 REPLACED_FILE_LABELS = (
     ("litert-community/Qwen3-0.6B", "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm", "2026-10-31",
@@ -316,7 +316,7 @@ def corrected_quant(runtime: str, model_id: str, quant: str, row=None) -> tuple[
             and quant == "INT4 (QAT)"):
         return "wNa8o8 (int2/int4/int8 + int8 activations, QAT)", True
     if (row is not None and row.get("platform") in ("android", "windows")
-            and runtime in ("litert-lm-cpu", "litert-lm-gpu")):
+            and runtime in ("litert-lm-cpu", "litert-lm-gpu", "litert-lm-gpu-igpu")):
         for mid, fname, since, carried, label in REPLACED_FILE_LABELS:
             if (model_id == mid and (row.get("timestamp") or "")[:10] >= since
                     and file_is(row.get("model_file"), [fname])

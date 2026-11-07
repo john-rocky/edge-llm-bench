@@ -808,6 +808,9 @@ class CliAndUpstreamAdditions(unittest.TestCase):
             "windows llama.cpp org/gguf short-chat context-tokens=2048\n"
             "windows llama.cpp org/gguf long-context-1024-gen256 backend=gpu context-tokens=2048\n"
             "windows llama.cpp org/gguf short-chat backend=cuda context-tokens=2048\n"
+            # one GPU row on each GPU: two cells (the adapter is part of the cell's identity), not a duplicate
+            "windows litert-lm org/model short-chat backend=gpu context-tokens=2048\n"
+            "windows litert-lm org/model short-chat backend=gpu adapter=igpu context-tokens=2048\n"
         )
         with tempfile.TemporaryDirectory(prefix="render-rules-wincells-") as tmp:
             p = os.path.join(tmp, "win.cells")
@@ -833,6 +836,15 @@ class CliAndUpstreamAdditions(unittest.TestCase):
                     "windows rows need context-tokens=",
                 "windows litert-lm org/model native-benchmark-1024x256 backend=gpu context-tokens=2048\n":
                     "windows v1 supports prompt tasks only",
+                # adapter= names the GPU of a litert-lm GPU row, and only the integrated one so far
+                "windows litert-lm org/model short-chat backend=cpu adapter=igpu context-tokens=2048\n":
+                    "adapter= names the GPU of a windows litert-lm backend=gpu row only",
+                "windows llama.cpp org/gguf short-chat backend=gpu adapter=igpu context-tokens=2048\n":
+                    "adapter= names the GPU of a windows litert-lm backend=gpu row only",
+                "windows litert-lm org/model short-chat backend=gpu adapter=dgpu context-tokens=2048\n":
+                    "adapter='dgpu' (want igpu)",
+                "android litert-lm org/model short-chat backend=gpu adapter=igpu\n":
+                    "adapter= is a windows litert-lm backend=gpu row's word only",
             }
             for line, want in bad.items():
                 with open(p, "w") as fh:
@@ -848,6 +860,7 @@ class CliAndUpstreamAdditions(unittest.TestCase):
                     "windows litert-lm org/model short-chat backend=cpu ynnpack=1 context-tokens=2048 runs=2\n"
                     "windows llama.cpp org/gguf short-chat backend=gpu context-tokens=2048 runs=2\n"
                     "windows llama.cpp org/gguf short-chat backend=cuda context-tokens=2048 runs=2\n"
+                    "windows litert-lm org/model short-chat backend=gpu adapter=igpu context-tokens=2048 runs=2\n"
                 )
             litert_file = os.path.join(tmp, "model.litertlm")
             gguf_file = os.path.join(tmp, "model-Q4_0.gguf")
@@ -919,15 +932,29 @@ class CliAndUpstreamAdditions(unittest.TestCase):
                     f"> {prompt_txt}\n{reply}\n"
                     "[ Prompt: 3100.0 t/s | Generation: 210.5 t/s ]\n"
                 )
-                for r_idx, console in (("r00", litert_console), ("r01", llama_console), ("r02", cuda_console)):
+                # the integrated GPU's run as the host's log carries it, run 1 the one that wrote the GPU caches
+                igpu_console = litert_console.replace(
+                    "Choose backend: cpu\nmax_tokens: 2048\nenable_ynnpack: 1\n"
+                    "INFO: delegates/ynnpack/ynnpack_delegate.cc:1\n",
+                    "Choose backend: gpu\nmax_tokens: 2048\n"
+                    "I0000 00:00:1.05 1 environment.cc:526] Selected adapter: Intel(R) Graphics, arch=xe-3lpg, "
+                    "vendor=intel, backend=Direct3D 12, adapterType=Integrated GPU\n"
+                    "INFO: [gpu_registry.cc:121] Statically linked GPU accelerator registered.\n")
+                self.assertNotEqual(igpu_console, litert_console)
+                for r_idx, console in (("r00", litert_console), ("r01", llama_console), ("r02", cuda_console),
+                                       ("r03", igpu_console)):
                     for run_i in (1, 2):
-                        (logs / f"{r_idx}_run{run_i}.json").write_text(json.dumps({
+                        meta = {
                             "exitCode": 0, "timedOut": False,
                             # PowerShell Get-Date -Format o local offset with 7 fractional digits.
                             "start": f"2026-10-29T21:00:0{run_i}.1234567+09:00",
                             "elapsedSeconds": 1.2, "peakWorkingSetBytes": 800 * 2**20,
                             "command": "test.exe",
-                        }))
+                        }
+                        if r_idx == "r03":
+                            meta.update(gpuPreference="GpuPreference=1;", gpuPreferenceRemoved=True,
+                                        gpuCacheWrite=run_i == 1, gpuCachePurge=[])
+                        (logs / f"{r_idx}_run{run_i}.json").write_text(json.dumps(meta))
                         (logs / f"{r_idx}_run{run_i}.log").write_text(console)
                 clean, total = run_windows_matrix.write_records(
                     plan, campaign_dir, inv, litert_label="21f113ea6eba", pins=pins)
@@ -942,7 +969,12 @@ class CliAndUpstreamAdditions(unittest.TestCase):
                     .read_text().splitlines()[-1]
                 )
                 self.assertTrue(unpinned_rec["engineVersion"].startswith("unknown ("))
-                return 0 if clean == total == 6 else 1
+                # the plan's launch of the igpu row carries what run_job.ps1 reads
+                igpu_launch = plan.job["launches"][3]
+                self.assertEqual((igpu_launch["adapter"], igpu_launch["gpuPreference"], igpu_launch["modelFile"]),
+                                 ("igpu", "GpuPreference=1;", "model.litertlm"))
+                self.assertIn("--preferred_device_substr=Intel", igpu_launch["args"])
+                return 0 if clean == total == 8 else 1
 
             run_windows_matrix.register_executor("fake-lab", fake_executor)
             try:
@@ -982,6 +1014,17 @@ class CliAndUpstreamAdditions(unittest.TestCase):
                     os.path.join(raw_dir, "2026-10-29-win", "llama.cpp-cuda_org_gguf_short-chat.jsonl")
                 ) if ln.strip()
             ]
+            igpu_recs = [
+                json.loads(ln) for ln in open(
+                    os.path.join(raw_dir, "2026-10-29-win", "litert-lm-gpu-igpu_org_model_short-chat.jsonl")
+                ) if ln.strip()
+            ]
+            self.assertEqual({r["runtime"] for r in igpu_recs}, {"litert-lm-gpu-igpu"})
+            self.assertEqual(igpu_recs[0]["conditions"]["gpuAdapter"],
+                             "Intel(R) Graphics, arch=xe-3lpg, vendor=intel, backend=Direct3D 12, "
+                             "adapterType=Integrated GPU")
+            self.assertEqual(igpu_recs[0]["conditions"]["gpuPreference"], "GpuPreference=1;")
+            self.assertEqual([r["metrics"].get("firstEver", False) for r in igpu_recs], [True, False, False, False])
             self.assertEqual(cuda_recs[0]["engineVersion"], cuda_label)
             self.assertEqual(cuda_recs[0]["conditions"]["ggmlDevice"], "CUDA0")
             self.assertIn("Device 0: NVIDIA RTX 4090, compute capability 8.9",
@@ -1012,6 +1055,8 @@ class CliAndUpstreamAdditions(unittest.TestCase):
                 "litert-lm-cpu-ynnpack": ("measured", 80.0, 1),
                 "llama.cpp-gpu": ("measured", 195.5, 1),
                 "llama.cpp-cuda": ("measured", 210.5, 1),
+                # the dashboard keys the igpu row by the arm its records carry: a cell of its own
+                "litert-lm-gpu-igpu": ("measured", 80.0, 1),
             })
 
 
@@ -1105,20 +1150,23 @@ class WindowsRunnerRows(unittest.TestCase):
         "    Decode Turn 1: Processed 128 tokens in 3.2842774s duration.\n"
         "      Decode Speed: 38.97 tokens/sec.\n")
 
-    def records(self, tmp, row, head, model="m.litertlm", mid="org/m", start="2026-11-05T20:00:00.0000000+09:00"):
-        """write_records over one run's fake host logs: (clean runs, the run's records)."""
-        cells = self.cells(tmp, f"windows litert-lm {mid} short-chat {row}\n")
+    def records(self, tmp, row, head, model="m.litertlm", mid="org/m", start="2026-11-05T20:00:00.0000000+09:00",
+                metas=({},)):
+        """write_records over fake host logs of one row, one run per metas entry (its fields over the defaults):
+        (clean runs, the row's records)."""
+        cells = self.cells(tmp, f"windows litert-lm {mid} short-chat {row} runs={len(metas)}\n")
         specs = run_windows_matrix.parse_model_specs([f"litert-lm:{mid}={model}:10"])
         plan = run_windows_matrix.plan_job([cells], "c", run_windows_matrix.load_pins(), specs)
         camp = pathlib.Path(tmp) / "c"
         logs = camp / "host-logs" / "inv"
         logs.mkdir(parents=True)
         (logs / "host.json").write_text(json.dumps({"model": "PC", "os": "Windows 11", "cpu": "x", "binaries": {}}))
-        (logs / "r00_run1.json").write_text(json.dumps({
-            "exitCode": 0, "timedOut": False, "start": start, "elapsedSeconds": 10,
-            "peakWorkingSetBytes": 1 << 30, "command": "tool", "before": {"quietGate": "quiet"},
-            "after": {"cpuBusyPercent": 3}}))
-        (logs / "r00_run1.log").write_text(head + self.ITERATION + self.ITERATION)
+        for k, extra in enumerate(metas, 1):
+            (logs / f"r00_run{k}.json").write_text(json.dumps({
+                "exitCode": 0, "timedOut": False, "start": start, "elapsedSeconds": 10,
+                "peakWorkingSetBytes": 1 << 30, "command": "tool", "before": {"quietGate": "quiet"},
+                "after": {"cpuBusyPercent": 3}, **extra}))
+            (logs / f"r00_run{k}.log").write_text(head + self.ITERATION + self.ITERATION)
         clean, _ = run_windows_matrix.write_records(plan, camp, "inv", litert_pins={}, harness="test")
         with open(camp / f"{plan.rows[0].stem}.jsonl") as fh:
             return clean, [json.loads(line) for line in fh]
@@ -1140,7 +1188,7 @@ class WindowsRunnerRows(unittest.TestCase):
             self.assertEqual(recs[0]["model"]["quantization"], want, start)
         # the summary's correction reads a windows row as it reads an android one, on both arms; a mac row keeps the
         # label its catalog wrote
-        for arm in ("litert-lm-cpu", "litert-lm-gpu"):
+        for arm in ("litert-lm-cpu", "litert-lm-gpu", "litert-lm-gpu-igpu"):
             row = {"platform": "windows", "timestamp": "2026-11-06T18:00:00Z", "model_file": fname}
             self.assertEqual(bench_common.corrected_quant(arm, mid, old, row), (new, True))
             self.assertEqual(bench_common.corrected_quant(arm, mid, new, row), (new, False))
@@ -1183,6 +1231,101 @@ class WindowsRunnerRows(unittest.TestCase):
         self.assertTrue(cond["backendOffReason"].startswith("Selected adapter: Intel"))
         self.assertIn("backend-not-registered", cond["protocolFlags"])
         self.assertEqual(cond["gpuAccelerator"], "static-source")
+        self.assertTrue(cond["gpuAdapter"].startswith("Intel(R) Graphics"))
+        self.assertIsNone(cond["gpuPreference"])
+
+    GPU_HEAD = ("I0000 00:00:1.0 1 litert_lm_lib.cc:728] Choose backend: gpu\nmax_tokens: 2048\n"
+                "I0000 00:00:1.5 1 environment.cc:526] Selected adapter: {adapter}\n"
+                "INFO: [gpu_registry.cc:121] Statically linked GPU accelerator registered.\n")
+    INTEL = "Intel(R) Graphics, arch=xe-3lpg, vendor=intel, backend=Direct3D 12, adapterType=Integrated GPU"
+    NVIDIA = ("NVIDIA GeForce RTX 5080 Laptop GPU, arch=blackwell, vendor=nvidia, backend=Direct3D 12, "
+              "adapterType=Discrete GPU")
+    APPLIED = {"gpuPreference": "GpuPreference=1;", "gpuPreferenceRemoved": True}
+
+    def test_adapter_row_is_its_own_arm_with_the_preference_in_its_launch(self):
+        with tempfile.TemporaryDirectory(prefix="render-rules-winadapter-") as tmp:
+            cells = self.cells(tmp, (
+                "windows litert-lm org/m short-chat backend=gpu file=m.litertlm context-tokens=2048\n"
+                "windows litert-lm org/m short-chat backend=gpu adapter=igpu file=m.litertlm context-tokens=2048\n"))
+            specs = run_windows_matrix.parse_model_specs(["litert-lm:org/m=m.litertlm:10"])
+            plan = run_windows_matrix.plan_job([cells], "c", run_windows_matrix.load_pins(), specs)
+            # the same exe and file on two GPUs: two arms, two capture files (no "share a capture file" refusal)
+            self.assertEqual([r.arm for r in plan.rows], ["litert-lm-gpu", "litert-lm-gpu-igpu"])
+            dflt, igpu = plan.job["launches"]
+            self.assertEqual((dflt["adapter"], dflt["modelFile"]), ("", "m.litertlm"))
+            self.assertNotIn("gpuPreference", dflt)
+            self.assertEqual((igpu["adapter"], igpu["gpuPreference"], igpu["modelFile"]),
+                             ("igpu", "GpuPreference=1;", "m.litertlm"))
+            self.assertIn("--preferred_device_substr=NVIDIA", dflt["args"])
+            self.assertIn("--preferred_device_substr=Intel", igpu["args"])
+            self.assertEqual([a for a in dflt["args"] if "preferred_device" not in a],
+                             [a for a in igpu["args"] if "preferred_device" not in a])
+            # the dashboard reads the cells file to the same arms
+            self.assertEqual([render_dashboard.arm_of(*validate_cells.parse_line(ln)[0:2], validate_cells.parse_line(ln)[4])
+                              for ln in open(cells).read().splitlines()], ["litert-lm-gpu", "litert-lm-gpu-igpu"])
+            # adapter= on a row that is not a LiteRT-LM GPU row stops the plan
+            bad = self.cells(tmp, "windows litert-lm org/m short-chat backend=cpu adapter=igpu file=m.litertlm "
+                                  "context-tokens=2048\n")
+            with self.assertRaisesRegex(ValueError, "adapter= is igpu on a litert-lm backend=gpu row only"):
+                run_windows_matrix.load_rows([bad])
+
+    def test_igpu_record_holds_the_adapter_its_log_selected(self):
+        with tempfile.TemporaryDirectory(prefix="render-rules-winigpu-") as tmp:
+            clean, recs = self.records(tmp, "backend=gpu adapter=igpu file=m.litertlm context-tokens=2048",
+                                       self.GPU_HEAD.format(adapter=self.INTEL), metas=(self.APPLIED,))
+        self.assertEqual(clean, 1)
+        cond = recs[0]["conditions"]
+        self.assertEqual((recs[0]["runtime"], cond["gpuAdapter"], cond["gpuPreference"]),
+                         ("litert-lm-gpu-igpu", self.INTEL, "GpuPreference=1;"))
+        self.assertEqual(cond["protocolFlags"], [])
+        self.assertNotIn("backendOffReason", cond)
+
+    def test_igpu_record_on_another_gpu_or_without_its_preference_is_not_counted(self):
+        cases = (
+            # the log selected the discrete GPU: the run measured that GPU
+            (self.GPU_HEAD.format(adapter=self.NVIDIA), self.APPLIED, "Selected adapter: NVIDIA", "backend-not-registered"),
+            # no adapter line: nothing says which GPU ran
+            (self.GPU_HEAD.replace("I0000 00:00:1.5 1 environment.cc:526] Selected adapter: {adapter}\n", ""),
+             self.APPLIED, "no Selected adapter: line", "backend-not-registered"),
+            # the job script read no preference back (an older run_job.ps1, or the value did not stick): whatever
+            # its log selected, the run is not a run of the cell
+            (self.GPU_HEAD.format(adapter=self.INTEL), {}, "no GpuPreference=1; on the tool", "gpu-preference-not-applied"),
+        )
+        first = []
+        for i, (head, meta, reason, flag) in enumerate(cases):
+            with tempfile.TemporaryDirectory(prefix="render-rules-winigpuoff-") as tmp:
+                clean, recs = self.records(tmp, "backend=gpu adapter=igpu file=m.litertlm context-tokens=2048", head,
+                                           metas=(meta,))
+            self.assertEqual(clean, 0, i)
+            cond = recs[0]["conditions"]
+            self.assertIn(flag, cond["protocolFlags"], i)
+            self.assertIn("backend-not-registered", cond["protocolFlags"], i)
+            if reason:
+                self.assertTrue(cond["backendOffReason"].startswith(reason), (i, cond.get("backendOffReason")))
+            first.append(recs[0])
+        # the summary carries each as backend_registered false, which arm_row keeps out of the pool
+        self.assertEqual([build_summary.backend_registered_of(r) for r in first], ["false"] * 3)
+        self.assertEqual(arm_row([{"first_ever": "False", "cold_run": "True", "decode_tps": "40.0", "prefill_tps": "",
+                                   "ttft_ms": "", "backend_registered": "false", "engine_version": "v", "campaign": "c",
+                                   "timestamp": "2026-11-07T00:00:00Z", "runtime": "litert-lm-gpu-igpu",
+                                   "model_id": "org/m", "quantization": "q", "mem_footprint_median_mb": "",
+                                   "mem_resident_median_mb": "", "platform": "windows", "task": "short-chat"}])["n"], 0)
+
+    def test_a_run_that_writes_the_gpu_caches_is_first_ever_wherever_it_falls(self):
+        # run 2 found no GPU cache of its file (the job removed them when the adapter changed): it compiled and wrote
+        # them, so its first conversation is the cache build, not the engine's speed
+        with tempfile.TemporaryDirectory(prefix="render-rules-wincachewrite-") as tmp:
+            clean, recs = self.records(tmp, "backend=gpu adapter=igpu file=m.litertlm context-tokens=2048",
+                                       self.GPU_HEAD.format(adapter=self.INTEL),
+                                       metas=(dict(self.APPLIED, gpuCacheWrite=True),
+                                              dict(self.APPLIED, gpuCacheWrite=True,
+                                                   gpuCachePurge=["m.litertlm_1_10_mldrift_program_cache.bin"]),
+                                              dict(self.APPLIED, gpuCacheWrite=False)))
+        self.assertEqual(clean, 3)
+        self.assertEqual([(r["metrics"].get("firstEver", False), r["conditions"]["iterationIndex"]) for r in recs],
+                         [(True, 1), (False, 2), (True, 1), (False, 2), (False, 1), (False, 2)])
+        self.assertEqual(recs[2]["conditions"]["gpuCachePurge"], ["m.litertlm_1_10_mldrift_program_cache.bin"])
+        self.assertNotIn("gpuCachePurge", recs[4]["conditions"])
 
 
 class WindowsSshExecutor(unittest.TestCase):

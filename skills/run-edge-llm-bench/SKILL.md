@@ -255,7 +255,9 @@ read the flags in the first line before the spread.
   `<root>\engines\litert` are not that label's build.
 - **`backend=` picks the arm, and `file=` has to fit it.** `cpu` and `gpu` take `gemma-4-E2B-it.litertlm`, `npu` takes
   the bundle of the PC's SoC and no `context-tokens=`. The GPU row checks that the log's `Selected adapter:` line names
-  NVIDIA; a run on any other adapter carries `backend-not-registered`.
+  NVIDIA; a run on any other adapter carries `backend-not-registered`. A GPU row with `adapter=igpu` is the arm
+  `litert-lm-gpu-igpu`: the job sets Windows' per-app graphics preference on the tool for each of its runs and removes it
+  after, and its line has to read `adapterType=Integrated GPU` (`windows/README.md` "Two GPUs").
 - **Each LiteRT-LM run is a cold and a warm record.** One process holds two conversations (`metrics.coldRun`). A new
   invocation (the executor started without `BENCH_WINDOWS_INVOCATION`) removes the engine's caches, so `firstEver`
   marks run 1's cold record, the cache build, and `runs=3` leaves two cold records and three warm ones to read. Read the

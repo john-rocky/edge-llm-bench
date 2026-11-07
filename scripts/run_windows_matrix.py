@@ -48,7 +48,18 @@ HARNESS_STAMP = "2026-10-windows-cli-v1"
 RSS_BASIS = "PeakWorkingSet64 of the engine process, read every 0.5 s while it runs"
 NAMESPACE = uuid.UUID("5d3f8a2e-1c47-4b8e-9a51-7e2c0f6b9d14")
 GPU_SUBSTR = "NVIDIA"
-ROW_KEYS = {"backend", "context-tokens", "runs", "ynnpack", "local", "file", "exclude", "manual"}
+ROW_KEYS = {"backend", "context-tokens", "runs", "ynnpack", "local", "file", "exclude", "manual", "adapter"}
+# A LiteRT-LM GPU row's adapter= (validate_cells.ADAPTERS) -> what the host is told and what the run's log has to show.
+# LiteRT-LM's WebGPU path asks Dawn by a power preference (use_low_power=0, from the GPU priority) and reads no device
+# flag, so a row without adapter= runs on the discrete GPU (the run's `Selected adapter:` line has to name NVIDIA,
+# GPU_SUBSTR). adapter=igpu runs under Windows' per-app graphics preference GpuPreference=1; on the tool's exe
+# (windows/run_job.ps1 sets the value before the run and removes it after), and its line has to say
+# adapterType=Integrated GPU. The arm is litert-lm-gpu-<adapter>: the
+# same exe and file on another GPU is another cell, never a run of the litert-lm-gpu one.
+ADAPTERS = {
+    "igpu": {"preference": "GpuPreference=1;", "substr": "Intel", "line": "adapterType=Integrated GPU"},
+}
+ADAPTER_LINE = "Selected adapter: "
 # A llama.cpp row's backend= -> the registry flavor of its release asset, and the tool dir it runs from on the host.
 # backend=gpu is the Vulkan asset (the arm llama.cpp-gpu), backend=cuda the CUDA one (llama.cpp-cuda): two arms, so the
 # two rows of one model and task land in capture files and cells of their own.
@@ -97,6 +108,7 @@ class WinRow:
     ynnpack: bool
     arm: str
     file_opt: str = ""
+    adapter: str = ""
 
     @property
     def row_id(self) -> str:
@@ -224,6 +236,7 @@ def load_rows(cells_files: list, engines: list | None = None) -> list:
             backend = opts.get("backend", "")
             ctx = opts.get("context-tokens", "")
             ynnpack = opts.get("ynnpack") == "1"
+            adapter = opts.get("adapter", "")
             if set(opts) - ROW_KEYS:
                 problems.append(f"{where}: unsupported option(s): {sorted(set(opts) - ROW_KEYS)}")
             if rt == "litert-lm":
@@ -245,10 +258,12 @@ def load_rows(cells_files: list, engines: list | None = None) -> list:
                 problems.append(f"{where}: needs context-tokens=")
             if ynnpack and (rt, backend) != ("litert-lm", "cpu"):
                 problems.append(f"{where}: ynnpack=1 is for litert-lm backend=cpu rows only")
-            arm = run_cell.arm_name(rt, backend or None, ynnpack)
+            if adapter and ((rt, backend) != ("litert-lm", "gpu") or adapter not in ADAPTERS):
+                problems.append(f"{where}: adapter= is {'|'.join(sorted(ADAPTERS))} on a litert-lm backend=gpu row only")
+            arm = run_cell.arm_name(rt, backend or None, ynnpack) + (f"-{adapter}" if adapter else "")
             runs = int(opts.get("runs", "3"))
             rows.append(WinRow(len(rows), rt, backend, mid, task, runs, int(ctx or 0),
-                               ynnpack, arm, opts.get("file", "")))
+                               ynnpack, arm, opts.get("file", ""), adapter))
     seen = {}
     for row in rows:
         if row.stem in seen:
@@ -296,8 +311,9 @@ def lab_args(row: WinRow, model_filename: str, budget: int, gpu_substr: str = GP
             words.pop(0)
         else:
             out.append(word)
-    if row.arm == "litert-lm-gpu":
-        out.append(f"--preferred_device_substr={gpu_substr}")
+    if (row.runtime, row.backend) == ("litert-lm", "gpu"):
+        # the flag reaches no adapter choice at this tag (ADAPTERS); each row still names the GPU it asks for
+        out.append(f"--preferred_device_substr={ADAPTERS[row.adapter]['substr'] if row.adapter else gpu_substr}")
     if row.arm == "litert-lm-npu":
         # run_cell's NPU line carries a Qualcomm setting and a phone's dispatch dir: on the Intel dispatch the
         # engine's defaults (Google's page runs none of its NPU flags), the dispatch DLL beside the tool, and the
@@ -364,13 +380,21 @@ def plan_job(cells_files: list, campaign: str, pins: dict, model_specs: dict,
         if row.runtime == "llama.cpp":
             labels[row.tool] = pinned_label(pins, row.backend)
         budget = task_budget(row.task)
-        launches.append({
+        launch = {
             "id": row.row_id,
             "stem": row.stem,
             "tool": row.tool,
             "runs": row.runs,
             "args": lab_args(row, models[key][0].name, budget),
-        })
+        }
+        if (row.runtime, row.backend) == ("litert-lm", "gpu"):
+            # run_job.ps1: the adapter the run asks for ("" = the engine's own choice), the per-app preference that
+            # gets it there, and the model file whose GPU caches the run reads or writes (the caches carry no adapter
+            # in their names, so the job removes them when the adapter changes)
+            launch.update(adapter=row.adapter, modelFile=models[key][0].name)
+            if row.adapter:
+                launch["gpuPreference"] = ADAPTERS[row.adapter]["preference"]
+        launches.append(launch)
     job = {
         "campaign": campaign,
         "runTimeoutSeconds": run_timeout_s,
@@ -450,8 +474,12 @@ def _launch_fields(row: WinRow, console: str, ctx: dict, gpu_substr: str = GPU_S
         off = parsers.litert_side_off_device(lines, row.backend, row.ynnpack, counts)
         if row.backend == "gpu":
             cond["gpuAccelerator"], cond["gpuAcceleratorLine"] = parsers.litert_gpu_accelerator(console)
-            adapters = [ln for ln in lines if ln.startswith("Selected adapter: ")]
-            if adapters and gpu_substr not in adapters[-1]:
+            adapters = [ln for ln in lines if ln.startswith(ADAPTER_LINE)]
+            # the GPU the run ran on is the one its log selected (the cell's adapter= only asks for it)
+            cond["gpuAdapter"] = adapters[-1][len(ADAPTER_LINE):] if adapters else None
+            if row.adapter and not adapters:
+                off = off or f"no {ADAPTER_LINE.strip()} line in the log (the row asks for adapter={row.adapter})"
+            elif adapters and (ADAPTERS[row.adapter]["line"] if row.adapter else gpu_substr) not in adapters[-1]:
                 off = off or adapters[-1]
         if off:
             cond["backendOffReason"] = off
@@ -550,6 +578,18 @@ def write_records(plan: Plan, campaign_dir: pathlib.Path, invocation: str, *,
                 flags.append("engine-timeout")
             elif exit_code != 0:
                 flags.append(f"engine-exit-{exit_code}")
+            want_pref = ADAPTERS[row.adapter]["preference"] if row.adapter else None
+            if want_pref and meta.get("gpuPreference") != want_pref:
+                # a job script that set no preference (or another one) ran this row on whatever GPU it got: not a
+                # run of the cell, kept out of every pool as a run on another adapter is (backend-not-registered)
+                flags.append("gpu-preference-not-applied")
+                checks.setdefault("backendOffReason", f"no {want_pref} on the tool for the run (the job read back "
+                                                     f"{meta.get('gpuPreference')!r})")
+                off = True
+            if meta.get("gpuCacheWrite"):
+                # the job found no GPU cache of the file before this run (removed at the job's start, or when the
+                # adapter changed): this run compiled and wrote them, whatever ran before it
+                built.discard(key)
             first_ever = key not in built and (row.runtime == "litert-lm" or bool(row.backend))
             paired = row.runtime == "litert-lm"
             start = str(meta.get("start") or "")
@@ -586,6 +626,11 @@ def write_records(plan: Plan, campaign_dir: pathlib.Path, invocation: str, *,
                         "regime": ("cold" if i == 1 else "warm") if paired else "cold-process",
                         "protocolFlags": pflags,
                     }
+                    if (row.runtime, row.backend) == ("litert-lm", "gpu"):
+                        # the per-app value the run ran under (None: none), as the job script read it back
+                        cond["gpuPreference"] = meta.get("gpuPreference")
+                        if meta.get("gpuCachePurge"):
+                            cond["gpuCachePurge"] = meta["gpuCachePurge"]
                     if meta.get("before"):
                         cond["hostBefore"] = meta["before"]
                     if meta.get("after"):

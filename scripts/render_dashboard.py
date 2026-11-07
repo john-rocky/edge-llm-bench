@@ -104,6 +104,10 @@ def arm_of(plat, runtime, opts):
     if plat in ("android", "windows", "ios") and runtime == "litert-lm" and opts.get("ynnpack") == "1":
         # a CPU row with YNNPACK asked for (cells ynnpack=1: run_cell.py --ynnpack, run_ddp_ios_lm.lay_out)
         return f"{runtime}-{opts.get('backend', 'cpu')}-ynnpack"
+    if plat == "windows" and runtime == "litert-lm" and opts.get("adapter"):
+        # a GPU row that names the GPU it asks Windows for (adapter=igpu: litert-lm-gpu-igpu,
+        # scripts/run_windows_matrix.py ADAPTERS)
+        return f"{runtime}-{opts.get('backend', 'gpu')}-{opts['adapter']}"
     if plat in ("android", "windows") and runtime in ("litert-lm", "llama.cpp") and opts.get("backend"):
         return f"{runtime}-{opts['backend']}"
     if plat in ("mac", "ios") and runtime == "litert-lm" and opts.get("backend") == "cpu":

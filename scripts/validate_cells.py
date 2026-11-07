@@ -65,8 +65,15 @@ STR_KEYS = {"exclude", "exclude-on", "file", "backend", "recipe", "thinking", "e
             # litert-lm on the iPhone: where a task run stops at its output budget — engine (the
             # engine's maxOutputTokens, counters over exactly the budget, as the Android CLI's
             # --max_output_tokens rows) or drain (the default: the app caps and drains the stream)
-            "output-cap"}
+            "output-cap",
+            # a windows litert-lm backend=gpu row's GPU when it is not the one the engine takes by itself
+            # (arm litert-lm-gpu-<adapter>; scripts/run_windows_matrix.py ADAPTERS)
+            "adapter"}
 OUTPUT_CAPS = {"engine", "drain"}
+# adapter=igpu: the integrated GPU, reached through Windows' per-app graphics preference GpuPreference=1;
+# on the tool's exe: LiteRT-LM's WebGPU path picks the discrete GPU by a power preference and no flag of the
+# tool moves it (windows/README.md "Two GPUs")
+ADAPTERS = {"igpu"}
 BACKENDS = {"cpu", "gpu", "npu"}
 # the backends of the Mac / iPhone LiteRT-LM rows and of the asr / vl instruments
 CPU_GPU = {"cpu", "gpu"}
@@ -159,6 +166,8 @@ def parse_line(line):
                 parse_exclude_on(v)
             if k == "output-cap" and v not in OUTPUT_CAPS:
                 raise ValueError(f"output-cap={v!r} (want {'|'.join(sorted(OUTPUT_CAPS))})")
+            if k == "adapter" and v not in ADAPTERS:
+                raise ValueError(f"adapter={v!r} (want {'|'.join(sorted(ADAPTERS))})")
         else:
             raise ValueError(f"unknown option key {k!r}")
         opts[k] = v
@@ -371,6 +380,9 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                 elif rt == "llama.cpp" and opts.get("backend") not in (None, "gpu", "cuda"):
                     errors.append(f"{where}: windows llama.cpp takes no backend= (CPU), backend=gpu (the Vulkan "
                                   "asset) or backend=cuda (the CUDA asset)")
+                if opts.get("adapter") and not (rt == "litert-lm" and opts.get("backend") == "gpu"):
+                    errors.append(f"{where}: adapter= names the GPU of a windows litert-lm backend=gpu row only "
+                                  "(the Vulkan and CUDA llama.cpp rows pick their device by their own means)")
                 if (NATIVE_TASK.match(task) or ENDURANCE_TASK.match(task) or ASR_TASK.match(task)
                         or VL_TASK.match(task) or TTS_TASK.match(task)):
                     errors.append(f"{where}: windows v1 supports prompt tasks only")
@@ -384,6 +396,9 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                                       "(quant-per-arm-rule: the recipe travels with the row)")
                 elif not opts.get("exclude") and opts.get("manual") != "1" and not int(opts.get("context-tokens", "0")):
                     errors.append(f"{where}: windows rows need context-tokens=<allocation>")
+            if opts.get("adapter") and plat != "windows":
+                errors.append(f"{where}: adapter= is a windows litert-lm backend=gpu row's word only "
+                              "(scripts/run_windows_matrix.py ADAPTERS)")
             if plat == "android" and rt == "litert-lm" and not opts.get("backend"):
                 errors.append(f"{where}: android litert-lm needs backend=cpu|gpu "
                               "(arm identity; run_cell refuses it — the anchors.cells "
@@ -448,11 +463,12 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                               "override) — encode the budget in the task id "
                               "(e.g. long-context-1024-gen256)")
             # context-tokens is part of the cell identity: the Mac runner keys the
-            # capture file on it, so one cell at two allocations is two cells.
+            # capture file on it, so one cell at two allocations is two cells; so is a
+            # windows GPU row's adapter= (another arm, another capture file)
             key = (plat, rt, mid, task, opts.get("backend", ""),
                    opts.get("context-tokens", ""), opts.get("file", ""), opts.get("recipe", ""),
                    opts.get("thinking", "model-default") if rt == "uzu" else "",
-                   opts.get("ynnpack", ""))
+                   opts.get("ynnpack", ""), opts.get("adapter", ""))
             if key in seen:
                 errors.append(f"{where}: duplicate cell (first at line {seen[key]})")
             else:

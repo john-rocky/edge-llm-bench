@@ -1691,16 +1691,17 @@ device, and its campaign names carry no `dashboard`, so the team page does not r
 |---|---|---|---|
 | `litert-lm-cpu` | LiteRT-LM v0.19.0, built on the host | `gemma-4-E2B-it.litertlm` | 2048 |
 | `litert-lm-gpu` | same, the accelerator built from source, Direct3D 12 on the discrete GPU | `gemma-4-E2B-it.litertlm` | 2048 |
+| `litert-lm-gpu-igpu` | the `litert-lm-gpu` row's exe and file on the integrated GPU (`adapter=igpu`: Windows' per-app graphics preference `GpuPreference=1;`, set by the job before each run and removed after) | `gemma-4-E2B-it.litertlm` | 2048 |
 | `litert-lm-npu` | same, the Intel dispatch on OpenVINO 2026.4.1 | `gemma-4-E2B-it_intel_PTL.litertlm` | fixed at export: 4096 |
 | `llama.cpp` | b11721 release asset | `gemma-4-E2B-it-Q4_K_M.gguf` | 2048 |
 | `llama.cpp-gpu` | b11721 Vulkan release asset, on the discrete GPU | `gemma-4-E2B-it-Q4_K_M.gguf` | 2048 |
 | `llama.cpp-cuda` | b11721 CUDA 13.4 release asset, with that release's CUDA runtime zip, on the discrete GPU | `gemma-4-E2B-it-Q4_K_M.gguf` | 2048 |
 
-The Qwen3 blocks and the Gemma 4 E4B block run five of these arms on the files the Android rows of
+The Qwen3 blocks and the Gemma 4 E4B block run six of these arms on the files the Android rows of
 `dashboard-text-v1.cells` load, by the same catalog ids, all at an allocation of 2048. They have no `litert-lm-npu`
 row: the Qwen3 repos and the E4B repo publish no Intel bundle.
 
-| model | `litert-lm-cpu` | `litert-lm-gpu` | `llama.cpp`, `llama.cpp-gpu`, `llama.cpp-cuda` |
+| model | `litert-lm-cpu` | `litert-lm-gpu`, `litert-lm-gpu-igpu` | `llama.cpp`, `llama.cpp-gpu`, `llama.cpp-cuda` |
 |---|---|---|---|
 | Qwen3 0.6B | `litert-community/Qwen3-0.6B`: `Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm` | the same file | `unsloth/Qwen3-0.6B-GGUF`: `Qwen3-0.6B-Q4_K_M.gguf` |
 | Qwen3 1.7B | `litert-community/Qwen3-1.7B`: `Qwen3_1.7B.litertlm` | `Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm` | `unsloth/Qwen3-1.7B-GGUF`: `Qwen3-1.7B-Q4_K_M.gguf` |
