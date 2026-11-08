@@ -27,6 +27,9 @@
 # run the same measurement in-process: yardstick --coreai-native-benchmark <P>x<D>
 # --runs N (N timed trials after the warmup trial), the lines appended to the cell's
 # .jsonl like LiteRT-LM's --litert-native-benchmark rows (import: docs/coreai-arm-v1.md).
+# mlx-swift native-benchmark-* rows run yardstick --mlx-native-benchmark <P>x<D> --runs N
+# (MLXRuntime.nativeBenchmark: forced counts, token ids, one model load, run 1 cold), the
+# same line shape with runtime=mlx-swift, appended to the cell's .jsonl.
 # --dry-run prints each yardstick row's resolved command and whether a Core AI bundle
 # is staged, and writes nothing.
 #
@@ -223,6 +226,8 @@ dry_run_ys_cell(){
   case "$task" in native-benchmark-*)
     if [ "$rt" = "core-ai" ]; then
       extra+=(--coreai-native-benchmark "${task#native-benchmark-}")
+    elif [ "$rt" = "mlx-swift" ]; then
+      extra+=(--mlx-native-benchmark "${task#native-benchmark-}")
     else
       extra+=(--litert-native-benchmark "${task#native-benchmark-}")
     fi
@@ -543,8 +548,12 @@ run_cell(){
     # before the native branch, so it must still name a real task id): LiteRT-LM's
     # benchmark(), or for the Core AI stock arm Apple's llm-benchmark measurement
     # (--runs = timed trials after the warmup trial, which prints as trial 0, cold).
+    # An mlx-swift row: MLXRuntime.nativeBenchmark (token ids into one prefill, decode to
+    # maxTokens, nothing stops it at EOS), one YARDSTICK_NATIVE_OK runtime=mlx-swift line per run.
     if [ "$rt" = "core-ai" ]; then
       extra+=(--coreai-native-benchmark "${task#native-benchmark-}")
+    elif [ "$rt" = "mlx-swift" ]; then
+      extra+=(--mlx-native-benchmark "${task#native-benchmark-}")
     else
       extra+=(--litert-native-benchmark "${task#native-benchmark-}")
     fi

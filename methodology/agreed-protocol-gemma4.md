@@ -172,4 +172,11 @@ engine's own benchmark (on the iPhone since 2026-10-08; its console lines are im
 `matrices/dashboard-protocol1024-v1.cells`, `matrices/dashboard-longctx1024-v1.cells`. (The
 `scripts/bench_gemma4_e2b_protocol_iphone.sh` named here before is not in this repository.) Since
 2026-10-08 the Core AI stock arm has a forced-prefill entry too, Apple's `llm-benchmark`
-measurement (`--coreai-native-benchmark`; `docs/coreai-arm-v1.md`).
+measurement (`--coreai-native-benchmark`; `docs/coreai-arm-v1.md`). Since 2026-11-09 the MLX arm
+has one as well: `--mlx-native-benchmark <P>x<D>` (`MLXRuntime.nativeBenchmark`, mlx-lm's own
+benchmark on the Swift engine: P token ids from a fixed seed below the model's vocab_size into one
+`TokenIterator` prefill of step `max(2048, P)`, then decode to `maxTokens` = D, which no EOS check
+on that path can end; one load, `--runs` calls, run 1 cold; `--context-tokens` is refused because
+the MLX KV cache grows with the sequence). Its lines say `runtime=mlx-swift` and import as mlx-swift
+records (`scripts/import_native_benchmark.py`). Rows of the engines beyond LiteRT-LM, llama.cpp
+and Core AI: `matrices/native-benchmark-1024x256-v1.cells`.

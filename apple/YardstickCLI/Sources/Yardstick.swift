@@ -92,6 +92,7 @@ struct YardstickApp {
         var contextTokens: Int? = nil
         var nativeBenchmark: (prefill: Int, decode: Int)? = nil
         var coreAINativeBenchmark: (prefill: Int, decode: Int)? = nil
+        var mlxNativeBenchmark: (prefill: Int, decode: Int)? = nil
         // LiteRT-LM compute backend (arm identity). Default gpu = every Apple row so far;
         // `cpu` runs the XNNPACK path and stamps `runtime: litert-lm-cpu` (2026-09-18, the
         // dashboard's long-context column: does decode track the allocated KV on each arm).
@@ -140,6 +141,18 @@ struct YardstickApp {
                     exit(2)
                 }
                 coreAINativeBenchmark = (p, d)
+            case "--mlx-native-benchmark":
+                // `<prefill>x<decode>`, e.g. 1024x256 — MLXRuntime.nativeBenchmark: token ids into one
+                // TokenIterator prefill, decode to maxTokens (mlx-lm's benchmark on the Swift engine).
+                let raw = argv.value(after: &i)
+                let parts = raw.lowercased().split(separator: "x")
+                guard parts.count == 2, let p = Int(parts[0]), let d = Int(parts[1]),
+                      p > 0, d > 0 else {
+                    FileHandle.standardError.write(Data(
+                        "bad --mlx-native-benchmark '\(raw)' — expected <prefill>x<decode>, e.g. 1024x256\n".utf8))
+                    exit(2)
+                }
+                mlxNativeBenchmark = (p, d)
             case "--litert-backend":
                 let raw = argv.value(after: &i).lowercased()
                 guard let b = MediaPipeRuntime.ComputeBackend(rawValue: raw) else {
@@ -197,6 +210,11 @@ struct YardstickApp {
                 "--coreai-native-benchmark and --litert-native-benchmark are exclusive\n".utf8))
             exit(2)
         }
+        if mlxNativeBenchmark != nil, nativeBenchmark != nil || coreAINativeBenchmark != nil {
+            FileHandle.standardError.write(Data(
+                "--mlx-native-benchmark excludes --litert-native-benchmark and --coreai-native-benchmark\n".utf8))
+            exit(2)
+        }
         if litertBackend != .gpu, !["litert-lm", "mediapipe"].contains(runtimeID) {
             FileHandle.standardError.write(Data(
                 "--litert-backend applies to --runtime litert-lm only (got '\(runtimeID)')\n".utf8))
@@ -219,6 +237,12 @@ struct YardstickApp {
             try await runCoreAINativeBenchmark(runtime: runtime, runtimeID: runtimeID, model: model,
                                                spec: native, trials: runs, contextTokens: contextTokens,
                                                outputPath: outputPath)
+            return
+        }
+        if let native = mlxNativeBenchmark {
+            try await runMLXNativeBenchmark(runtime: runtime, runtimeID: runtimeID, model: model,
+                                            spec: native, runs: runs, contextTokens: contextTokens,
+                                            outputPath: outputPath)
             return
         }
 
@@ -456,6 +480,69 @@ struct YardstickApp {
         throw CLIError.invalidArgument(
             "--litert-native-benchmark unavailable: LiteRTLM is not linked into this build")
         #endif
+    }
+
+    /// `--mlx-native-benchmark <P>x<D>`: `MLXRuntime.nativeBenchmark` — P token ids (SplitMix64 from
+    /// seed 0 below the model's vocab_size) into one TokenIterator prefill, then the iterator runs to
+    /// maxTokens = D, which only maxTokens can end (no EOS check on this path). The model loads once
+    /// (init_s); `runs` calls run back to back in this process: run 1 is cold (the first call after the
+    /// load: Metal kernels compile there), runs 2...N warm. One YARDSTICK_NATIVE_OK line per call
+    /// (`runtime=mlx-swift`), stdout and appended to `--output` as each ends: the LiteRT-LM line's keys
+    /// plus the MLX ones. A call whose counts are not P / D prints its line and fails the command.
+    /// The KV cache grows with the sequence (no allocation to force), so `--context-tokens` is refused.
+    static func runMLXNativeBenchmark(
+        runtime: any LLMRuntime, runtimeID: String, model: ModelInfo,
+        spec: (prefill: Int, decode: Int), runs: Int, contextTokens: Int?, outputPath: String?
+    ) async throws {
+        guard let mlx = runtime as? MLXRuntime else {
+            throw CLIError.invalidArgument(
+                "--mlx-native-benchmark requires --runtime mlx-swift (got '\(runtimeID)')")
+        }
+        if let ctx = contextTokens {
+            throw CLIError.invalidArgument(
+                "--mlx-native-benchmark takes no --context-tokens (\(ctx)): the MLX KV cache grows with the sequence")
+        }
+        let loadStart = CFAbsoluteTimeGetCurrent()
+        try await mlx.loadModel(model) { _ in }
+        let initSeconds = CFAbsoluteTimeGetCurrent() - loadStart
+        FileHandle.standardError.write(Data(
+            "yardstick: native benchmark runtime=mlx-swift model=\(model.id) prefill=\(spec.prefill) decode=\(spec.decode) runs=\(runs) init_s=\(String(format: "%.2f", initSeconds))\n".utf8))
+        var mismatch = false
+        for run in 1...runs {
+            let thermalInitial = ThermalMonitor.describe(ProcessInfo.processInfo.thermalState)
+            let callStart = CFAbsoluteTimeGetCurrent()
+            let r = try await mlx.nativeBenchmark(prefillTokens: spec.prefill, decodeTokens: spec.decode)
+            let wallSeconds = CFAbsoluteTimeGetCurrent() - callStart
+            let thermalFinal = ThermalMonitor.describe(ProcessInfo.processInfo.thermalState)
+            let head = r.firstTokenIds.map(String.init).joined(separator: ",")
+            let line = String(
+                format: "YARDSTICK_NATIVE_OK runtime=mlx-swift run=%d runs=%d cold=%d prefill_tokens=%d prefill_tok_s=%.2f decode_tokens=%d decode_tok_s=%.2f ttft_ms=%.1f init_s=%.2f prefill_s=%.4f decode_s=%.4f prefill_step=%d prefill_chunks=%d vocab=%d seed=%llu ids_head=%@ kv_cache=dynamic thermal_initial=%@ thermal_final=%@ wall_s=%.3f harness=%@",
+                run, runs, run == 1 ? 1 : 0,
+                r.prefillTokenCount, r.prefillTokensPerSecond,
+                r.decodeTokenCount, r.decodeTokensPerSecond,
+                r.prefillSeconds * 1000, initSeconds, r.prefillSeconds, r.decodeSeconds,
+                r.prefillStepSize, r.prefillChunks, r.vocabSize, r.seed, head,
+                thermalInitial, thermalFinal, wallSeconds, BenchmarkRunner.harnessStamp)
+            print(line)
+            fflush(stdout)
+            if let outputPath {
+                if !FileManager.default.fileExists(atPath: outputPath) {
+                    FileManager.default.createFile(atPath: outputPath, contents: nil)
+                }
+                let handle = try FileHandle(forWritingTo: URL(fileURLWithPath: outputPath))
+                try handle.seekToEnd()
+                try handle.write(contentsOf: Data((line + "\n").utf8))
+                try handle.close()
+                FileHandle.standardError.write(Data("yardstick: appended to \(outputPath)\n".utf8))
+            }
+            if r.prefillTokenCount != spec.prefill || r.decodeTokenCount != spec.decode {
+                print("YARDSTICK_NATIVE_COUNT_MISMATCH runtime=mlx-swift run=\(run) prefill_tokens=\(r.prefillTokenCount) want=\(spec.prefill) decode_tokens=\(r.decodeTokenCount) want=\(spec.decode)")
+                mismatch = true
+            }
+        }
+        if mismatch {
+            throw CLIError.invalidArgument("--mlx-native-benchmark: a call's counts were not \(spec.prefill)x\(spec.decode)")
+        }
     }
 
     /// Apple's llm-benchmark measurement (BenchmarkMain.swift, apple/coreai-models d30b086) on the

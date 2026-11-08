@@ -8,6 +8,8 @@ must not get wrong, because both end in a number that looks right:
     reach metrics, `cold=0` is a warm run (never pooled as cold), and the N lines of one launch
     share that launch's index and start time.
 
+MLX lines (`runtime=mlx-swift`) import as mlx-swift records and never under another arm's record.
+
 Fixtures live in a temp dir; results/ is neither read nor written.
 
   python3 scripts/test_import_native_benchmark.py
@@ -58,6 +60,26 @@ CAI_LINE = ("YARDSTICK_NATIVE_OK runtime=core-ai trial={trial}{cold} trials={n} 
             "prepare_cached={cached} prepare_peak_mb=369 engine_warmup_s=0.033 warmup_trial_s=5.354 "
             "context_tokens=2048 peak_mb=658 median_mb=646 median_resident_mb=1188 samples=50 "
             "thermal_initial=nominal thermal_peak=nominal thermal_final=fair seed=0 harness=h1\n")
+
+# MLX (MLXRuntime.nativeBenchmark via yardstick --mlx-native-benchmark): one load, then `--runs`
+# calls, run 1 cold. The Mac CLI's --output carries no YARDSTICK_BEGIN line, so --model-id names
+# the model.
+MLX_MODEL = "mlx-community/Qwen3-0.6B-4bit"
+MLX_LIKE = {
+    "schemaVersion": 1, "runtime": "mlx-swift", "engineVersion": "mlx-swift-lm 3.31.4-31-g60bd0d78",
+    "task": "short-chat", "timestamp": "2026-11-09T00:00:00Z",
+    "model": {"id": MLX_MODEL, "primaryFile": ""},
+    "device": {"modelIdentifier": "Mac16,9", "systemVersion": "27.0", "batteryLevel": -1,
+               "batteryState": "unknown", "initialThermalState": "nominal"},
+    "metrics": {"coldRun": True},
+}
+MLX_LINES = "".join(
+    f"YARDSTICK_NATIVE_OK runtime=mlx-swift run={run} runs=3 cold={int(run == 1)} prefill_tokens=1024 "
+    f"prefill_tok_s={p} decode_tokens=256 decode_tok_s=210.50 ttft_ms=250.0 init_s=0.80 "
+    f"prefill_s=0.2500 decode_s=1.2162 prefill_step=2048 prefill_chunks=1 vocab=151936 seed=0 "
+    f"ids_head=88,1203,70 kv_cache=dynamic thermal_initial=nominal thermal_final=nominal "
+    f"wall_s=1.470 harness=h1\n"
+    for run, p in ((1, 3500.0), (2, 4096.0), (3, 4100.0)))
 
 
 def cai_launch(trials, cached, first_trial=0, with_cold=True):
@@ -192,6 +214,50 @@ class SchemaV1Import(unittest.TestCase):
         (self.dir / "cai_like.json").write_text(json.dumps(CAI_LIKE))
         self.assertEqual(self.run_import(NEW, f"{T1},{T2}", like="cai_like.json")[0], 2)
         self.assertEqual(self.run_core_ai(cai_launch(1, cached=1) + NEW, f"{T1},{T2},{T2}")[0], 2)
+
+    def run_mlx(self, text, times, *extra, like="mlx_like.json"):
+        (self.dir / "mlx_like.json").write_text(json.dumps(MLX_LIKE))
+        return self.run_import(text, times, "--model-id", MLX_MODEL, *extra, like=like, device="Mac16,9")
+
+    def test_mlx_runs_of_one_load_import_as_mlx_swift(self):
+        rc, recs = self.run_mlx(MLX_LINES, T1)
+        self.assertEqual(rc, 0)
+        self.assertEqual([r["runtime"] for r in recs], ["mlx-swift"] * 3)
+        self.assertEqual([r["conditions"]["launchIndex"] for r in recs], [1, 1, 1])
+        self.assertEqual([r["conditions"]["run"] for r in recs], [1, 2, 3])
+        self.assertEqual([r["timestamp"] for r in recs], [T1] * 3)
+        self.assertEqual([r["metrics"]["coldRun"] for r in recs], [True, False, False])
+        self.assertEqual([r["metrics"]["promptTokensPerSecond"] for r in recs], [3500.0, 4096.0, 4100.0])
+        for r in recs:
+            self.assertEqual(r["task"], "native-benchmark-1024x256")
+            self.assertEqual(r["engineVersion"], "mlx-swift-lm 3.31.4-31-g60bd0d78")
+            c, m = r["conditions"], r["metrics"]
+            self.assertEqual({k: c[k] for k in ("prefillStepSize", "prefillChunks", "vocabSize", "seed",
+                                                "tokenIdsHead", "kvCache", "sampler")},
+                             {"prefillStepSize": 2048, "prefillChunks": 1, "vocabSize": 151936, "seed": 0,
+                              "tokenIdsHead": [88, 1203, 70], "kvCache": "dynamic", "sampler": "greedy"})
+            self.assertEqual((m["promptTokenCount"], m["generatedTokenCount"]), (1024, 256))
+            self.assertEqual((m["prefillSeconds"], m["decodeSeconds"]), (0.25, 1.2162))
+            self.assertEqual((m["initialThermalState"], m["finalThermalState"]), ("nominal", "nominal"))
+
+    def test_mlx_lines_never_import_as_another_arm(self):
+        self.assertEqual(self.run_mlx(MLX_LINES, T1, like="like.json")[0], 2)      # litert-lm --like
+        self.assertEqual(self.run_mlx(NEW, f"{T1},{T2}")[0], 2)                   # LiteRT-LM lines, mlx --like
+        self.assertEqual(self.run_mlx(MLX_LINES + NEW, f"{T1},{T1},{T2}")[0], 2)  # two families, one log
+        # the plain (non schema-v1) import names the arm from the line, never litert-lm
+        log = self.dir / "console_mlx.txt"
+        log.write_text(MLX_LINES)
+        out = self.dir / "plain"
+        p = subprocess.run([sys.executable, str(SCRIPT), str(log), "--out", str(out),
+                            "--device", "Mac16,9", "--model-id", MLX_MODEL], capture_output=True, text=True)
+        self.assertEqual(p.returncode, 0, p.stderr)
+        recs = [json.loads(f.read_text()) for f in sorted(out.glob("native_mlx_*.json"))]
+        self.assertEqual([(r["runtime"], r["conditions"]["prefillStepSize"], r["metrics"]["generatedTokenCount"])
+                          for r in recs], [("mlx-swift", 2048, 256)] * 3)
+        log.write_text(MLX_LINES.replace("runtime=mlx-swift", "runtime=other-engine"))
+        p = subprocess.run([sys.executable, str(SCRIPT), str(log), "--out", str(self.dir / "plain2"),
+                            "--device", "Mac16,9", "--model-id", MLX_MODEL], capture_output=True, text=True)
+        self.assertNotEqual(p.returncode, 0)
 
 
 if __name__ == "__main__":

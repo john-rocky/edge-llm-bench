@@ -35,6 +35,15 @@ in the same process, so each becomes its own record (spread stays visible), cold
 path does sample thermal state, so those rows carry it. A line without `runtime=` is a LiteRT-LM
 row and imports exactly as before.
 
+MLX rows
+--------
+A line that says `runtime=mlx-swift` comes from `yardstick --mlx-native-benchmark`
+(MLXRuntime.nativeBenchmark: P SplitMix64 token ids below the model's vocab_size into one
+TokenIterator prefill, decode to maxTokens = D, no EOS check on that path; one model load, then
+`--runs` calls, run 1 cold). It carries the LiteRT-LM line's keys plus prefill_s / decode_s,
+prefill_step / prefill_chunks, vocab, seed, ids_head and kv_cache, and imports as runtime
+mlx-swift; it is never read as a LiteRT-LM line.
+
 Cold and warm (lines from the 2026-10-07 build on)
 --------------------------------------------------
 LiteRT-LM lines then carry `run=<i> runs=<N> cold=<0|1>`: `--runs N` calls `benchmark()` N times
@@ -113,6 +122,11 @@ def to_result(rec, source: Path, device_id: str, model_id: str | None):
     task = f"native-benchmark-{rec['prefill_cfg'] or prefill}x{rec['decode_cfg'] or decode}"
     if f.get("runtime") == "core-ai":
         return core_ai_result(rec, source, device_id, model_id, task, prefill, decode)
+    if f.get("runtime") == "mlx-swift":
+        return mlx_result(rec, source, device_id, model_id, task, prefill, decode)
+    if f.get("runtime") not in (None, "litert-lm"):
+        raise SystemExit(f"{source}: a runtime={f.get('runtime')} line; this importer reads "
+                         "litert-lm, core-ai and mlx-swift lines")
     cold = num("cold", int)
     result = {
         "runtime": "litert-lm",
@@ -164,6 +178,65 @@ def to_result(rec, source: Path, device_id: str, model_id: str | None):
     if "wall_s" in f:
         result["metrics"]["wallSeconds"] = num("wall_s")
     return result
+
+
+MLX_CONDITIONS = (  # mlx-swift lines only: (conditions key, NATIVE_OK field, cast)
+    ("prefillStepSize", "prefill_step", int),
+    ("prefillChunks", "prefill_chunks", int),
+    ("vocabSize", "vocab", int),
+    ("seed", "seed", int),
+)
+MLX_METRICS = (  # mlx-swift lines only: (metrics key, NATIVE_OK field, cast)
+    ("prefillSeconds", "prefill_s", float),
+    ("decodeSeconds", "decode_s", float),
+)
+
+
+def mlx_conditions(f, num) -> dict:
+    out = {k: num(field, cast) for k, field, cast in MLX_CONDITIONS if num(field, cast) is not None}
+    if f.get("ids_head"):
+        out["tokenIdsHead"] = [int(x) for x in f["ids_head"].split(",") if x.isdigit()]
+    out.update({"kvCache": f.get("kv_cache"), "sampler": "greedy",
+                "promptSource": "SplitMix64 token ids below vocab_size, no text"})
+    return out
+
+
+def mlx_result(rec, source: Path, device_id: str, model_id: str | None, task: str, prefill, decode):
+    f, num = rec["fields"], rec["num"]
+    cold = num("cold", int)
+    metrics = {
+        "coldRun": None if cold is None else cold == 1,
+        "promptTokenCount": prefill,
+        "promptTokensPerSecond": num("prefill_tok_s"),
+        "generatedTokenCount": decode,
+        "decodeTokensPerSecond": num("decode_tok_s"),
+        "firstTokenLatencyMS": num("ttft_ms"),
+        "loadTimeSeconds": num("init_s"),
+        "wallSeconds": num("wall_s"),
+        "initialThermalState": f.get("thermal_initial"),
+        "finalThermalState": f.get("thermal_final"),
+        "harnessStamp": f.get("harness"),
+    }
+    metrics.update({k: num(field, cast) for k, field, cast in MLX_METRICS})
+    return {
+        "runtime": "mlx-swift",
+        "task": task,
+        "model": {"id": rec["model"] or model_id},
+        "device": {"modelIdentifier": device_id},
+        "outputSample": "",
+        "provenance": {
+            "importedBy": "scripts/import_native_benchmark.py",
+            "sourceFile": str(source),
+            "entryPoint": "MLXRuntime.nativeBenchmark (yardstick --mlx-native-benchmark)",
+            "note": ("mlx-lm's benchmark on the MLX Swift engine: forced counts, token ids, one "
+                     "TokenIterator prefill, decode to maxTokens; prompt tok/s = prefill_tokens / "
+                     "prefill_s (prepare + the wait for the first token), decode tok/s = "
+                     "decode_tokens / decode_s (first token to last, mlx-swift-lm's generateTime); "
+                     "not comparable with task-prompt prefill"),
+        },
+        "conditions": {"run": num("run", int), "runs": num("runs", int), **mlx_conditions(f, num)},
+        "metrics": metrics,
+    }
 
 
 def core_ai_result(rec, source: Path, device_id: str, model_id: str | None, task: str,
@@ -317,6 +390,11 @@ def is_core_ai(rec) -> bool:
     return rec["fields"].get("runtime") == "core-ai"
 
 
+def family_of(rec) -> str:
+    """The line's engine family: its runtime= (core-ai, mlx-swift), none = litert-lm."""
+    return rec["fields"].get("runtime") or "litert-lm"
+
+
 def launch_positions(recs) -> list[int]:
     """1-based launch position of each line. A line without `run=` is its own launch (the builds
     before 2026-10-07 print one line per process); `run=1` starts a launch, `run=2..N` continue it.
@@ -389,6 +467,11 @@ def to_schema_v1(rec, source: Path, like: dict, launch_time: str, index: int, in
             conditions[key] = v
     if core_ai:
         conditions.update({"warmupTrials": 1, "sampler": "greedy"})
+    if family_of(rec) == "mlx-swift":
+        conditions.update(mlx_conditions(f, num))
+        for key, field, cast in MLX_METRICS:
+            if (v := num(field, cast)) is not None:
+                metrics[key] = v
     out = {
         "schemaVersion": 1,
         "id": str(uuid.uuid4()).upper(),
@@ -418,9 +501,9 @@ def main_schema_v1(args) -> int:
     log = args.logs[0]
     like = load_like(args.like)
     recs = list(parse(log))
-    families = {"core-ai" if is_core_ai(r) else "litert-lm" for r in recs}
+    families = {family_of(r) for r in recs}
     if len(families) > 1:
-        print(f"{log}: Core AI and LiteRT-LM lines in one log; import them from separate logs",
+        print(f"{log}: lines of {', '.join(sorted(families))} in one log; import them from separate logs",
               file=sys.stderr)
         return 2
     family = families.pop() if families else "litert-lm"
