@@ -1,0 +1,20 @@
+# Forced-count row (task native-benchmark-1024x256) of LiteRT-LM on the Qualcomm NPU (arm litert-lm-npu), Galaxy S26
+# only: prefill exactly 1024 token ids in one prefill call, no text prompt; decode exactly 256 tokens that EOS cannot stop.
+# The other runtimes' rows of the task are in matrices/native-benchmark-1024x256-v1.cells; this file is the NPU arm's own
+# (its sitting needs the S26 and the side build below, nothing else).
+#
+# litert-lm (android, backend=npu): the side build engine-build=v0.19.1-qnn247 (LiteRT-LM v0.19.1's litert_lm_advanced_main
+#   built from the tag with its Qualcomm dispatch, the QNN libraries of QAIRT 2.47.0.260601; android/engine-pins.json,
+#   android/README.md "Side builds") runs this repo's own Qwen3 0.6B bundle compiled ahead of time for SM8850 with one
+#   1,024-token prefill signature and a 2,048-token KV cache (android/bench/run_cell.py OWN_NPU_BUNDLES):
+#   litert_lm_advanced_main --benchmark --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --async=false
+#   --use_hw_cache_update_for_npu=true: the default prompt text's ids without a template, resized to 1024 with zeros,
+#   taken by the NPU executor in one call of prefill_1024; the decode runs 256 tokens whatever they are. One cold process
+#   per run. The engine's BenchmarkInfo is the check (one prefill turn of 1024 tokens, one decode turn of 256); a run whose
+#   counts differ is flagged and is not an OK run. runs=4: the first launch of a bundle new to the phone is its cache
+#   build (firstEver, out of every pool), three measured after it.
+# docs/dashboard-cells-v1.md "LiteRT-LM on the NPU".
+#   BENCH_CPU_MASK= BENCH_ANDROID_SERIAL=RFGL80R6A6H ./bench matrix matrices/native-benchmark-1024x256-litert-npu-v1-android-s26.cells \
+#     --platform android --campaign <date>-npu-native1024-litert-s26
+
+android litert-lm Qwen/Qwen3-0.6B native-benchmark-1024x256 backend=npu engine-build=v0.19.1-qnn247 file=~/code/litertlm-convert/out/npu-native-bench/aot/Qwen3-0.6B_qualcomm_sm8850_p1024_ekv2048.litertlm runs=4

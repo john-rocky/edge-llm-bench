@@ -333,6 +333,25 @@
         "libwebgpu_dawn.so": "bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9"
       },
       "built": "android/scripts/build_litert_lm_main.sh at main-de80bb14f (bazel source build, 2026-11-05; commit de80bb14fa4c16c734cd3a8670b7e90f9d4cd156)"
+    },
+    "v0.19.1-qnn247": {
+      "requested_tag": "v0.19.1 (7a03724cece417f1724c923b3d527b4319730841)",
+      "observed": "v0.19.1 tag build with the Qualcomm dispatch and the QNN libraries of QAIRT 2.47.0.260601",
+      "litert_lm_advanced_main_sha256": "5d869be730622b854fb87bf74205c7b083edece8197c9279317749dfd26772b7",
+      "so_files": {
+        "libLiteRtDispatch_Qualcomm.so": "6946f3771068302a894fbaaff53345f9460d211fe50b2866f2fadf388919f533",
+        "libGemmaModelConstraintProvider.so": "c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783",
+        "libwebgpu_dawn.so": "bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9",
+        "libQnnHtp.so": "c0488f2df87932a42ca0a563883e6fba190896bca439ad0fdaa2428358ab5092",
+        "libQnnHtpPrepare.so": "9988ce10ffee6813ffd218df308478f44dbc758cc89aed9cb98cfebb030ca72e",
+        "libQnnHtpV81CalculatorStub.so": "3567bc848ae1c9169ad38879f9f75e4ead3e959a5258e370d9c8e46e58a76176",
+        "libQnnHtpV81Stub.so": "479da62bd52bb7cb5791d5898442457272d5403e42244af690a137b52d67f939",
+        "libQnnIr.so": "79043536d4ac324782c953c9092066d3418ec88626ac2384b2e81883a3f8f644",
+        "libQnnSaver.so": "d26d8002da0fbe829f58370465dc40b4e5a0fc2c2830c0608972817ac5835026",
+        "libQnnSystem.so": "077a8b20a53b216d006b85b58dd754a9e958e02f98e9c79d46619db6f8edfec9",
+        "dsp/libQnnHtpV81Skel.so": "0b4fa7419e7265ae33d5e57f214d49cd11abbf7302149bb7ff78d9b602903899"
+      },
+      "built": "bazel source build of the LiteRT-LM v0.19.1 tag (commit 7a03724cece417f1724c923b3d527b4319730841; WORKSPACE LITERT_REF dcb657e8, TENSORFLOW_REF 4f8e6d47), 2026-11-07, --config=android_arm64 (NDK 29.0.13113456) with --repo_env=LITERT_QAIRT_SDK= QAIRT 2.47.0.260601114230: litert_lm_advanced_main and libLiteRtDispatch_Qualcomm.so (@litert//litert/vendors/qualcomm/dispatch:dispatch_api_so) from that build; libGemmaModelConstraintProvider.so and libwebgpu_dawn.so = the tag's prebuilt android_arm64 libraries (the tool's DT_NEEDED); libQnn*.so and dsp/libQnnHtpV81Skel.so = QAIRT 2.47.0.260601's aarch64-android and hexagon-v81 libraries, the SDK of the build and of the bundle's ahead-of-time compile; no compiler plugin (LiteRT looks for one in the dispatch dir; an AOT bundle needs none)"
     }
   },
   "litertlm-android": {

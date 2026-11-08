@@ -180,8 +180,11 @@ SNAPDRAGON_CHAT_FLAGS = ""
 SIDE_DIRS = {"llama.cpp": ("bin", "lib"), "litert-lm": ("", "")}
 # LiteRT-LM on the NPU (cells backend=npu engine-build=<tag>; arm litert-lm-npu): the
 # build's advanced_main, which takes the NPU switches and prints BenchmarkInfo with
-# --benchmark. The hardware KV-cache update stays off: with it on, the one bundle this arm
-# runs (an own Qwen3 0.6B export) decodes garbage on the S26 (google-ai-edge/litert-torch#1290).
+# --benchmark. A prompt task keeps the hardware KV-cache update off: with it on, the
+# 2026-08-21 build decodes garbage from that day's own Qwen3 0.6B export on the S26
+# (google-ai-edge/litert-torch#1290). A native-benchmark task (the v0.19.1 build and a
+# bundle exported with a 1,024-token prefill) keeps it on, the build's default
+# (engine_command).
 LITERT_NPU_TOOL = "litert_lm_advanced_main"
 # Own NPU ahead-of-time exports the runner can name, keyed by the file's sha256:
 # npu_export names every output model_qualcomm_<SoC>.litertlm whatever the model and
@@ -197,6 +200,17 @@ OWN_NPU_BUNDLES = {
                          "static-range int16 activations, calibration 3 prompts x 8 decode steps; "
                          "prefill 128, cache 1024 (litert-torch npu_export, 2026-08-21)"),
         "cacheTokens": 1024},
+    # Qwen3 0.6B for SM8850, Qwen3-0.6B_qualcomm_sm8850_p1024_ekv2048.litertlm (810,765,487 bytes):
+    # the 2026-11-09 build for native-benchmark-1024x256 (one prefill_1024 signature; its metadata
+    # section is litert-community/Qwen3-0.6B's with max_num_tokens 2048); docs/dashboard-cells-v1.md
+    # "Forced counts on the NPU" gives the recipe
+    "27ebc2d55ce61b6413319755819126162281c48d232591ac9ff9093fc05a0eba": {
+        "quantization": ("own export, NPU AOT for SM8850: int8 weights (dynamic_wi8_afp32) with "
+                         "static-range int16 activations, calibration 10 prompts x 32 decode steps, "
+                         "rotary position range widened to the cache; prefill 1024, cache 2048 "
+                         "(litert-torch npu_export 6d4c622 + prefill mask broadcast, QAIRT 2.47, "
+                         "2026-11-09)"),
+        "cacheTokens": 2048},
 }
 # provenance.rssBasis of every record (schema: memoryPeakResidentMB). Until
 # 2026-10-06 VmHWM was read only under BENCH_STRICT_SMOKE, so earlier records
@@ -740,17 +754,33 @@ def engine_command(runtime, backend, model_dev, task, prompt_dev, budget, max_to
     with the flat build's commands; its env comes from launch_env. ynnpack = LiteRT-LM on the
     CPU with --enable_ynnpack=true."""
     if runtime.startswith("litert-lm") and engine_dir and backend == "npu":
-        # The NPU side build runs a prompt task on the bundle's own KV cache: an AOT bundle's
-        # cache length is fixed at export (no --max_num_tokens; main() names it from the
-        # bundle, ctx_note here is the placeholder). --benchmark with no synthetic token
-        # counts keeps the real prompt and prints BenchmarkInfo (without it advanced_main
-        # prints no rate; the reply is printed whenever benchmark_prefill_tokens is 0 —
-        # LiteRT-LM main b12c62c7 runtime/engine/litert_lm_lib.cc). The dispatch library is
-        # the build's own (--litert_dispatch_lib_dir; unset, LiteRT-LM looks beside the model).
-        if context_tokens is not None or task.startswith(("native-", "endurance-")):
-            raise SystemExit(f"litert-lm on the NPU runs a prompt task on the bundle's own KV cache "
-                             f"(task {task!r}, context-tokens {context_tokens}): an AOT bundle's cache "
-                             "is fixed at export, and the protocol and endurance paths are not wired")
+        # The NPU side build runs on the bundle's own KV cache: an AOT bundle's cache length is
+        # fixed at export (no --max_num_tokens; main() names it from the bundle, ctx_note here
+        # is the placeholder). The dispatch library is the build's own
+        # (--litert_dispatch_lib_dir; unset, LiteRT-LM looks beside the model).
+        if context_tokens is not None or task.startswith("endurance-"):
+            raise SystemExit(f"litert-lm on the NPU runs on the bundle's own KV cache (task {task!r}, "
+                             f"context-tokens {context_tokens}): an AOT bundle's cache is fixed at "
+                             "export, and the endurance path is not wired")
+        if task.startswith("native-benchmark-"):
+            # Forced counts (advanced_main's benchmark mode, LiteRT-LM v0.19.1): P token ids with
+            # no template (the default prompt's ids, resized to P with zeros), decoded for exactly
+            # D tokens whatever they are (stop tokens are not read while a benchmark decode count
+            # is set). The NPU executor splits the P ids over the bundle's prefill signatures, so
+            # a bundle whose only prefill signature is P takes them in one call. Its
+            # BenchmarkInfo is the count check (parsers.litert_native_counts). The hardware KV-cache
+            # update keeps the build's default, on, said in the command (the prompt path's off
+            # is the 2026-08-21 build's, below). No text: none is printed with P > 0.
+            p, d = task[len("native-benchmark-"):].split("x")
+            core = (f"{engine_dir}/{LITERT_NPU_TOOL} --backend={backend} --model_path={model_dev} "
+                    f"--benchmark --benchmark_prefill_tokens={p} --benchmark_decode_tokens={d} "
+                    "--async=false --use_hw_cache_update_for_npu=true "
+                    f"--litert_dispatch_lib_dir={engine_dir}")
+            return core, LITERT_NPU_TOOL, "engine-default", "aot-fixed"
+        # A prompt task: --benchmark with no synthetic token counts keeps the real prompt and
+        # prints BenchmarkInfo (without it advanced_main prints no rate; the reply is printed
+        # whenever benchmark_prefill_tokens is 0 — LiteRT-LM main b12c62c7
+        # runtime/engine/litert_lm_lib.cc).
         core = (f"{engine_dir}/{LITERT_NPU_TOOL} --backend={backend} --model_path={model_dev} "
                 f"--input_prompt_file={prompt_dev} --max_output_tokens={max_tokens or budget} "
                 "--async=false --benchmark --benchmark_prefill_tokens=0 --benchmark_decode_tokens=0 "
@@ -1308,10 +1338,9 @@ def main():
                  "build with --define=litert_enable_ynnpack=true): the flat pinned build carries no "
                  "YNNPACK, and the engine refuses --enable_ynnpack=true without it")
     if args.runtime == "litert-lm" and args.engine_build and args.backend == "npu" and (
-            args.context_tokens is not None or args.task.startswith(("native-", "endurance-"))):
-        ap.error("litert-lm on the NPU runs a prompt task on the bundle's own KV cache: no "
-                 "--context-tokens (an AOT bundle's cache is fixed at export), no native-benchmark- "
-                 "or endurance- task (not wired)")
+            args.context_tokens is not None or args.task.startswith("endurance-")):
+        ap.error("litert-lm on the NPU runs on the bundle's own KV cache: no --context-tokens (an "
+                 "AOT bundle's cache is fixed at export), no endurance- task (not wired)")
     if args.runtime == "llama.cpp" and args.backend == "cpu":
         ap.error("llama.cpp without --backend is the CPU arm (`llama.cpp`); --backend takes npu|gpu")
     if args.runtime == "llama.cpp" and args.backend and not args.engine_build:
@@ -1556,6 +1585,17 @@ def main():
         elif ort:
             metrics, ort_report, ort_loaded, ort_text = parsers.parse_ortgenai(console)
             cold = True
+        elif litert_npu and native:
+            # the engine's own BenchmarkInfo counts are the check (one prefill turn of P tokens,
+            # one decode turn of D): a run whose counts differ keeps its record and log, flagged
+            # in conditions.protocolFlags, and is not an OK run here (no cache marker either);
+            # render_leaderboard.arm_row does not read these flags, so such a record is left
+            # out of a campaign by hand
+            metrics = parsers.parse_litert(console)
+            npu_counts = parsers.litert_native_counts(console, *native)
+            if npu_counts["flags"]:
+                launch_checks.setdefault("protocolFlags", []).extend(npu_counts["flags"])
+            cold = True
         else:
             metrics = parsers.parse_litert(console)
             cold = True
@@ -1743,6 +1783,20 @@ def main():
             })
             if launch_checks.get("protocolFlags"):
                 rec["conditions"]["protocolFlags"] = list(launch_checks["protocolFlags"])
+        elif litert_npu and native:
+            rec["conditions"]["nativeBenchmark"] = {
+                "tool": f"{LITERT_NPU_TOOL} --benchmark (the side build's, unchanged)",
+                "requestedPrefillTokens": native[0], "requestedDecodeTokens": native[1],
+                # BenchmarkInfo's turns (the last block): one prefill turn = one Prefill call,
+                # which the NPU executor splits over the bundle's prefill signatures
+                "prefillTurns": npu_counts["prefillTurns"], "loggedPrefillTokens": npu_counts["prefillTokens"],
+                "decodeTurns": npu_counts["decodeTurns"], "loggedDecodeTokens": npu_counts["decodeTokens"],
+                "promptSource": ("the engine's default prompt text tokenized without a template, its "
+                                 "ids resized to the prefill count (zeros after them), no prompt file"),
+                "decodeStop": "the benchmark decode count: stop tokens are not read while it is set",
+                "countsMatch": not npu_counts["flags"]}
+            if launch_checks.get("protocolFlags"):
+                rec["conditions"]["protocolFlags"] = list(launch_checks["protocolFlags"])
         elif ort:
             sockets = engine_sockets(console)
             if sockets is not None:
@@ -1791,7 +1845,9 @@ def main():
         if paired and checking:
             printed_texts = parsers.context_prompt_texts(console)
         elif litert_npu and checking:
-            printed_texts = [parsers.litert_reply(console)]
+            # (a native-benchmark row prints no reply: token ids in, its BenchmarkInfo counts are
+            # the check; None here, so the chat branch below never reads it)
+            printed_texts = None if native else [parsers.litert_reply(console)]
         elif engine_dir and args.backend and not litert_side and binname != "llama-bench" and checking:
             printed_texts = [parsers.llama_cli_reply(console, prompt_text)]
         elif et and checking and et["runner"] != parsers.EXECUTORCH_NATIVE_RUNNER:

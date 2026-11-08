@@ -230,6 +230,34 @@ def engine(cmd):
             for line in side_build_lines(cmd) + side_chat_reply(cmd):
                 print(line)
         print("[ Prompt: 200.0 t/s | Generation: %%s t/s ]" %% d)
+    elif (side and "/litert_lm_advanced_main " in cmd and "--backend=npu" in cmd
+          and re.search(r"--benchmark_prefill_tokens=[1-9]", cmd)):
+        # the LiteRT-LM NPU build on a native-benchmark launch (forced counts): its lines with
+        # the settings echo the command asked for, no conversation and no reply, then
+        # BenchmarkInfo on a glog line (v0.19.1's form on the S26) with the counts
+        # STATE/npu_counts.json scripts for this launch ([prefill turns, decode turns], consumed
+        # like schedule.json; null or none = the command's own counts)
+        hw = "true" if "--use_hw_cache_update_for_npu=true" in cmd else "false"
+        for line in npu_lines():
+            print(line.replace("use_hw_cache_update_for_npu: false", "use_hw_cache_update_for_npu: " + hw))
+        p = os.path.join(STATE, "npu_counts.json")
+        q = json.load(open(p)) if os.path.exists(p) else []
+        counts = q.pop(0) if q else None
+        if os.path.exists(p):
+            json.dump(q, open(p, "w"))
+        pre, dec = counts or ([int(re.search(r"--benchmark_prefill_tokens=(\\d+)", cmd).group(1))],
+                              [int(re.search(r"--benchmark_decode_tokens=(\\d+)", cmd).group(1))])
+        print("I0000 00:00:1794008076.008980   21470 litert_lm_lib.cc:461] BenchmarkInfo:")
+        print("    - Init Executor: 277.69 ms")
+        print("    - Init Total: 278.78 ms")
+        print("  Time to first token: 0.10 s")
+        for k, n in enumerate(pre, 1):
+            print("    Prefill Turn %%d: Processed %%d tokens in 92.31349ms duration." %% (k, n))
+            print("      Prefill Speed: 11092.64 tokens/sec.")
+        for k, n in enumerate(dec, 1):
+            print("    Decode Turn %%d: Processed %%d tokens in 1.620963958s duration." %% (k, n))
+            print("      Decode Speed: %%s tokens/sec." %% d)
+        print("INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007b8f206890, name=NpuAccelerator")
     elif side and "/litert_lm_advanced_main " in cmd and "--backend=npu" in cmd:
         # the LiteRT-LM NPU build with --benchmark on the real prompt, --async=false: its
         # lines, the profile-summary warnings a benchmark launch logs before the reply (with
@@ -2208,6 +2236,68 @@ def main():
     ok((a.get("cold_n"), a.get("cold_median"), a.get("backend_off_n")) == (1, 73.0, 3),
        f"arm_row: the three flagged runs are out of the pool, counted (cold_n, cold_median, backend_off_n = "
        f"{(a.get('cold_n'), a.get('cold_median'), a.get('backend_off_n'))})")
+
+    # check L4: a LiteRT-LM NPU native-benchmark-1024x256 cell (forced counts): advanced_main with
+    # the benchmark counts and no prompt file, the HW cache update on in the command and in the
+    # engine's echo; no reply, no text check; the engine's BenchmarkInfo counts are the check —
+    # one prefill turn of 1,024 and one decode turn of 256 is a clean run, a prefill of 1,023 or
+    # of two turns, or a decode of 255, keeps its record, flagged, a failed launch (FAILURES.txt)
+    cells_l4 = os.path.join(tmp, "l4.cells")
+    with open(cells_l4, "w") as fh:
+        fh.write(f"android litert-lm Qwen/Qwen3-0.6B native-benchmark-1024x256 backend=npu "
+                 f"engine-build={npu_tag} file={npu_bundle} runs=3\n")
+    json.dump([None, [[1023], [256]], [[512, 512], [255]]], open(os.path.join(state, "npu_counts.json"), "w"))
+    if os.path.exists(cmds):
+        os.remove(cmds)
+    schedule([157.9, 150.0, 151.0])
+    print("--- campaign L4 (litert npu native-benchmark-1024x256: counts 1024 / 256, then 1023 / 256, "
+          "then 512 + 512 / 255)")
+    rc = run_campaign(dict(env_l, CAMPAIGN="selftest-l4", BENCH_RAW_ROOT=side_raw), cells_l4)
+    os.remove(os.path.join(state, "npu_counts.json"))
+    ok(rc == 0, f"campaign L4 exits 0 (got {rc})")
+    out_l4 = os.path.join(side_raw, "selftest-l4", "app-path-android")
+    l4 = [r for _, r in records(out_l4, "litert-lm-npu_")]
+    cmd_native = (f"{NPU_ENG}/litert_lm_advanced_main --backend=npu --model_path={model_l} --benchmark "
+                  "--benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --async=false "
+                  f"--use_hw_cache_update_for_npu=true --litert_dispatch_lib_dir={NPU_ENG}")
+    if len(l4) == 3:
+        r = l4[0]
+        c = r["conditions"]
+        nb = c.get("nativeBenchmark", {})
+        ok((r["runtime"], r["engineVersion"], r["task"]) == ("litert-lm-npu", npu_tag, "native-benchmark-1024x256")
+           and c.get("engineCommand") == f"{env_litert_npu} {cmd_native}"
+           and c.get("hwCacheUpdateForNpu") is True and c.get("contextTokens") == "aot-fixed (cache length unrecorded)",
+           f"litert npu native: the build's advanced_main with the forced counts, no prompt file, the HW cache "
+           f"update on (command and echo), the bundle's fixed cache: {c.get('engineCommand')!r}, "
+           f"{c.get('hwCacheUpdateForNpu')}")
+        ok((nb.get("requestedPrefillTokens"), nb.get("requestedDecodeTokens"), nb.get("prefillTurns"),
+            nb.get("loggedPrefillTokens"), nb.get("decodeTurns"), nb.get("loggedDecodeTokens"),
+            nb.get("countsMatch")) == (1024, 256, 1, [1024], 1, [256], True)
+           and "protocolFlags" not in c and "textCheck" not in c and "decodedText" not in r["provenance"],
+           f"litert npu native: BenchmarkInfo's counts in nativeBenchmark (one prefill turn of 1024, one decode "
+           f"turn of 256), no flag, no text check (got {nb}, flags {c.get('protocolFlags')})")
+        m = r["metrics"]
+        ok((m.get("promptTokenCount"), m.get("generatedTokenCount"), m.get("promptTokensPerSecond"),
+            m.get("decodeTokensPerSecond"), m.get("firstTokenLatencyMS"), m.get("coldRun"))
+           == (1024, 256, 11092.64, 157.9, 100.0, True),
+           f"litert npu native: the glog-line BenchmarkInfo parsed (got {m})")
+        got = [(x["conditions"].get("protocolFlags"), x["conditions"].get("nativeBenchmark", {}).get("countsMatch"))
+               for x in l4]
+        ok(got == [(None, True), (["prompt-token-count-mismatch"], False),
+                   (["prefill-turns-not-one", "decode-token-count-mismatch"], False)],
+           f"litert npu native: 1023 prefill tokens / two prefill turns and 255 decode tokens are flagged, "
+           f"the records kept (got {got})")
+    else:
+        ok(False, f"three litert-lm-npu native records (got {len(l4)})")
+    shells = open(cmds).read().splitlines() if os.path.exists(cmds) else []
+    ok(len(shells) == 3 and all(s == f"cd /data/local/tmp/llmbench && {env_litert_npu} taskset f0 {cmd_native}"
+                                for s in shells),
+       f"litert npu native: the engine shell (got {shells[:1]})")
+    fails_l4 = os.path.join(out_l4, "FAILURES.txt")
+    fails_l4 = open(fails_l4).read().splitlines() if os.path.exists(fails_l4) else []
+    ok(fails_l4 == ["litert-lm-npu Qwen/Qwen3-0.6B native-benchmark-1024x256 rc=1"] * 2,
+       f"litert npu native: each flagged launch is a failed launch: {fails_l4}")
+
     # the export this arm runs is named by its sha256 (the label and the cache length its export
     # logs give); the reply extraction on the shapes of the build's real consoles
     sys.path.insert(0, os.path.join(ROOT, "android", "bench"))
@@ -2219,6 +2309,10 @@ def main():
     ok(ctx == "aot-fixed-1024" and label.startswith("own export, NPU AOT for SM8850: int8 weights")
        and "static-range int16 activations" in label,
        f"own_npu_bundle: the Qwen3 0.6B SM8850 export -> its label and cache (got {label!r}, {ctx!r})")
+    label, ctx = own("27ebc2d55ce61b6413319755819126162281c48d232591ac9ff9093fc05a0eba") if own else ("", None)
+    ok(ctx == "aot-fixed-2048" and "prefill 1024, cache 2048" in label
+       and "static-range int16 activations" in label,
+       f"own_npu_bundle: the Qwen3 0.6B SM8850 prefill-1024 export -> its label and cache (got {label!r}, {ctx!r})")
     litert_reply = getattr(parsers, "litert_reply", lambda text: None)
     jit = ("I0000 00:00:1790871082.995872   23069 litert_lm_lib.cc:868] Running single-turn conversation\n"
            "[1] graph_prepare.cc:208::ERROR:could not create op: q::Select.exe\n"
@@ -2364,8 +2458,10 @@ def main():
         ("windows litert-lm m/l short-chat backend=gpu ynnpack=1 context-tokens=2048", "mac / ios / windows litert-lm backend=cpu rows only"),
         ("android litert-lm m/l long-context-1024-gen256 backend=npu engine-build=main-20260821-selfbuilt "
          "file=x.litertlm context-tokens=2048", "no context-tokens="),
-        ("android litert-lm m/l native-benchmark-1024x256 backend=npu engine-build=main-20260821-selfbuilt "
-         "file=x.litertlm", "no native-benchmark-"),
+        ("android litert-lm m/l native-benchmark-1024x256 backend=npu engine-build=v0.19.1-qnn247 "
+         "file=x.litertlm", None),
+        ("android litert-lm m/l endurance-chat-30m backend=npu engine-build=v0.19.1-qnn247 "
+         "file=x.litertlm", "no endurance- task"),
         ("ios litert-lm m/l short-chat backend=gpu engine-build=main-20260821-selfbuilt",
          "engine-build= is read for android llama.cpp, litert-lm and executorch rows only"),
         ("android litert-lm m/l asr-rtf-librispeech-82s backend=npu file=x.litertlm", "asr-rtf-* needs backend=cpu|gpu"),

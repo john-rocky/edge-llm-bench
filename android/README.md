@@ -216,6 +216,28 @@ and passes `--litert_dispatch_lib_dir=$E`; the witness reads
 pin gives them (`dsp/…` for the skel). Until the pin is written, the records
 stamp `unknown (…)` and a sitting stops the cell before it launches.
 
+`v0.19.1-qnn247` (since 2026-11-09; the forced-count row
+`matrices/native-benchmark-1024x256-litert-npu-v1-android-s26.cells`) is
+LiteRT-LM v0.19.1's `litert_lm_advanced_main` built from the tag with its own
+Qualcomm dispatch library, the two libraries the tool loads
+(`libGemmaModelConstraintProvider.so`, `libwebgpu_dawn.so`, the tag's prebuilt
+ones) and the QNN libraries of QAIRT 2.47.0.260601, the SDK the build and the
+bundle's ahead-of-time compile used (the pin's `built` says how). It has no
+host copy in this repo; the pin lists all twelve files by sha256. From a
+directory `$K` holding the set (flat, the skel in `dsp/`):
+
+```bash
+E=/data/local/tmp/llmbench/engines/v0.19.1-qnn247
+adb shell mkdir -p $E/dsp
+adb push $K/litert_lm_advanced_main $K/lib*.so $E/
+adb push $K/dsp/libQnnHtpV81Skel.so $E/dsp/
+adb shell chmod +x $E/litert_lm_advanced_main
+adb shell sha256sum $E/litert_lm_advanced_main $E/*.so $E/dsp/*.so   # = the pin's
+```
+
+No compiler plugin goes into `$E`: LiteRT looks for one in the dispatch
+directory and below it, and an ahead-of-time bundle needs none.
+
 LiteRT-LM on the CPU or the GPU on a build other than the flat pin (cells
 `backend=cpu|gpu engine-build=<tag>`, arms `litert-lm-cpu` / `litert-lm-gpu`;
 since 2026-10-20) sits flat in `/data/local/tmp/llmbench/engines/<tag>/` too:

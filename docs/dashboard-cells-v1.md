@@ -940,11 +940,76 @@ and bundle is labelled `firstEver` by LiteRT-LM's marker, as on the CPU and
 GPU; whether an AOT bundle builds anything on its first launch is for the
 first device run to show.
 
-Tasks. A prompt task on the bundle's own cache only: the runner and
-`scripts/validate_cells.py` refuse `context-tokens=`, `native-benchmark-*` and
-`endurance-*` on this arm. Short-chat on Qwen3 0.6B is the row; its 1K text
-task is `exclude=aot-cache-length-1024` (the prompt alone is 1,339 tokens on
-LiteRT-LM's Qwen3 0.6B, against a 1,024-token cache).
+Tasks. The bundle's own cache only: the runner and `scripts/validate_cells.py`
+refuse `context-tokens=` and `endurance-*` on this arm. Short-chat on Qwen3
+0.6B is the prompt row; its 1K text task is `exclude=aot-cache-length-1024`
+(the prompt alone is 1,339 tokens on LiteRT-LM's Qwen3 0.6B, against a
+1,024-token cache). `native-benchmark-*` runs since 2026-11-09, on a bundle
+and a build of its own (below).
+
+#### Forced counts on the NPU (`native-benchmark-1024x256`, 2026-11-09)
+
+`matrices/native-benchmark-1024x256-litert-npu-v1-android-s26.cells`, one row:
+Qwen3 0.6B, prefill exactly 1,024 token ids in one prefill call, decode
+exactly 256 tokens that EOS cannot stop — the task the other runtimes run in
+`matrices/native-benchmark-1024x256-v1.cells`.
+
+Bundle. `Qwen3-0.6B_qualcomm_sm8850_p1024_ekv2048.litertlm`, 810,765,487
+bytes, sha256 `27ebc2d55ce61b6413319755819126162281c48d232591ac9ff9093fc05a0eba`, side-loaded by local path: litert-torch's
+`npu_export` at commit 6d4c622 on `Qwen/Qwen3-0.6B` (revision c1899de2) with
+one change, the prefill attention mask broadcast over the query heads instead
+of concatenated per head (hf-to-litertlm
+`mnn_pocket_work/npu/litert_torch_6d4c622_split_cache_mask.diff`: at this size
+the concatenated int16 mask would be 12,582,912 bytes, past the 1 MiB at which
+the HTP's ADD mis-pairs rows, google-ai-edge/litert-torch#1184); int8 weights
+(`dynamic_wi8_afp32`), calibration on `npu_export`'s first 10 bundled sample
+prompts × 32 decode steps, the rotary position range widened to the whole cache
+(2,047.9375, an int16 scale of 1/16) before the static-range quantization with
+16-bit activations; stage 4 compiled ahead of time for SM8850 with QAIRT
+2.47.0.260601 (the aux graphs left to the CPU; weight sharing on, the
+compiler's default: one context binary of 648,167,424 bytes). One prefill
+signature, `prefill_1024`, and a KV cache of 2,048 tokens, both fixed at
+export; read back from the bundle: `prefill_1024` takes embeddings
+[1, 1024, 1024] and `decode` [1, 1, 1024], each a single `DISPATCH_OP`, and
+each of the 56 KV inputs is [1, 8, 128, 2048] (K) or [1, 8, 2048, 128] (V),
+int16 (in `prefill_1024` the last layer's two are float32). Its
+metadata section is `litert-community/Qwen3-0.6B`'s (the published CPU file's
+template, stop token and model type) with `max_num_tokens` 2,048.
+`OWN_NPU_BUNDLES` names it: `conditions.contextTokens` `aot-fixed-2048`.
+
+Runtime. `engine-build=v0.19.1-qnn247`: LiteRT-LM v0.19.1's
+`litert_lm_advanced_main` built from the tag with its own Qualcomm dispatch
+library, the two libraries the tool needs and QAIRT 2.47.0.260601's QNN
+libraries, the V81 skel in `dsp/` (`android/engine-pins.json`,
+`android/README.md` "Side builds"). The bundle's context binaries are QAIRT
+2.47's, the libraries' too: the engine logs "Context binary SDK version
+matches current SDK" (kept in `backendRegistered`).
+
+Command (`conditions.engineCommand`, whole):
+`LD_LIBRARY_PATH=<build> ADSP_LIBRARY_PATH="<build>/dsp;/system/lib/rfsa/adsp;/vendor/lib/rfsa/adsp;/dsp"
+<build>/litert_lm_advanced_main --backend=npu --model_path=<bundle>
+--benchmark --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256
+--async=false --use_hw_cache_update_for_npu=true --litert_dispatch_lib_dir=<build>`.
+In benchmark mode the session takes the default prompt text's ids without a
+template and resizes them to 1,024 (zeros after them), and while a benchmark
+decode count is set the decode ignores stop tokens (LiteRT-LM v0.19.1
+`runtime/core/session_utils.cc`, `runtime/core/session_advanced.cc`,
+`runtime/core/tasks.cc` `ShouldStop`; the output cap defaults to none). The NPU
+executor splits a prefill over the bundle's prefill signatures, so 1,024 ids
+on a bundle whose only one is `prefill_1024` are one call. The hardware
+KV-cache update keeps the build's default, on (the prompt row's off is the
+2026-08-21 build's); the other NPU switches keep theirs.
+
+Counts. The engine's BenchmarkInfo is the check
+(`parsers.litert_native_counts`): one prefill turn of 1,024 tokens and one
+decode turn of 256; anything else is flagged (`prefill-turns-not-one`,
+`prompt-token-count-mismatch`, `decode-token-count-mismatch`,
+`native-count-line-missing`) and the run is not an OK run; the summary's
+pools do not read these flags (`render_leaderboard.arm_row`), so a flagged
+record is left out of a campaign by hand. Records carry the
+counts in `conditions.nativeBenchmark`. There is no reply and no text check.
+The first launch of the bundle on a phone is its `firstEver` cache build, so
+the row asks for four runs.
 
 ## ONNX Runtime GenAI arm (v1, 2026-10-07)
 

@@ -114,6 +114,36 @@ def parse_litert(text):
     return m
 
 
+RE_PREFILL_TURN_ANY = re.compile(r"Prefill Turn (\d+): Processed (\d+) tokens")
+RE_DECODE_TURN_ANY = re.compile(r"Decode Turn (\d+): Processed (\d+) tokens")
+
+
+def litert_native_counts(text, want_prefill, want_decode):
+    """A LiteRT-LM native-benchmark-<P>x<D> launch's own counts, from its last BenchmarkInfo (never
+    the Aggregated block): the prefill turns and their tokens, the decode turns and theirs. The
+    cell asks for one prefill turn of P tokens and one decode turn of D tokens; flags:
+    native-count-line-missing (no BenchmarkInfo), prefill-turns-not-one, prompt-token-count-mismatch
+    (the prefill tokens summed != P), decode-token-count-mismatch (not one decode turn of D tokens).
+    A turn is the engine's: on the NPU it is one Prefill call, which the executor splits over the
+    bundle's prefill signatures (one call of prefill_1024 for 1,024 ids when that is the only one)."""
+    text = cut_aggregated(text)
+    blocks = RE_BENCHMARK_INFO.split(text)
+    block = blocks[-1] if len(blocks) > 1 else ""
+    pre = [int(n) for _, n in RE_PREFILL_TURN_ANY.findall(block)]
+    dec = [int(n) for _, n in RE_DECODE_TURN_ANY.findall(block)]
+    flags = []
+    if not block:
+        flags.append("native-count-line-missing")
+    if len(pre) != 1:
+        flags.append("prefill-turns-not-one")
+    if sum(pre) != want_prefill:
+        flags.append("prompt-token-count-mismatch")
+    if dec != [want_decode]:
+        flags.append("decode-token-count-mismatch")
+    return {"prefillTurns": len(pre), "prefillTokens": pre, "decodeTurns": len(dec), "decodeTokens": dec,
+            "flags": flags}
+
+
 def parse_litert_iterations(text):
     """One BenchmarkInfo per fresh Conversation in advanced_main's loop.
 
@@ -489,6 +519,11 @@ LITERT_NPU_LINE_PATTERNS = (
     re.compile(r"Loaded plugin at: \S+"),
     re.compile(r"\bBackendType\s+: \S+"),
     re.compile(r"Replacing \d+ out of \d+ node\(s\) with delegate \(DispatchDelegate\) node.*"),
+    # an ahead-of-time bundle: its QNN context binary's SDK against the QNN libraries the
+    # dispatch loaded (LiteRT litert/vendors/qualcomm/context_binary_info.cc: equal, older or
+    # newer; a newer binary fails to load)
+    re.compile(r"Context binary SDK version matches current SDK: \S+"),
+    re.compile(r"Context binary \([\d.]+\) is (?:older|newer) than the current SDK \([\d.]+\)"),
     re.compile(r"Creating new QNN context for bytecode \w+ \(size \d+\)"),
     # the Intel dispatch on Windows (LiteRT-LM v0.19.0, litert/vendors/intel_openvino):
     #   INFO: [litert_dispatch.cc:208] Loading shared library: C:/.../LiteRtDispatch.dll

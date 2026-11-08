@@ -451,12 +451,12 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                                   "(engine-build=<tag> of a build with --define=litert_enable_ynnpack=true; "
                                   "the flat pinned build carries no YNNPACK)")
                 if (opts.get("backend") == "npu" and not opts.get("exclude")
-                        and (opts.get("context-tokens") or NATIVE_TASK.match(task)
-                             or ENDURANCE_TASK.match(task))):
-                    errors.append(f"{where}: android litert-lm backend=npu runs a prompt task on the "
-                                  "bundle's own KV cache: no context-tokens= (an AOT bundle's cache "
-                                  "is fixed at export), no native-benchmark- / endurance- task "
-                                  "(not wired; android/bench/run_cell.py refuses them)")
+                        and (opts.get("context-tokens") or ENDURANCE_TASK.match(task))):
+                    errors.append(f"{where}: android litert-lm backend=npu runs on the bundle's own KV "
+                                  "cache: no context-tokens= (an AOT bundle's cache is fixed at "
+                                  "export), no endurance- task (not wired; android/bench/run_cell.py "
+                                  "refuses them); a native-benchmark- task runs (the counts it forces "
+                                  "are checked against the engine's BenchmarkInfo)")
             # executorch: the build label names the runner dirs (executorch-<label>[-<backend>]/)
             if opts.get("engine-build") and not (
                     plat == "android" and rt in ("llama.cpp", "litert-lm", "executorch")):
