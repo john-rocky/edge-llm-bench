@@ -245,6 +245,10 @@ EXECUTORCH_RSS_NOTE = {
                    "peak (memoryPeakEngineReportedMB: getrusage ru_maxrss at the end of generation, "
                    "its stderr line 'RSS after finishing text generation', MiB) — a launch can end "
                    "between two 0.5 s reads above the last one"),
+    "et_native_bench": ("; executorch: memoryPeakResidentMB = the larger of that and the harness's "
+                        "own peak (memoryPeakEngineReportedMB: getrusage ru_maxrss at the end of the "
+                        "decode, its stderr line 'RSS after finishing text generation', MiB, as "
+                        "llama_main logs it)"),
     "gemma4_e2e_runner": ("; executorch: memoryPeakResidentMB = the larger of that and the runner's "
                           "own peak (memoryPeakEngineReportedMB: the largest VmRSS it read at each "
                           "decode step, its report's 'Memory (peak)', MB = MiB)"),
@@ -851,6 +855,21 @@ def engine_command(runtime, backend, model_dev, task, prompt_dev, budget, max_to
         if runner is None:
             raise SystemExit(f"executorch: no runner for {os.path.basename(model_dev)} "
                              "(parsers.executorch_runner_for knows Qwen 3 and Gemma 4)")
+        if task.startswith("native-benchmark-"):
+            # forced counts: et_native_bench (scripts/executorch/native_bench) drives the tag's
+            # runner components with P token ids in one prefill call and D - 1 decode steps that
+            # ignore EOS; no prompt file. Qwen 3 only: it builds llama_main's components.
+            if runner != "llama_main":
+                raise SystemExit(f"executorch: {task} runs {parsers.EXECUTORCH_NATIVE_RUNNER} over "
+                                 f"llama_main's components, Qwen 3 exports only "
+                                 f"(not {os.path.basename(model_dev)})")
+            p, d = task[len("native-benchmark-"):].split("x")
+            binname = executorch_binname(backend, parsers.EXECUTORCH_NATIVE_RUNNER, engine_build)
+            tokenizer_dev, _ = executorch_device_paths(model_dev, task)
+            inner = (f"exec ./{binname} --model_path={model_dev} --tokenizer_path={tokenizer_dev} "
+                     f"--prefill_tokens={p} --decode_tokens={d} 2>{EXECUTORCH_STDERR}")
+            return f"sh -c {shlex.quote(inner)}", binname, parsers.EXECUTORCH_NATIVE_SAMPLER, \
+                context_tokens or "export-fixed"
         binname = executorch_binname(backend, runner, engine_build)
         tokenizer_dev, rendered_dev = executorch_device_paths(model_dev, task)
         prompt_arg = (f"--prompt_file={rendered_dev}" if runner == "llama_main"
@@ -939,7 +958,9 @@ def executorch_fields(console, et, budget, declared_context):
     engine = console.split("===ENGINE_OUTPUT===\n", 1)[-1]
     stdout, _, stderr = engine.partition("\n===ENGINE_STDERR===\n")
     stdout = stdout[:stdout.rfind("EXIT_CODE=")] if "EXIT_CODE=" in stdout else stdout
-    if et["runner"] == "llama_main":
+    if et["runner"] == parsers.EXECUTORCH_NATIVE_RUNNER:
+        parsed = parsers.parse_et_native_bench(stdout, stderr, *et["native"])
+    elif et["runner"] == "llama_main":
         parsed = parsers.parse_executorch(stdout, stderr, et["promptText"])
     else:
         parsed = parsers.parse_gemma4_runner(stdout, stderr)
@@ -983,8 +1004,9 @@ def dry_run(args, arm, engine_dir):
         tokenizer_dev, rendered_dev = executorch_device_paths(model_dev, args.task)
         host_bin = os.path.join(ANDROID_BIN_DIR, binname)
         pushes = [(et["pte"], model_dev, et["pteSha256"]), (et["tokenizer"], tokenizer_dev, et["tokenizerSha256"])]
-        pushes.append((et["prompt"], rendered_dev if et["runner"] == "llama_main" else prompt_dev,
-                       et["promptSha256"]))
+        if et["prompt"]:  # a native-benchmark row reads no prompt
+            pushes.append((et["prompt"], rendered_dev if et["runner"] == "llama_main" else prompt_dev,
+                           et["promptSha256"]))
         plan.update(pushes=[{"local": a, "device": b, "sha256": c} for a, b, c in pushes],
                     hostBinary=host_bin,
                     hostBinarySha256=sha256_file(host_bin) if os.path.isfile(host_bin) else "missing",
@@ -1772,7 +1794,8 @@ def main():
             printed_texts = [parsers.litert_reply(console)]
         elif engine_dir and args.backend and not litert_side and binname != "llama-bench" and checking:
             printed_texts = [parsers.llama_cli_reply(console, prompt_text)]
-        elif et and checking:
+        elif et and checking and et["runner"] != parsers.EXECUTORCH_NATIVE_RUNNER:
+            # (a native-benchmark row prints no text: token ids in, its count line is the check)
             printed_texts = [et_fields["text"] or ""]
         else:
             printed_texts = None

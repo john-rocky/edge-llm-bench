@@ -223,7 +223,16 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                 elif opts.get("backend") not in EXECUTORCH_BACKENDS[plat]:
                     errors.append(f"{where}: executorch needs backend=<"
                                   f"{'|'.join(sorted(EXECUTORCH_BACKENDS[plat]))}> on {plat} (arm identity)")
-                if task not in EXECUTORCH_TASKS:
+                if NATIVE_TASK.match(task):
+                    # et_native_bench over llama_main's runner components (android/bench/run_cell.py):
+                    # token ids in one prefill call, decode that ignores EOS; Qwen 3 exports, Android
+                    if plat != "android":
+                        errors.append(f"{where}: an executorch {task} row runs on android only "
+                                      "(et_native_bench through android/bench/run_cell.py)")
+                    elif not re.search(r"qwen3(?:[._]5)?[-_]", opts.get("file", "").lower()):
+                        errors.append(f"{where}: an executorch {task} row runs et_native_bench over "
+                                      "llama_main's components: Qwen 3 exports only")
+                elif task not in EXECUTORCH_TASKS:
                     errors.append(f"{where}: unsupported executorch task {task!r}")
                 if opts.get("local") != "1" or not opts.get("file", "").endswith(".pte"):
                     errors.append(f"{where}: executorch runs an own export: local=1 file=<name>.pte "

@@ -340,6 +340,42 @@ the Android path end to end on it with no phone.
 iPhone: round r6-ios built the app with the ExecuTorch package (an unsigned Release compile on
 the Mac); it has not run on a phone yet.
 
+## Protocol row (`native-benchmark-<P>x<D>`, Android, Qwen 3)
+
+`llama_main` takes a text prompt only: `TextLLMRunner::generate` encodes the string, and
+`TextLLMRunner::prefill(std::vector<MultimodalInput>)` encodes text inputs and skips token inputs
+(`extension/llm/runner/text_llm_runner.cpp`, v1.5.1). A forced-count row therefore runs
+`et_native_bench` (`scripts/executorch/native_bench/`, our file, as `ortgenai_run` is for ONNX
+Runtime GenAI): it builds the runner components `create_text_llm_runner` builds for `llama_main`
+(`llm_runner_helper.cpp`: Module, metadata, EOS ids, IOManager, Sampler, TextDecoderRunner,
+TextPrefiller, TextTokenGenerator, Stats), unchanged, and drives them as `TextLLMRunner::generate`
+does, with token ids in place of the encoded prompt:
+
+- P SplitMix64 token ids (seed 0) below the `.pte`'s `get_vocab_size` (the generator of the Core AI
+  and MLX native benchmarks) go into ONE `TextPrefiller::prefill` call: one forward over all P when the
+  export has dynamic shape and P <= `get_max_seq_len` (the Qwen 3 exports here: 2048, so 1024 is one
+  forward);
+- the first token is sampled from the prefill logits (greedy), then `TextTokenGenerator::generate`
+  runs D - 1 steps with `set_ignore_eos(true)`: only the count ends the decode;
+- stdout carries `llama_main`'s stats line (`PyTorchObserver {json}`, its windows set where
+  `TextLLMRunner::generate` sets them; the prefill window holds no tokenization, there being no text)
+  and one `ET_NATIVE_BENCH_OK` line with the counts the run made (prefill tokens, calls, chunks and
+  forwards, the token sampled from the prefill, decode steps, tokens generated, the export's shape).
+
+`android/bench/parsers.py` `parse_et_native_bench` checks that line against the cell: a launch whose
+prefill is not P (`prompt-token-count-mismatch`), whose tokens after the prompt are not D or whose
+decode steps are not D - 1 (`decode-token-count-mismatch`), or whose prefill took more than one
+forward (`prefill-not-one-forward`) keeps its record and log, flagged, out of every pool. The record's
+`generatedTokenCount` is D (the prefill-sampled token included); the decode rate is the stats line's
+(the D - 1 steps over their window), the prefill rate P over the prefill window. `conditions.nativeBenchmark`
+holds the counts, the ids' head and the export's shape. Gemma 4 (`gemma4_e2e_runner`, its own method
+layout) has no native row.
+
+Build: `ET_RUNNERS=et_native_bench android/scripts/build_executorch_llama_main.sh` (a fourth stage
+against the same stage-1 install); the pin is `et_native_bench_sha256` of `android/engine-pins.json`
+`executorch` `v1.5.1`, pushed by hand beside `llama_main` (`/data/local/tmp/llmbench/executorch-v1.5.1/`).
+Cells: `matrices/native-benchmark-1024x256-v1.cells`.
+
 ## Run one cell
 
 ```bash

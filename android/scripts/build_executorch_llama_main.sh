@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Build ExecuTorch's runners for android arm64-v8a at a pinned tag: llama_main
-# (examples/models/llama, Qwen 3) and gemma4_e2e_runner (examples/models/gemma4, Gemma 4).
+# (examples/models/llama, Qwen 3) and gemma4_e2e_runner (examples/models/gemma4, Gemma 4), and on
+# request (ET_RUNNERS) et_native_bench, our forced-count benchmark over the same tag's runner
+# components (scripts/executorch/native_bench/: task native-benchmark-<P>x<D>, Qwen 3 exports).
 #
 # ExecuTorch releases ship no Android runner binary (v1.5.1 GitHub release assets:
 # PyTorch.ExecuTorch.1.5.1.pack and PyTorch.ExecuTorch.pdsc only, read 2026-10-07), so the
@@ -16,6 +18,10 @@
 # runner/gemma4_runner.cpp, unchanged) is built from scripts/executorch/gemma4_runner/, the
 # CMake glue the Mac build uses, with the NDK toolchain. It links the XNNPACK build's
 # libraries only (no vulkan_backend), so it is built for ET_BACKEND=xnnpack.
+#
+# et_native_bench is a fourth stage against the same install: scripts/executorch/native_bench/
+# (et_native_bench.cpp + its CMake glue, linking what llama_main links), with the NDK toolchain.
+# Like gemma4_e2e_runner it is built for ET_BACKEND=xnnpack.
 #
 # A runner already in the output directory is replaced only by identical bytes or with
 # ET_REPLACE=1: the pin registry holds its sha256, and a rebuild that differs would stamp
@@ -45,7 +51,10 @@
 #   GLSLC           vulkan only (default: glslc on PATH)
 #   ET_JOBS         parallel build jobs (default: 16, as in the README)
 #   ET_RUNNERS      runners to build (default: "llama_main gemma4_e2e_runner" for xnnpack,
-#                   "llama_main" for vulkan)
+#                   "llama_main" for vulkan; et_native_bench on request, xnnpack only)
+#   ET_STAGE1_EXTRA extra stage-1 CMake flags, space-separated (recorded in stage1_flags), e.g.
+#                   -DKLEIDIAI_SOURCE_DIR=<a KleidiAI source of the same XNNPACK pin>: XNNPACK
+#                   otherwise downloads KleidiAI into every new build directory, slowly
 #   ET_REPLACE      1 = replace a runner in the output directory whose sha256 differs
 #                   (default: keep it and report the rebuild's sha256)
 #   BENCH_BIN_ROOT  where engine binaries live (default: <repo>/android/bin)
@@ -80,11 +89,15 @@ for runner in "${RUNNERS[@]}"; do
     gemma4_e2e_runner)
       [[ "$BACKEND" == xnnpack ]] || {
         echo "ERROR: gemma4_e2e_runner links the XNNPACK build only (scripts/executorch/gemma4_runner)" >&2; exit 2; } ;;
-    *) echo "ERROR: ET_RUNNERS takes llama_main and gemma4_e2e_runner (got '$runner')" >&2; exit 2 ;;
+    et_native_bench)
+      [[ "$BACKEND" == xnnpack ]] || {
+        echo "ERROR: et_native_bench links the XNNPACK build only (scripts/executorch/native_bench)" >&2; exit 2; } ;;
+    *) echo "ERROR: ET_RUNNERS takes llama_main, gemma4_e2e_runner and et_native_bench (got '$runner')" >&2; exit 2 ;;
   esac
 done
 wants() { [[ " ${RUNNERS[*]} " == *" $1 "* ]]; }
 GLUE="$REPO_ROOT/scripts/executorch/gemma4_runner"
+NB_GLUE="$REPO_ROOT/scripts/executorch/native_bench"
 
 if [[ ! -f "$SRC/CMakeLists.txt" ]]; then
   cat >&2 <<EOF
@@ -139,6 +152,9 @@ if [[ "$BACKEND" == vulkan ]]; then
   echo "== glslc: $GLSLC ($GLSLC_VERSION)"
   STAGE1_EXTRA=(-DEXECUTORCH_BUILD_VULKAN=ON "-DGLSLC_PATH=$GLSLC")
 fi
+if [[ -n "${ET_STAGE1_EXTRA:-}" ]]; then
+  STAGE1_EXTRA+=(${ET_STAGE1_EXTRA})
+fi
 
 TOOLCHAIN=(-DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK/build/cmake/android.toolchain.cmake"
            -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-23
@@ -158,17 +174,19 @@ STAGE2=(-DPYTHON_EXECUTABLE="$PY" -DEXECUTORCH_BUILD_XNNPACK=ON
 STAGE3=(-DEXECUTORCH_ROOT="$SRC" -DET_CMAKE_OUT="$SRC/$BUILD_DIR")
 
 G4_DIR="$BUILD_DIR/examples/models/gemma4_e2e_runner"
+NB_DIR="$BUILD_DIR/examples/models/et_native_bench"
 # per runner (bash 3.2 has no associative arrays): the built binary, its stage's flags, the recipe
 runner_bin() {
   case "$1" in
     llama_main) echo "$SRC/$BUILD_DIR/examples/models/llama/llama_main" ;;
     gemma4_e2e_runner) echo "$SRC/$G4_DIR/gemma4_e2e_runner" ;;
+    et_native_bench) echo "$SRC/$NB_DIR/et_native_bench" ;;
   esac
 }
 runner_flags() {
   case "$1" in
     llama_main) printf '%s\n' "${TOOLCHAIN[@]}" "${STAGE2[@]}" ;;
-    gemma4_e2e_runner) printf '%s\n' "${TOOLCHAIN[@]}" "${STAGE3[@]}" ;;
+    gemma4_e2e_runner|et_native_bench) printf '%s\n' "${TOOLCHAIN[@]}" "${STAGE3[@]}" ;;
   esac
 }
 runner_recipe() {
@@ -179,6 +197,10 @@ runner_recipe() {
            "$(shasum -a 256 "$GLUE/CMakeLists.txt" | cut -d' ' -f1)) over the tag's examples/models/gemma4" \
            "e2e_runner.cpp + runner/gemma4_runner.cpp, unchanged; stb" \
            "$(sed -n 's/^ *GIT_TAG *//p' "$GLUE/CMakeLists.txt")" ;;
+    et_native_bench)
+      echo "README Step 4 stage 1, then scripts/executorch/native_bench/CMakeLists.txt (sha256" \
+           "$(shasum -a 256 "$NB_GLUE/CMakeLists.txt" | cut -d' ' -f1)) over et_native_bench.cpp (sha256" \
+           "$(shasum -a 256 "$NB_GLUE/et_native_bench.cpp" | cut -d' ' -f1)): the tag's runner components, unchanged" ;;
   esac
 }
 
@@ -195,6 +217,11 @@ if wants gemma4_e2e_runner; then
   echo "== stage 3: scripts/executorch/gemma4_runner (examples/models/gemma4) -> $SRC/$G4_DIR"
   cmake "${TOOLCHAIN[@]}" "${STAGE3[@]}" -S "$GLUE" -B"$G4_DIR"
   cmake --build "$G4_DIR" --target gemma4_e2e_runner -j"$JOBS" --config Release
+fi
+if wants et_native_bench; then
+  echo "== stage 4: scripts/executorch/native_bench -> $SRC/$NB_DIR"
+  cmake "${TOOLCHAIN[@]}" "${STAGE3[@]}" -S "$NB_GLUE" -B"$NB_DIR"
+  cmake --build "$NB_DIR" --target et_native_bench -j"$JOBS" --config Release
 fi
 
 READELF="$(ls "$ANDROID_NDK"/toolchains/llvm/prebuilt/*/bin/llvm-readelf | head -1)"
@@ -262,7 +289,8 @@ entry = {
     "requested_tag": tag, "observed": observed, "commit": commit, f"{runner}_sha256": sha,
     "size_bytes": os.path.getsize(built), "needed": needed.split(), "recipe": recipe,
     "stage1_flags": stage1.split("\n"),
-    ("stage2_flags" if runner == "llama_main" else "stage3_flags"): stage_flags.split("\n"),
+    {"llama_main": "stage2_flags", "gemma4_e2e_runner": "stage3_flags"}.get(runner, "stage4_flags"):
+        stage_flags.split("\n"),
     "configured": {k: cache(k) for k in (
         "EXECUTORCH_PAL_DEFAULT", "EXECUTORCH_ENABLE_LOGGING", "EXECUTORCH_LOG_LEVEL",
         "EXECUTORCH_XNNPACK_ENABLE_KLEIDI", "EXECUTORCH_XNNPACK_SHARED_WORKSPACE",

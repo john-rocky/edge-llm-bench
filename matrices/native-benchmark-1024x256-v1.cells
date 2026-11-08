@@ -7,6 +7,10 @@
 # onnxruntime-genai (android): the engine's own model_benchmark (upstream benchmark/c v0.17.0, unchanged, pinned in
 #   android/engine-pins.json) -l 1024 --use_random_tokens -g 256 -r 1 -w 0 -ml 2048: 1024 ids drawn in [0, 99],
 #   min_length = 1280; one cold process per run (android/bench/run_cell.py engine_command).
+# executorch (android): et_native_bench (scripts/executorch/native_bench) over the tag's runner components, the ones
+#   llama_main builds: 1024 SplitMix64 ids (seed 0) below the .pte's get_vocab_size in one TextPrefiller::prefill call
+#   (one forward: the export has dynamic shape and max_seq_len 2048), the first token sampled from its logits, then
+#   255 decode steps with ignore_eos; greedy; one cold process per run. Qwen 3 exports only.
 # mlx-swift (mac): yardstick --mlx-native-benchmark 1024x256 --runs 3 (MLXRuntime.nativeBenchmark): 1024 SplitMix64
 #   ids (seed 0) below the model's vocab_size into one TokenIterator prefill (step 2048), decode to maxTokens = 256,
 #   greedy; one load, run 1 cold, runs 2-3 warm; no context-tokens (the KV cache grows). Lines land in the cell's
@@ -14,6 +18,7 @@
 
 # ---- android ----
 android onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX native-benchmark-1024x256 backend=cpu runs=3 file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+android executorch own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 native-benchmark-1024x256 backend=xnnpack local=1 file=Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048 runs=3
 
 # ---- mac ----
 mac mlx-swift mlx-community/Qwen3-0.6B-4bit native-benchmark-1024x256 runs=3

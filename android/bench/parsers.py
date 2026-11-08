@@ -769,6 +769,18 @@ EXECUTORCH_DEFINITIONS = {
         "there is no warm regime.\n"
         "Clock: std::chrono::steady_clock; the report prints ms with one decimal under 1 s and seconds "
         "with two decimals from 1 s on (10 ms resolution)."),
+    "et_native_bench": (
+        "native-benchmark-<P>x<D> row (scripts/executorch/native_bench/et_native_bench.cpp over the tag's "
+        "runner components, the ones llama_main builds): P token ids, no text, in one TextPrefiller::prefill "
+        "call, the first token sampled from its logits (greedy), then D - 1 decode steps with ignore_eos.\n"
+        "prefill tok/s = prompt_tokens / (prompt_eval_end_ms - inference_start_ms) * 1000: the prefill call "
+        "and the first token's sampling; no tokenization (there is no text).\n"
+        "TTFT ms = first_token_ms - inference_start_ms = the same window.\n"
+        "decode tok/s = the stats line's generated_tokens (the decode loop's D - 1 steps) / "
+        "(inference_end_ms - prompt_eval_end_ms) * 1000, as llama_main's; generatedTokenCount = D, the "
+        "prefill-sampled token included (nativeBenchmark: sampledFromPrefill 1 + decodeForwardSteps D - 1).\n"
+        "cold = one generation in a fresh et_native_bench process (no warmup).\n"
+        "Clock: integer milliseconds (extension/llm/runner/util.h time_in_ms)."),
 }
 # cells recipe= alias -> the record's model.quantization label (quant-label-rule), the runner
 # of its model family and the recipe.json facts the label states: executorch_inputs refuses an
@@ -859,6 +871,10 @@ def executorch_recipes():
 
 
 EXECUTORCH_SAMPLER = "greedy (--temperature 0: argmax)"
+# the forced-count harness of native-benchmark-<P>x<D> rows (Qwen 3 exports: llama_main's components)
+EXECUTORCH_NATIVE_RUNNER = "et_native_bench"
+EXECUTORCH_NATIVE_SAMPLER = "greedy (et_native_bench: argmax, temperature 0)"
+RE_ET_NATIVE = re.compile(r"^ET_NATIVE_BENCH_(OK|COUNT_MISMATCH) (.*)$", re.M)
 RE_ET_THREADS = re.compile(r"(?:Resetting threadpool with num threads =|Setting threadpool to) (\d+)")
 RE_ET_METADATA = re.compile(r"Metadata: (\w+) = (-?\d+)")
 RE_ET_RSS = re.compile(r"RSS after (loading model|prompt prefill|finishing text generation): ([\d.]+) MiB")
@@ -1029,6 +1045,43 @@ def _executorch_log(stderr):
     return log
 
 
+def parse_et_native_bench(stdout, stderr, want_prefill, want_decode):
+    """et_native_bench's stdout and stderr (a native-benchmark-<P>x<D> launch) -> parse_executorch's
+    dict (runner et_native_bench, the stats line's metrics, the log) plus "native": the counts its
+    ET_NATIVE_BENCH line states. generatedTokenCount becomes D's count (the prefill-sampled token +
+    the decode loop's steps); the decode rate stays the stats line's (the loop's steps over its window).
+    flags add native-count-line-missing, prompt-token-count-mismatch (the call's tokens or the stats
+    line's prompt_tokens != P), decode-token-count-mismatch (the tokens after the prompt != D, or the
+    loop's steps != D - 1) and prefill-not-one-forward (the export chunked or stepped the prefill)."""
+    out = parse_executorch(stdout, stderr)
+    out["runner"] = EXECUTORCH_NATIVE_RUNNER
+    out["textExtraction"] = "none: a native-benchmark row prints no text (token ids in, counts out)"
+    lines = RE_ET_NATIVE.findall(stdout or "")
+    flags, m = out["flags"], out["metrics"]
+    if len(lines) != 1:
+        flags.append("native-count-line-missing" if not lines else f"native-count-line-count-{len(lines)}")
+    native = {}
+    if lines:
+        verdict, rest = lines[-1]
+        for key, value in re.findall(r"(\w+)=(\S+)", rest):
+            native[key] = int(value) if re.fullmatch(r"-?\d+", value) else value
+        native["verdict"] = verdict
+        out["nativeLine"] = f"ET_NATIVE_BENCH_{verdict} {rest}"
+    out["native"] = native
+    stats_prompt = m.get("promptTokenCount")
+    if native.get("prefill_tokens") != want_prefill or (stats_prompt is not None and stats_prompt != want_prefill):
+        flags.append("prompt-token-count-mismatch")
+    steps = (out["stats"] or {}).get("generated_tokens")
+    if native.get("generated_tokens") != want_decode or native.get("decode_forward_steps") != want_decode - 1 \
+            or (steps is not None and steps != want_decode - 1):
+        flags.append("decode-token-count-mismatch")
+    if native and native.get("prefill_forwards") != 1:
+        flags.append("prefill-not-one-forward")
+    if "generated_tokens" in native:
+        m["generatedTokenCount"] = native["generated_tokens"]
+    return out
+
+
 def parse_gemma4_runner(stdout, stderr=""):
     """gemma4_e2e_runner's stdout and stderr -> the dict parse_executorch returns, from its
     "=== Gemma 4 Performance Report ===" (statsReport, verbatim) instead of a stats line.
@@ -1134,7 +1187,15 @@ def executorch_inputs(model_dir, pte_file, task, alias, repo_root):
         raise ValueError(f"{tokenizer} sha256 {tokenizer_sha} != the recipe.json's")
     checkpoint = recipe.get("checkpoint") or {}
     manifest = None
-    if runner == "llama_main":
+    native = re.fullmatch(r"native-benchmark-(\d+)x(\d+)", task)
+    if native:
+        # forced counts from token ids: the harness over llama_main's components, no prompt file
+        if runner != "llama_main":
+            raise ValueError(f"{task} runs {EXECUTORCH_NATIVE_RUNNER} over llama_main's runner components: "
+                             f"Qwen 3 exports only (this recipe feeds {runner})")
+        runner = EXECUTORCH_NATIVE_RUNNER
+        prompt = prompt_text = prompt_sha = None
+    elif runner == "llama_main":
         prompts_dir = stem + ".prompts"
         prompt = os.path.join(prompts_dir, f"{task}.chat.txt")
         listing = os.path.join(prompts_dir, "prompts.json")
@@ -1161,9 +1222,10 @@ def executorch_inputs(model_dir, pte_file, task, alias, repo_root):
                     "renderedSha256": entry.get("renderedSha256")}
     else:
         prompt = os.path.join(repo_root, "prompts", "text", f"{task}.txt")
-    with open(prompt, encoding="utf-8") as fh:
-        prompt_text = fh.read()
-    prompt_sha = hashlib.sha256(prompt_text.encode()).hexdigest()
+    if prompt:
+        with open(prompt, encoding="utf-8") as fh:
+            prompt_text = fh.read()
+        prompt_sha = hashlib.sha256(prompt_text.encode()).hexdigest()
     if manifest and manifest["renderedSha256"] != prompt_sha:
         raise ValueError(f"{prompt} sha256 {prompt_sha} != prompts.json renderedSha256 (edited after rendering)")
     with open(recipe_path, "rb") as fh:
@@ -1174,6 +1236,7 @@ def executorch_inputs(model_dir, pte_file, task, alias, repo_root):
             "runner": runner, "tokenizer": tokenizer, "tokenizerSha256": tokenizer_sha,
             "prompt": prompt, "promptSha256": prompt_sha, "promptText": prompt_text,
             "promptManifest": manifest, "contextTokens": context, "contextSource": context_source,
+            "native": (int(native.group(1)), int(native.group(2))) if native else None,
             "hfRepo": checkpoint.get("hf_repo"), "hfRevision": checkpoint.get("revision"),
             "exporter": ((recipe.get("exporter") or {}).get("tree_path")
                          or "extension/llm/export/export_llm (" + str(recipe.get("config_yaml_path")) + ")")}
@@ -1187,7 +1250,16 @@ def executorch_record_fields(parsed, inputs, budget, declared_context=None):
     allocation-witness-mismatch (the cell's context-tokens= against the run's allocation)."""
     runner, log, m = parsed["runner"], parsed["log"], dict(parsed["metrics"])
     flags = list(parsed["flags"])
-    if runner == "llama_main":
+    if runner == EXECUTORCH_NATIVE_RUNNER:
+        witness = (log.get("metadata") or {}).get("get_max_context_len")
+        context = witness if witness is not None else inputs["contextTokens"]
+        context_source = ("runner log (Metadata: get_max_context_len)" if witness is not None
+                          else inputs["contextSource"])
+        engine_peak = log.get("rssAfterGenerationMiB")
+        reply = m.get("generatedTokenCount")
+        chat = "none: token ids into the prefill, no text and no chat template (native-benchmark row)"
+        thinking = "n/a (no text)"
+    elif runner == "llama_main":
         witness = (log.get("metadata") or {}).get("get_max_context_len")
         context = witness if witness is not None else inputs["contextTokens"]
         context_source = ("runner log (Metadata: get_max_context_len)" if witness is not None
@@ -1222,7 +1294,8 @@ def executorch_record_fields(parsed, inputs, budget, declared_context=None):
         flags.append("context-budget-exceeded")
     if declared_context and context and int(declared_context) != int(context):
         flags.append("allocation-witness-mismatch")
-    conditions = {"executorchRunner": runner, "sampler": EXECUTORCH_SAMPLER,
+    conditions = {"executorchRunner": runner,
+                  "sampler": EXECUTORCH_NATIVE_SAMPLER if runner == EXECUTORCH_NATIVE_RUNNER else EXECUTORCH_SAMPLER,
                   "maxOutputTokens": budget, "chatMode": chat, "thinkingPolicy": thinking,
                   "cpuThreadsPolicy": "engine heuristic (--cpu_threads -1: cpuinfo "
                                       "get_num_performant_cores)",
@@ -1233,14 +1306,34 @@ def executorch_record_fields(parsed, inputs, budget, declared_context=None):
         conditions["cpuThreads"] = log["cpuThreads"]
     if runner == "gemma4_e2e_runner":
         conditions["runnerDefaults"] = "--enable_workspace_sharing true (XNNPACK workspace sharing + weight cache)"
+    if runner == EXECUTORCH_NATIVE_RUNNER:
+        nb = parsed.get("native") or {}
+        want_p, want_d = inputs["native"]
+        conditions["nativeBenchmark"] = {
+            "tool": "et_native_bench (scripts/executorch/native_bench, over the tag's runner components)",
+            "requestedPrefillTokens": want_p, "requestedDecodeTokens": want_d,
+            "loggedPromptTokens": nb.get("prefill_tokens"), "prefillCalls": nb.get("prefill_calls"),
+            "prefillChunks": nb.get("prefill_chunks"), "prefillForwards": nb.get("prefill_forwards"),
+            "sampledFromPrefill": nb.get("sampled_from_prefill"),
+            "decodeForwardSteps": nb.get("decode_forward_steps"), "generatedTokens": nb.get("generated_tokens"),
+            "promptSource": (f"SplitMix64 token ids (seed {nb.get('seed')}) below get_vocab_size "
+                             f"{nb.get('vocab')}, no text"),
+            "tokenIdsHead": [int(x) for x in str(nb.get("ids_head", "")).split(",") if x.isdigit()],
+            "decodeStop": "TextTokenGenerator ignore_eos: only the count ends it",
+            "exportShape": {k: nb.get(k) for k in ("max_seq_len", "max_context_len", "enable_dynamic_shape",
+                                                   "use_kv_cache")},
+            "countsMatch": nb.get("verdict") == "OK" and not any(
+                f in flags for f in ("prompt-token-count-mismatch", "decode-token-count-mismatch",
+                                     "native-count-line-missing"))}
     provenance = {"definitions": EXECUTORCH_DEFINITIONS[runner],
                   "recipe": os.path.basename(inputs["recipePath"]), "recipeSha256": inputs["recipeSha256"],
                   "recipeAlias": inputs["alias"], "exporter": inputs["exporter"],
                   "modelProvenance": ("own export with the ExecuTorch tag's own exporter (recipe.json "
                                       "beside the .pte); not a published artifact"),
-                  "promptFile": inputs["prompt"] if runner == "gemma4_e2e_runner"
-                  else os.path.join(os.path.basename(os.path.dirname(inputs["prompt"])),
-                                    os.path.basename(inputs["prompt"])),
+                  "promptFile": (None if not inputs["prompt"]
+                                 else inputs["prompt"] if runner == "gemma4_e2e_runner"
+                                 else os.path.join(os.path.basename(os.path.dirname(inputs["prompt"])),
+                                                   os.path.basename(inputs["prompt"]))),
                   "promptSha256": inputs["promptSha256"],
                   "tokenizer": os.path.basename(inputs["tokenizer"]),
                   "tokenizerSha256": inputs["tokenizerSha256"],
@@ -1251,6 +1344,8 @@ def executorch_record_fields(parsed, inputs, budget, declared_context=None):
     else:
         provenance["statsLine"] = parsed.get("statsLine")
         provenance["promptRender"] = inputs.get("promptManifest")
+    if runner == EXECUTORCH_NATIVE_RUNNER:
+        provenance["nativeLine"] = parsed.get("nativeLine")
     if parsed["engineErrors"]:
         provenance["engineErrors"] = parsed["engineErrors"]
     model = {"quantization": inputs["label"], "sha256": inputs["pteSha256"],

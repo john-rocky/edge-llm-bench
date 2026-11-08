@@ -2738,6 +2738,88 @@ def main():
        and n_sit_after == n_sit and not records(os.path.join(tmp, "et-sitting-unpinned"), "executorch-xnnpack_"),
        f"sitting: a llama_main the registry does not pin stops with rc 5 before any launch, no record "
        f"(rc {p.returncode}, engine shells {n_sit_after - n_sit}, {p.stdout.strip()[-140:]!r})")
+    # --- executorch native-benchmark-<P>x<D> (et_native_bench over llama_main's components, Qwen 3):
+    # token ids, no prompt file pushed; the harness's own count line is the check, and a launch
+    # whose counts are not the cell's keeps its record, flagged, out of every pool
+    nb_dir = os.path.join(tmp, "et-native-fixture")
+    os.makedirs(nb_dir)
+    nb_stats = ('PyTorchObserver {"prefill_token_per_sec":1024,"decode_token_per_sec":51,"prompt_tokens":1024,'
+                '"generated_tokens":%d,"model_load_start_ms":1000,"model_load_end_ms":1500,'
+                '"inference_start_ms":2000,"inference_end_ms":%d,"model_execution_start_ms":0,'
+                '"model_execution_end_ms":0,"prompt_eval_end_ms":3000,"first_token_ms":3000,'
+                '"aggregate_sampling_time_ms":10,"aggregate_model_execution_time_ms":0,'
+                '"SCALING_FACTOR_UNITS_PER_SECOND":1000}\n')
+    nb_line = ("ET_NATIVE_BENCH_%s requested_prefill=1024 requested_decode=256 prefill_tokens=1024 prefill_calls=1 "
+               "prefill_chunks=1 prefill_forwards=1 sampled_from_prefill=1 decode_forward_steps=%d "
+               "generated_tokens=%d token_callbacks=%d ignore_eos=1 sampler=greedy seed=0 vocab=151936 "
+               "ids_head=85364,125647,54380,55707,111594,46817,106428,110531 max_seq_len=2048 "
+               "max_context_len=2048 enable_dynamic_shape=1 use_kv_cache=1\n")
+    with open(os.path.join(nb_dir, "ok.stdout.txt"), "w") as fh:
+        fh.write(nb_stats % (255, 8000) + nb_line % ("OK", 255, 256, 255))
+    with open(os.path.join(nb_dir, "short.stdout.txt"), "w") as fh:  # a decode cut at 200 tokens
+        fh.write(nb_stats.replace('"decode_token_per_sec":51', '"decode_token_per_sec":39.8')
+                 % (199, 8000) + nb_line % ("COUNT_MISMATCH", 199, 200, 199))
+    with open(os.path.join(nb_dir, "stderr.txt"), "w") as fh:
+        fh.write("I 00:00:00.000100 executorch:et_native_bench.cpp:98] Resetting threadpool with num threads = 6\n"
+                 "I 00:00:00.300000 executorch:llm_runner_helper.cpp:137] Metadata: get_max_context_len = 2048\n"
+                 "I 00:00:00.300000 executorch:llm_runner_helper.cpp:137] Metadata: enable_dynamic_shape = 1\n"
+                 "I 00:00:01.500000 executorch:et_native_bench.cpp:160] RSS after loading model: 600.000000 MiB (0 if unsupported)\n"
+                 "I 00:00:03.000000 executorch:et_native_bench.cpp:171] RSS after prompt prefill: 700.000000 MiB (0 if unsupported)\n"
+                 "I 00:00:08.000000 executorch:et_native_bench.cpp:186] RSS after finishing text generation: 720.000000 MiB (0 if unsupported)\n")
+    nb_sha = pinned.get("et_native_bench_sha256")
+    ok(bool(nb_sha), "android/engine-pins.json executorch v1.5.1 pins et_native_bench_sha256")
+    with open(os.path.join(dev, "executorch-v1.5.1", "et_native_bench"), "w") as fh:
+        fh.write("sha256=" + str(nb_sha))
+    json.dump([{"stdout": os.path.join(nb_dir, "ok.stdout.txt"), "stderr": os.path.join(nb_dir, "stderr.txt")},
+               {"stdout": os.path.join(nb_dir, "short.stdout.txt"), "stderr": os.path.join(nb_dir, "stderr.txt")}],
+              open(os.path.join(state, "et_launches.json"), "w"))
+
+    def native_cell(out):
+        return subprocess.run([sys.executable, os.path.join(ROOT, "android", "bench", "run_cell.py"), "--runtime",
+                               "executorch", "--backend", "xnnpack", "--model-id", f"own-export/{stem}",
+                               "--file", f"{stem}.pte", "--recipe", alias, "--task", "native-benchmark-1024x256",
+                               "--context-tokens", "2048", "--runs", "1", "--out", out],
+                              env=dict(env_et, BENCH_SITTING="1"), capture_output=True, text=True)
+    print("--- executorch native-benchmark-1024x256 (et_native_bench: token ids, forced counts)")
+    nb_out, nb_bad_out = os.path.join(tmp, "et-native"), os.path.join(tmp, "et-native-short")
+    p_ok, p_bad = native_cell(nb_out), native_cell(nb_bad_out)
+    got = records(nb_out, "executorch-xnnpack_")
+    r = got[0][1] if got else {}
+    c, m = r.get("conditions", {}), r.get("metrics", {})
+    nb = c.get("nativeBenchmark", {})
+    ok(p_ok.returncode == 0 and len(got) == 1 and r.get("engineArtifact") == nb_sha
+       and r.get("engineVersion") == "v1.5.1" and c.get("executorchRunner") == "et_native_bench"
+       and (nb.get("loggedPromptTokens"), nb.get("prefillCalls"), nb.get("prefillForwards"),
+            nb.get("sampledFromPrefill"), nb.get("decodeForwardSteps"), nb.get("generatedTokens"),
+            nb.get("countsMatch")) == (1024, 1, 1, 1, 255, 256, True)
+       and (m.get("promptTokenCount"), m.get("generatedTokenCount")) == (1024, 256)
+       and abs(m.get("promptTokensPerSecond", 0) - 1024.0) < 1e-6 and abs(m.get("decodeTokensPerSecond", 0) - 51.0) < 1e-6
+       and m.get("firstTokenLatencyMS") == 1000 and m.get("loadTimeSeconds") == 0.5
+       and nb.get("tokenIdsHead", [])[:2] == [85364, 125647] and not c.get("protocolFlags")
+       and r.get("provenance", {}).get("definitions") == parsers.EXECUTORCH_DEFINITIONS["et_native_bench"]
+       and "--prefill_tokens=1024 --decode_tokens=256" in open(os.path.join(state, "engine_cmds")).read()
+       and not os.path.exists(model_dev + ".native-benchmark-1024x256.prompt.txt"),
+       f"executorch native row: the pinned et_native_bench, 1024 ids in one prefill call and forward, 1 + 255 = 256 "
+       f"tokens, the stats line's rates, no prompt pushed (rc {p_ok.returncode}, {nb}, {m}, "
+       f"{p_ok.stderr.strip()[-200:]!r})")
+    got = records(nb_bad_out, "executorch-xnnpack_")
+    r = got[0][1] if got else {}
+    ok(p_bad.returncode != 0 and len(got) == 1
+       and r.get("conditions", {}).get("protocolFlags") == ["decode-token-count-mismatch"]
+       and r.get("conditions", {}).get("nativeBenchmark", {}).get("countsMatch") is False
+       and r.get("metrics", {}).get("generatedTokenCount") == 200,
+       f"executorch native row: a launch that stopped at 200 tokens keeps its record, flagged "
+       f"decode-token-count-mismatch, and the cell is not OK (rc {p_bad.returncode}, "
+       f"{r.get('conditions', {}).get('protocolFlags')})")
+    g4_native = subprocess.run([sys.executable, os.path.join(ROOT, "android", "bench", "run_cell.py"), "--runtime",
+                                "executorch", "--backend", "xnnpack", "--model-id", f"own-export/{g4stem}",
+                                "--file", f"{g4stem}.pte", "--recipe", g4alias, "--task", "native-benchmark-1024x256",
+                                "--runs", "1", "--out", os.path.join(tmp, "et-native-g4")],
+                               env=env_et, capture_output=True, text=True)
+    ok(g4_native.returncode != 0 and "Qwen 3 exports only" in g4_native.stderr
+       and not records(os.path.join(tmp, "et-native-g4"), "executorch-xnnpack_"),
+       f"executorch native row of a Gemma 4 export stops before any launch "
+       f"(rc {g4_native.returncode}, {g4_native.stderr.strip()[-160:]!r})")
     # the summary row of an executorch record, and its pool (build_summary, arm_row)
     with patch.object(build_summary, "ROOT", raw_root.rsplit(os.sep + "raw", 1)[0]), \
          patch.object(build_summary, "OUT", os.path.join(tmp, "summary-et")), \
