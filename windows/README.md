@@ -547,3 +547,39 @@ adapter:` line came 1.21 to 1.30 s after its first log line (1.20 to 1.27 s in `
 medians (the five runs' second conversations, run 1's included) lay 0.05 % apart, with warm spreads of 8.51 and
 12.10 %. All four sittings of this row with the wait read `out` (cold spreads 11.62, 10.90, 11.04 and 6.04 %); what
 moves its cold decode from run to run with the wait is not established.
+
+Five more sittings each ran one model's four GPU rows of the column (a cells file of that model's four GPU lines of
+`matrices/dashboard-windows-v1.cells`, runs=3, 12 runs each) with the job's 2 s wait, on 2026-11-08 JST:
+`2026-11-08-windows-gpu-q06` (Qwen3 0.6B) at 14:57, `-q17` (Qwen3 1.7B) at 16:00, `-e2b` (Gemma 4 E2B) at 16:12, `-q4b`
+(Qwen3 4B) at 16:51 and `-e4b` (Gemma 4 E4B) at 17:58; since then each of the column's 20 GPU cells shows one of them.
+As in `-on-c1` and `-on-c2`, `BENCH_WINDOWS_MODEL_DIR` named a folder of its own that held the ten model files of these
+rows by a second path (NTFS hard links to the files in `%USERPROFILE%\models`); the ten files' sha256, read on the
+machine after the first sitting, equal the ones the Hub lists for them. Their `host.json` lists the same 187 engine
+files as `-on-c2`, every run was clean and quiet, no run took a GPU read while its engine ran, and every run's
+`gpuReadToStartSeconds` reads 1.997 to 2.044 s on the NVIDIA rows and 2.369 to 2.404 s on `litert-lm-gpu-igpu`. In each
+sitting run 1 of each LiteRT-LM row started without the model's GPU cache files and wrote them (`gpuCacheWrite` true;
+before the `litert-lm-gpu-igpu` row's run 1 the job removed the two the NVIDIA row had written, `gpuCachePurge`, and at
+the job's end the two that row wrote), and runs 2 and 3 started with them in place (false). Three SSH connections opened
+during runs, each from the driving machine's reachability check (one every 5 minutes): 10.6 s into `-q4b`'s second
+`litert-lm-gpu-igpu` run, 3.9 s into its first `llama.cpp-cuda` run (the row's first process, not counted) and 0.4 s
+before the job launched the engine of `-e4b`'s second `llama.cpp-gpu` run (`atSeconds` -0.4; the record counts it). Each
+of the two counted runs read the lower cold decode of its row's two counted runs, and both rows read `out`; the four
+other cells that read `out` (below) had no connection in their runs, so whether a connection moved a run is not
+established.
+
+The sitting the column's cell showed before these was, for the Qwen3 and Gemma 4 E4B cells, `2026-11-07-windows-e4b`
+(`2026-11-07-windows-igpu` on `litert-lm-gpu-igpu`), a day earlier and without the wait, and for Gemma 4 E2B `-on-c2` on
+`litert-lm-gpu` (with the wait, about four hours earlier), `-off-a2` on `llama.cpp-gpu` and `-off-b2` on
+`litert-lm-gpu-igpu` and `llama.cpp-cuda` (without it, about 12 and 9 hours earlier). Against it, the cold decode median
+moved by -12.07 to +0.30 % in the 11 cells whose cold spreads stayed within 5 % in both: on `litert-lm-gpu` by -3.45,
++0.30 and +0.24 % (Qwen3 1.7B, Qwen3 4B, Gemma 4 E4B), on `litert-lm-gpu-igpu` by -0.51 % (Qwen3 1.7B), on
+`llama.cpp-gpu` by -1.26, -11.96 and -0.30 % (Qwen3 0.6B, Qwen3 1.7B, Gemma 4 E2B) and on `llama.cpp-cuda` by -2.08,
+-12.07, -5.93 and -2.14 % (Qwen3 1.7B, Gemma 4 E2B, Qwen3 4B, Gemma 4 E4B). Six cells read `out` in the new sittings:
+Qwen3 0.6B's `litert-lm-gpu` (cold spread 21.59 %) and `llama.cpp-cuda` (5.87 %), Qwen3 4B's `litert-lm-gpu-igpu` (12.02
+%) and `llama.cpp-gpu` (20.39 %), and Gemma 4 E4B's `litert-lm-gpu-igpu` (9.29 %) and `llama.cpp-gpu` (18.04 %); five
+had read `out` in the sitting before: Qwen3 0.6B's `litert-lm-gpu-igpu` and `llama.cpp-cuda`, Gemma 4 E2B's
+`litert-lm-gpu` and `litert-lm-gpu-igpu`, and Gemma 4 E4B's `litert-lm-gpu-igpu` (two cells, Qwen3 0.6B's
+`llama.cpp-cuda` and Gemma 4 E4B's `litert-lm-gpu-igpu`, read `out` in both). The cold prefill medians, which the spread
+rule does not gate, moved by -47.27 to +29.70 % over the 20 cells. The wait alone can make a GPU row's later sitting
+read lower on the same machine (the eight `2026-11-07-windows-gpuwait-*` sittings above); how much of each difference
+the wait, the day or anything else made is not established.
