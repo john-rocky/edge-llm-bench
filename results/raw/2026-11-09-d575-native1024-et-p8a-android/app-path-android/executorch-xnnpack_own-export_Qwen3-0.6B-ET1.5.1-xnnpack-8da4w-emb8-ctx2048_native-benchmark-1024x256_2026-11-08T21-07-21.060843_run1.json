@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "id": "50039b27-772c-49a7-8d17-42fc16bff66a",
+  "runtime": "executorch-xnnpack",
+  "engineVersion": "v1.5.1",
+  "engineArtifact": "0363f33a12c70af4f8a9fa56257291a1ba0dd339fdad254111b8af71b8e007ca",
+  "model": {
+    "id": "own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048",
+    "quantization": "8da4w: int8 dynamic per-token asymmetric activations x int4 symmetric weights, group 128, HQQ scale-only (every Linear incl. lm_head); embedding int8 per-row (embedding_byte); fp32 compute and KV cache; own export, ExecuTorch 1.5.1",
+    "file": "Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte",
+    "sha256": "2517e337fbe6da0850a9bc1dfbe015690def3aedc362534429744735e9e110a3",
+    "hfRevision": "c1899de289a04d12100db370d81485cdf75e47ca"
+  },
+  "task": "native-benchmark-1024x256",
+  "timestamp": "2026-11-08T21:07:21Z",
+  "device": {
+    "modelIdentifier": "Pixel 8a",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-05-05",
+    "soc": "Tensor G3",
+    "product": "akita",
+    "batteryLevel": 0.76,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "greedy (et_native_bench: argmax, temperature 0)",
+    "cpuAffinity": "taskset f0",
+    "cpusAllowedList": "4-7",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 1704,
+        "hw": 1704,
+        "cpus": "0-3"
+      },
+      "policy4": {
+        "min": 2367,
+        "hw": 2367,
+        "cpus": "4-7"
+      },
+      "policy8": {
+        "min": 2914,
+        "hw": 2914,
+        "cpus": "8"
+      }
+    },
+    "contextTokens": 2048,
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "on-usb",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "15",
+    "elapsedSeconds": 25.2,
+    "exitCode": 0,
+    "executorchRunner": "et_native_bench",
+    "maxOutputTokens": null,
+    "chatMode": "none: token ids into the prefill, no text and no chat template (native-benchmark row)",
+    "thinkingPolicy": "n/a (no text)",
+    "cpuThreadsPolicy": "engine heuristic (--cpu_threads -1: cpuinfo get_num_performant_cores)",
+    "contextSource": "runner log (Metadata: get_max_context_len)",
+    "contextBudget": 2048,
+    "cpuThreads": 9,
+    "nativeBenchmark": {
+      "tool": "et_native_bench (scripts/executorch/native_bench, over the tag's runner components)",
+      "requestedPrefillTokens": 1024,
+      "requestedDecodeTokens": 256,
+      "loggedPromptTokens": 1024,
+      "prefillCalls": 1,
+      "prefillChunks": 1,
+      "prefillForwards": 1,
+      "sampledFromPrefill": 1,
+      "decodeForwardSteps": 255,
+      "generatedTokens": 256,
+      "promptSource": "SplitMix64 token ids (seed 0) below get_vocab_size 151669, no text",
+      "tokenIdsHead": [
+        31235,
+        53321,
+        10469,
+        145497,
+        140233,
+        107269,
+        145623,
+        136368
+      ],
+      "decodeStop": "TextTokenGenerator ignore_eos: only the count ends it",
+      "exportShape": {
+        "max_seq_len": 2048,
+        "max_context_len": 2048,
+        "enable_dynamic_shape": 1,
+        "use_kv_cache": 1
+      },
+      "countsMatch": true
+    },
+    "warm": false
+  },
+  "metrics": {
+    "promptTokenCount": 1024,
+    "generatedTokenCount": 256,
+    "promptTokensPerSecond": 236.2168396770473,
+    "decodeTokensPerSecond": 13.616703155871202,
+    "firstTokenLatencyMS": 4335,
+    "loadTimeSeconds": 0.957,
+    "memoryPeakEngineReportedMB": 1047.195312,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1+executorch-runner-stats",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 1029.83984375,
+    "memoryPeakResidentMB": 1047.1953125
+  },
+  "provenance": {
+    "rawLog": "executorch-xnnpack_own-export_Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048_native-benchmark-1024x256_2026-11-08T21-07-21.060843_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024; executorch: memoryPeakResidentMB = the larger of that and the harness's own peak (memoryPeakEngineReportedMB: getrusage ru_maxrss at the end of the decode, its stderr line 'RSS after finishing text generation', MiB, as llama_main logs it)",
+    "modelShaSource": "device",
+    "definitions": "native-benchmark-<P>x<D> row (scripts/executorch/native_bench/et_native_bench.cpp over the tag's runner components, the ones llama_main builds): P token ids, no text, in one TextPrefiller::prefill call, the first token sampled from its logits (greedy), then D - 1 decode steps with ignore_eos.\nprefill tok/s = prompt_tokens / (prompt_eval_end_ms - inference_start_ms) * 1000: the prefill call and the first token's sampling; no tokenization (there is no text).\nTTFT ms = first_token_ms - inference_start_ms = the same window.\ndecode tok/s = the stats line's generated_tokens (the decode loop's D - 1 steps) / (inference_end_ms - prompt_eval_end_ms) * 1000, as llama_main's; generatedTokenCount = D, the prefill-sampled token included (nativeBenchmark: sampledFromPrefill 1 + decodeForwardSteps D - 1).\ncold = one generation in a fresh et_native_bench process (no warmup).\nClock: integer milliseconds (extension/llm/runner/util.h time_in_ms).",
+    "recipe": "Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.recipe.json",
+    "recipeSha256": "0ad0c744008d58f8d3707eb73f813481e71b8052c67cf756466402becd49994f",
+    "recipeAlias": "et1.5.1-xnnpack-8da4w-g128-emb8",
+    "exporter": "extension/llm/export/export_llm (examples/models/qwen3/config/qwen3_xnnpack_q8da4w.yaml)",
+    "modelProvenance": "own export with the ExecuTorch tag's own exporter (recipe.json beside the .pte); not a published artifact",
+    "promptFile": null,
+    "promptSha256": null,
+    "tokenizer": "tokenizer.json",
+    "tokenizerSha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+    "textExtraction": "none: a native-benchmark row prints no text (token ids in, counts out)",
+    "statsLine": "PyTorchObserver {\"prefill_token_per_sec\":236.217,\"decode_token_per_sec\":13.6167,\"prompt_tokens\":1024,\"generated_tokens\":255,\"model_load_start_ms\":1794172022268,\"model_load_end_ms\":1794172023225,\"inference_start_ms\":1794172023225,\"inference_end_ms\":1794172046287,\"model_execution_start_ms\":1794172046201,\"model_execution_end_ms\":1794172046287,\"prompt_eval_end_ms\":1794172027560,\"first_token_ms\":1794172027560,\"aggregate_sampling_time_ms\":59,\"aggregate_model_execution_time_ms\":22996,\"SCALING_FACTOR_UNITS_PER_SECOND\":1000}",
+    "promptRender": null,
+    "nativeLine": "ET_NATIVE_BENCH_OK requested_prefill=1024 requested_decode=256 prefill_tokens=1024 prefill_calls=1 prefill_chunks=1 prefill_forwards=1 sampled_from_prefill=1 decode_forward_steps=255 generated_tokens=256 token_callbacks=255 ignore_eos=1 sampler=greedy seed=0 vocab=151669 ids_head=31235,53321,10469,145497,140233,107269,145623,136368 max_seq_len=2048 max_context_len=2048 enable_dynamic_shape=1 use_kv_cache=1"
+  },
+  "outputSample": ""
+}
