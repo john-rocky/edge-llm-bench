@@ -279,6 +279,76 @@ def parse_ortgenai(text):
     return metrics, report, (libs.group(1).split() if libs else []), (out.group(1) if out else None)
 
 
+RE_MB_HEAD = re.compile(
+    r"^Batch size: (\d+), prompt tokens: (\d+), tokens to generate: (\d+)\s*$", re.M)
+RE_MB_BLOCK = re.compile(
+    r"^(Prompt processing \(time to first token\)|Token generation|Token sampling):\s*\n"
+    r"\s*avg \(us\):\s*(\S+)\s*\n\s*avg \(tokens/s\):\s*(\S+)\s*\n\s*p50 \(us\):\s*(\S+)\s*\n"
+    r"\s*stddev \(us\):\s*(\S+)\s*\n\s*n:\s*(\d+) \* (\d+) token\(s\)", re.M)
+RE_MB_LATENCY = re.compile(r"^(Model|Tokenizer|Generator) Creation Latency: ([0-9.eE+-]+) ms", re.M)
+RE_MB_PEAK = re.compile(r"^Peak working set size: (\d+) bytes", re.M)
+MB_BLOCKS = {"Prompt processing (time to first token)": "prefill", "Token generation": "decode",
+             "Token sampling": "sampling"}
+
+
+def parse_ortgenai_model_benchmark(text, want_prefill, want_decode):
+    """ONNX Runtime GenAI's upstream model_benchmark (benchmark/c v0.17.0 main.cpp, unchanged)
+    run as one measured iteration (-r 1 -w 0) -> (metrics, report, flags).
+
+    The tool's own lines are the counts: `prompt tokens: P` (the ids it appended), the
+    `Prompt processing` block `n: 1 * P token(s)` (one AppendTokenSequences call of P ids =
+    one prefill), `Token sampling` `n: 1 * 1` (the first GenerateNextToken, a pick from the
+    prefill logits, no forward pass) and `Token generation` `n: D-1 * 1` (each a forward pass +
+    a pick); generated tokens = sampling + generation steps. min_length = P + D (main.cpp
+    MakeGeneratorParams) keeps EOS from ending the loop, so a short count means the generator
+    stopped for another reason. metrics use the record names: prompt tok/s = the tool's
+    prefill tokens/s (P / the AppendTokenSequences wall clock), TTFT = that call + the first
+    GenerateNextToken, decode tok/s = the tool's `Token generation` tokens/s ((D - 1) / their
+    summed wall clock), load = Model Creation Latency. flags name every count that is not
+    the cell's (prompt-token-count-mismatch, decode-token-count-mismatch, prefill-calls-not-one,
+    model-benchmark-output-missing)."""
+    report, flags = {}, []
+    head = RE_MB_HEAD.search(text)
+    blocks = {}
+    for m in RE_MB_BLOCK.finditer(text):
+        blocks[MB_BLOCKS[m.group(1)]] = {"avg_us": _number(m.group(2)), "avg_tps": _number(m.group(3)),
+                                         "p50_us": _number(m.group(4)), "stddev_us": _number(m.group(5)),
+                                         "n": int(m.group(6)), "tokens_per_measurement": int(m.group(7))}
+    for m in RE_MB_LATENCY.finditer(text):
+        report[f"{m.group(1).lower()}_creation_ms"] = _number(m.group(2))
+    peak = RE_MB_PEAK.search(text)
+    if peak:
+        report["peak_working_set_bytes"] = int(peak.group(1))
+    if not head or set(blocks) != set(MB_BLOCKS.values()):
+        return {}, report, ["model-benchmark-output-missing"]
+    batch, prompt_tokens, to_generate = (int(g) for g in head.groups())
+    report.update(batch_size=batch, prompt_tokens=prompt_tokens, tokens_to_generate=to_generate,
+                  **{f"{k}_{f}": v for k, b in blocks.items() for f, v in b.items()})
+    pre, dec, samp = blocks["prefill"], blocks["decode"], blocks["sampling"]
+    prefill_calls = pre["n"]
+    appended = pre["tokens_per_measurement"] // batch if batch else 0
+    generated = samp["n"] * samp["tokens_per_measurement"] + dec["n"] * dec["tokens_per_measurement"]
+    report.update(prefill_calls=prefill_calls, prefill_tokens_per_call=appended,
+                  decode_forward_steps=dec["n"], sampled_from_prefill=samp["n"],
+                  generated_tokens=generated)
+    if prefill_calls != 1:
+        flags.append("prefill-calls-not-one")
+    if prompt_tokens != want_prefill or appended != want_prefill:
+        flags.append("prompt-token-count-mismatch")
+    if to_generate != want_decode or generated != want_decode:
+        flags.append("decode-token-count-mismatch")
+    metrics = {"promptTokenCount": appended, "generatedTokenCount": generated}
+    if isinstance(pre["avg_tps"], (int, float)):
+        metrics["promptTokensPerSecond"] = float(pre["avg_tps"])
+    if isinstance(pre["avg_us"], (int, float)) and isinstance(samp["avg_us"], (int, float)):
+        metrics["firstTokenLatencyMS"] = (pre["avg_us"] + samp["avg_us"]) / 1000.0
+    if isinstance(dec["avg_tps"], (int, float)):
+        metrics["decodeTokensPerSecond"] = float(dec["avg_tps"])
+    if isinstance(report.get("model_creation_ms"), (int, float)):
+        metrics["loadTimeSeconds"] = report["model_creation_ms"] / 1000.0
+    return metrics, report, flags
+
+
 def parse_llama_bench_json(text):
     """llama-bench -o json -> list of per-test dicts {kind, avg_ts, n_prompt, n_gen,
     stddev_ts} plus the fields that say where the tests ran (BENCH_DEVICE_FIELDS).

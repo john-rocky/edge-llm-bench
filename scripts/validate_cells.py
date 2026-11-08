@@ -274,8 +274,15 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                 elif opts.get("backend") not in ORTGENAI_BACKENDS[plat]:
                     errors.append(f"{where}: onnxruntime-genai on {plat} needs backend="
                                   f"{'|'.join(sorted(ORTGENAI_BACKENDS[plat]))} (arm identity)")
-                if task not in ORTGENAI_TASKS:
-                    errors.append(f"{where}: onnxruntime-genai v1 tasks are {', '.join(sorted(ORTGENAI_TASKS))}")
+                # a native-benchmark-<P>x<D> row runs the engine's own model_benchmark (forced counts,
+                # token ids, no text) on Android only (android/bench/run_cell.py engine_command)
+                if NATIVE_TASK.match(task):
+                    if plat != "android":
+                        errors.append(f"{where}: an onnxruntime-genai native-benchmark row runs on android only "
+                                      "(model_benchmark through android/bench/run_cell.py)")
+                elif task not in ORTGENAI_TASKS:
+                    errors.append(f"{where}: onnxruntime-genai v1 tasks are {', '.join(sorted(ORTGENAI_TASKS))} "
+                                  "or native-benchmark-<P>x<D> (android)")
                 if not int(opts.get("context-tokens", "0")):
                     errors.append(f"{where}: onnxruntime-genai needs context-tokens=<max_length> "
                                   "(the KV allocation; past_present_share_buffer allocates it up front)")

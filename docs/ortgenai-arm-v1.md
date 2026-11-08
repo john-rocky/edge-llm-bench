@@ -149,6 +149,36 @@ cell, `max_length` 40960 (the folder's own default) instead of 2048 raised the
 peak by 8,516 MiB, the computed size of the fp32 KV for the extra 38,912 tokens
 (8,512 MiB) — which is why every row pins `context-tokens=2048`.
 
+## Protocol row (`native-benchmark-<P>x<D>`, Android)
+
+A `native-benchmark-1024x256` row (`matrices/native-benchmark-1024x256-v1.cells`) runs the engine's own
+`model_benchmark` (upstream `benchmark/c` at v0.17.0, unchanged, built by `android/ortgenai/build_android.sh`
+and pinned as `model_benchmark_sha256`; the witness stamps a record from it as it does from `ortgenai_run`):
+
+```
+model_benchmark -i <folder> -e cpu -l 1024 --use_random_tokens -g 256 -r 1 -w 0 -ml <context-tokens>
+```
+
+- Prefill: 1024 token ids drawn in [0, 99] (`--use_random_tokens`): no text, no tokenizer, no chat template and
+  no earlier model run; appended in one `AppendTokenSequences` call.
+- Decode: `GenerateNextToken` until prompt + 256 tokens; the tool sets `min_length` = prompt + generation, so EOS
+  cannot end it. The first call picks from the prefill logits (no forward pass), the other 255 each run one.
+- One measured iteration, no warmup, one process per run: every Android run is cold, as on the other Android arms.
+- `-ml` = `context-tokens` (2048): the KV allocation every ORT row pins.
+- The pick is the folder's `genai_config.json` `search` block (the tool sets only `max_length` and `min_length`;
+  the Qwen3 CPU folders: `do_sample` true, `top_k` 20, `top_p` 0.95, temperature 0.6); the record keeps it
+  (`conditions.searchConfig`).
+
+The record's counts are the tool's own lines (`android/bench/parsers.py` `parse_ortgenai_model_benchmark`):
+`prompt tokens: 1024`, the `Prompt processing` block `n: 1 * 1024 token(s)` (one prefill call), `Token sampling`
+`n: 1 * 1` and `Token generation` `n: 255 * 1` (256 generated). `conditions.nativeBenchmark` holds them; a run
+whose counts are not the cell's is flagged `prompt-token-count-mismatch` / `decode-token-count-mismatch` /
+`prefill-calls-not-one`, kept, and not counted. The rates are the tool's: prefill tok/s = its `Prompt processing`
+tokens/s, decode tok/s = its `Token generation` tokens/s ((D - 1) / their summed wall clock), TTFT = the prefill call
++ the first pick (`conditions.metricDefinitions`). The tool prints no text; the row is a rate, not a text check.
+
+Not wired: the Mac and iPhone protocol rows (`scripts/validate_cells.py` refuses them).
+
 ## Telemetry
 
 The official builds ship the 1DS telemetry SDK, on by default — in the GenAI
@@ -376,8 +406,8 @@ without a valid run (ceiling down 19-58 %, the section above). The other numbers
 smokes (the Mac 2026-10-07 runs and the wiring smoke, the Mac 2026-10-08 warm-regime smoke —
 one engine process, run 1 cold and runs 2-4 warm — and the Galaxy S26 driver smoke), not
 dashboard measurements.
-Open: the 1.7B / 4B recipe entries; the protocol rows (`model_benchmark` on
-Android, a Mac entry); `streamed_bytes` for the six folders
+Open: the 1.7B / 4B recipe entries; the Mac and iPhone protocol rows (the Android row: "Protocol row"
+above); `streamed_bytes` for the six folders
 in `models/artifact-bytes.json` (the int8 embedding table is gathered per token,
 not streamed, and is still counted, so this arm's bandwidth column reads high).
 In the weekly set since 2026-10-09 (owner decision): the Mac's 12 Qwen3 cells, the Galaxy S26's

@@ -124,6 +124,19 @@ ORTGENAI_METRICS = (
     "engine process (rssBasis); past_present_share_buffer true allocates and zero-fills the KV "
     "cache for max_length = contextTokens (-ml) when the generator is created, so the memory "
     "numbers include it")
+# a native-benchmark-<P>x<D> row (model_benchmark, upstream benchmark/c v0.17.0 unchanged, -r 1 -w 0)
+ORTGENAI_MB_METRICS = (
+    "model_benchmark's own cut points, one measured iteration in a fresh process (no warmup): "
+    "prefill tok/s = its 'Prompt processing' tokens/s = P / the wall clock of the one "
+    "AppendTokenSequences call of the P token ids (prompt forward pass + logits); TTFT = that call "
+    "+ the first GenerateNextToken ('Token sampling': a pick from the prefill logits, no forward "
+    "pass); decode tok/s = its 'Token generation' tokens/s = (D - 1) / the summed wall clock of "
+    "GenerateNextToken calls 2..D (each = one forward pass + a pick); generatedTokenCount = the "
+    "sampling call + the generation calls (D); min_length = P + D, so EOS cannot end the decode; "
+    "the pick is the folder's genai_config.json search (model_benchmark sets only max_length = -ml "
+    "and min_length); memory = the runner's VmRSS / VmHWM sampler of the engine process (rssBasis); "
+    "past_present_share_buffer true allocates the KV cache for max_length = contextTokens when the "
+    "generator is created")
 HARNESS_STAMP = "2026-08-android-cli-v1"
 # CPU affinity mask for the engine process. "f0" (the upstream recommendation,
 # tuned on Pixel 8a's 4 contiguous mid cores) is NOT device-neutral: on the
@@ -591,8 +604,18 @@ def remove_ortgenai_folder(dev_dir, serial):
         print(f"could not remove {dev_dir}: {exc}", file=sys.stderr)
 
 
-def ortgenai_present(serial):
-    out = adb(["shell", f"ls {ORTGENAI_DIR}/ortgenai_run >/dev/null 2>&1 && echo present || echo absent"],
+def ortgenai_search(folder):
+    """The folder's genai_config.json "search" block (the pick model_benchmark leaves to the
+    folder), or {"unreadable": <why>}."""
+    try:
+        with open(os.path.join(folder, "genai_config.json")) as fh:
+            return json.load(fh).get("search", {})
+    except (OSError, ValueError, AttributeError) as e:
+        return {"unreadable": f"{type(e).__name__}: {e}"}
+
+
+def ortgenai_present(serial, tool="ortgenai_run"):
+    out = adb(["shell", f"ls {ORTGENAI_DIR}/{tool} >/dev/null 2>&1 && echo present || echo absent"],
               serial)
     return "present" in out
 
@@ -838,12 +861,24 @@ def engine_command(runtime, backend, model_dev, task, prompt_dev, budget, max_to
         return f"sh -c {shlex.quote(inner)}", binname, parsers.EXECUTORCH_SAMPLER, \
             context_tokens or "export-fixed"
     if runtime == "onnxruntime-genai":
-        if task.startswith(("native-", "endurance-")):
-            raise SystemExit("onnxruntime-genai v1 rows are prompt tasks (a native-benchmark row "
-                             "through model_benchmark is not wired; docs/ortgenai-arm-v1.md)")
+        if task.startswith("endurance-"):
+            raise SystemExit("onnxruntime-genai has no endurance path (docs/ortgenai-arm-v1.md)")
         if not context_tokens:
             raise SystemExit("onnxruntime-genai needs --context-tokens: max_length, the KV cache it "
                              "allocates up front (cells context-tokens=)")
+        if task.startswith("native-benchmark-"):
+            # the engine's own benchmark tool, upstream benchmark/c v0.17.0 unchanged (pinned:
+            # model_benchmark_sha256): P token ids drawn in [0, 99] (--use_random_tokens, no text,
+            # no tokenizer, no earlier model run) appended in one AppendTokenSequences call, then
+            # GenerateNextToken until P + D tokens with min_length = P + D, so EOS cannot end the
+            # decode; one measured iteration per process, no warmup (the Android regime: every
+            # run cold); -ml = the KV allocation every ORT row pins. The sampler is the folder's
+            # genai_config.json search block (the tool sets only max_length / min_length).
+            p, d = task[len("native-benchmark-"):].split("x")
+            core = (f"{ORTGENAI_DIR}/model_benchmark -i {model_dev} -e cpu -l {p} --use_random_tokens "
+                    f"-g {d} -r 1 -w 0 -ml {context_tokens}")
+            return core, "ortgenai/model_benchmark", "genai_config.json search (model_benchmark sets none)", \
+                context_tokens
         # the tool by absolute path (run_once's mksh note), its env from launch_env;
         # ortgenai_run applies the folder's chat_template.jinja, greedy, no min_length
         core = (f"{ORTGENAI_DIR}/ortgenai_run -i {model_dev} --prompt_file {prompt_dev} "
@@ -1266,6 +1301,10 @@ def main():
                  "and no --engine-build (its runtime dir is " + ORTGENAI_DIR + ")")
     if ort and not args.file:
         ap.error("onnxruntime-genai needs --file <the GenAI folder in the HF repo, or a local folder>")
+    # (prefill, decode) of a native-benchmark-<P>x<D> row: the counts its engine is told to force
+    # and its log is checked against (onnxruntime-genai: model_benchmark's own lines)
+    native = (tuple(int(n) for n in args.task[len("native-benchmark-"):].split("x"))
+              if args.task.startswith("native-benchmark-") else None)
     arm = arm_name(args.runtime, args.backend, args.ynnpack)
     # an executorch build label names its runner dirs (executorch-<label>[-<backend>]/ under
     # DEV_DIR, as EXECUTORCH_TAG does), not an {ENGINES_DIR} side build
@@ -1304,8 +1343,9 @@ def main():
         cell_file, args.file = args.file, et["pte"]
     ort_model = None
     if ort:
-        if not ortgenai_present(args.serial):
-            raise SystemExit(f"{ORTGENAI_DIR}/ortgenai_run is not on the device: push android/bin/ortgenai-0.17.0/ "
+        tool = "model_benchmark" if native else "ortgenai_run"
+        if not ortgenai_present(args.serial, tool):
+            raise SystemExit(f"{ORTGENAI_DIR}/{tool} is not on the device: push android/bin/ortgenai-0.17.0/ "
                              f"to {ORTGENAI_DIR}/ (android/README.md)")
         local, files = resolve_ortgenai_folder(args.model_id, args.file, args.revision)
         recipe = ortgenai_recipe.lookup(args.model_id, args.file, files["model.onnx"]["sha256"])
@@ -1314,6 +1354,7 @@ def main():
                              "has no recipe label in models/ortgenai-recipes.json (quant-label-rule); register it: "
                              + ortgenai_recipe.register_command(local, args.model_id, args.file, args.revision))
         model_dev, model_local = ortgenai_dev_dir(args.model_id, args.file), os.path.join(local, "model.onnx")
+        ort_search = ortgenai_search(local) if native else None
         push_ortgenai_folder(local, files, model_dev, args.serial)
         if os.environ.get("BENCH_ORTGENAI_KEEP_MODEL") != "1":
             # the folder leaves the phone when this invocation ends (run_campaign.py sets
@@ -1482,6 +1523,14 @@ def main():
             et_fields = executorch_fields(console, et, args.max_tokens or budget, args.context_tokens)
             metrics = dict(et_fields["metrics"])
             cold = True
+        elif ort and native:
+            # model_benchmark's own counts are the check: a run whose logged prefill or decode
+            # count is not the cell's keeps its record and log, flagged, out of every pool
+            metrics, ort_report, native_flags = parsers.parse_ortgenai_model_benchmark(console, *native)
+            ort_loaded, ort_text = [], None
+            if native_flags:
+                launch_checks.setdefault("protocolFlags", []).extend(native_flags)
+            cold = True
         elif ort:
             metrics, ort_report, ort_loaded, ort_text = parsers.parse_ortgenai(console)
             cold = True
@@ -1645,7 +1694,34 @@ def main():
             rec["outputSample"] = (et_fields["text"] or "")[:200]
             if launch_checks.get("protocolFlags"):
                 rec["conditions"]["protocolFlags"] = list(launch_checks["protocolFlags"])
-        if ort:
+        if ort and native:
+            sockets = engine_sockets(console)
+            if sockets is not None:
+                rec["conditions"]["engineSockets"] = sockets
+            rec["conditions"].update({
+                "telemetry": ORTGENAI_TELEMETRY, "metricDefinitions": ORTGENAI_MB_METRICS,
+                "threads": "engine default", "engineCommand": f"{env} {cmd}",
+                # every value model_benchmark printed (its stats blocks, latencies, peak
+                # working set) and the counts read from them
+                "engineReport": ort_report,
+                "nativeBenchmark": {
+                    "tool": "model_benchmark (onnxruntime-genai benchmark/c v0.17.0, unchanged)",
+                    "requestedPrefillTokens": native[0], "requestedDecodeTokens": native[1],
+                    "loggedPromptTokens": ort_report.get("prompt_tokens"),
+                    "prefillCalls": ort_report.get("prefill_calls"),
+                    "prefillTokensPerCall": ort_report.get("prefill_tokens_per_call"),
+                    "sampledFromPrefill": ort_report.get("sampled_from_prefill"),
+                    "decodeForwardSteps": ort_report.get("decode_forward_steps"),
+                    "generatedTokens": ort_report.get("generated_tokens"),
+                    "promptSource": "random token ids in [0, 99] (--use_random_tokens), no text",
+                    "decodeStop": "min_length = prompt + decode: EOS cannot end it",
+                    "countsMatch": not native_flags},
+                # the pick model_benchmark leaves to the folder (genai_config.json "search")
+                "searchConfig": ort_search,
+            })
+            if launch_checks.get("protocolFlags"):
+                rec["conditions"]["protocolFlags"] = list(launch_checks["protocolFlags"])
+        elif ort:
             sockets = engine_sockets(console)
             if sockets is not None:
                 rec["conditions"]["engineSockets"] = sockets

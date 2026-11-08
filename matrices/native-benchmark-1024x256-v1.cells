@@ -1,0 +1,12 @@
+# Forced-count rows (task native-benchmark-1024x256) for the runtimes beyond LiteRT-LM and llama.cpp: prefill exactly
+# 1024 token ids in one prefill call, no text prompt, no tokenizer; decode exactly 256 tokens that EOS cannot stop.
+# Every row here is a native-benchmark row: no string-prompt task shares this file (those stay in the dashboard files).
+# Each engine logs its own counts; the Android driver checks them against the task and flags a run whose counts differ
+# (prompt-token-count-mismatch / decode-token-count-mismatch), so it pools into no number.
+#
+# onnxruntime-genai (android): the engine's own model_benchmark (upstream benchmark/c v0.17.0, unchanged, pinned in
+#   android/engine-pins.json) -l 1024 --use_random_tokens -g 256 -r 1 -w 0 -ml 2048: 1024 ids drawn in [0, 99],
+#   min_length = 1280; one cold process per run (android/bench/run_cell.py engine_command).
+
+# ---- android ----
+android onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX native-benchmark-1024x256 backend=cpu runs=3 file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048

@@ -268,6 +268,34 @@ def engine(cmd):
         print("ORTGENAI_LIBS " + " ".join(DEV + "/ortgenai/" + n for n in
                                           ("libmat.so", "libonnxruntime-genai.so", "libonnxruntime.so")))
         print("[OUTPUT BEGIN]" + ON_TASK + "[OUTPUT END]")
+    elif "/ortgenai/model_benchmark " in cmd:
+        # upstream benchmark/c v0.17.0's report of one measured iteration (-r 1 -w 0): the
+        # prefill block holds one AppendTokenSequences call of -l ids, sampling one pick, and
+        # generation -g - 1 forward steps; a -g of 300 stands for a generator that stopped
+        # short (199 steps), as a run whose counts the driver must flag
+        p = int(re.search(r" -l (\\d+)", cmd).group(1))
+        g = int(re.search(r" -g (\\d+)", cmd).group(1))
+        steps = g - 1 if g != 300 else 199
+        print("Batch size: 1, prompt tokens: %%d, tokens to generate: %%d" %% (p, g))
+        print("Model Creation Latency: 1500.25 ms")
+        print("Tokenizer Creation Latency: 120.5 ms")
+        print("Generator Creation Latency: 30.75 ms")
+        print("First Warmup AppendTokenSequences Latency: N/A (--warmup=0)")
+        for label, avg_us, tps, n, per in (("Prompt processing (time to first token)", 2000000, p / 2.0, 1, p),
+                                           ("Token generation", 1e6 / d, d, steps, 1),
+                                           ("Token sampling", 250, 4000, 1, 1)):
+            print(label + ":")
+            print("\\tavg (us):       %%s" %% avg_us)
+            print("\\tavg (tokens/s): %%s" %% tps)
+            print("\\tp50 (us):       %%s" %% avg_us)
+            print("\\tstddev (us):    0")
+            print("\\tn:              %%d * %%d token(s)" %% (n, per))
+        print("E2E generation (entire generation loop):")
+        print("\\tavg (ms):       9000")
+        print("\\tp50 (ms):       9000")
+        print("\\tstddev (ms):    0")
+        print("\\tn:              1")
+        print("Peak working set size: 1395864320 bytes (1.30 GB)")
     elif "/litert_lm_advanced_main" in cmd and "--num_iterations=2" in cmd:
         # the flat build (./) and a cpu / gpu side build (its absolute path) alike
         ctx = re.search(r"--max_num_tokens=(\\d+)", cmd).group(1)
@@ -1646,6 +1674,50 @@ def main():
        f"a libonnxruntime.so that is not the pin's stamps 'unknown' (got {bare[0][1]['engineVersion'] if bare else None})")
     with open(os.path.join(ort_dir, "libonnxruntime.so"), "w") as fh:
         fh.write("sha256=" + ort_pin["so_files"]["libonnxruntime.so"])
+    # a native-benchmark-<P>x<D> row: the engine's own model_benchmark (pinned sha), forced counts
+    # with token ids, the record carries its own counts; a run whose logged counts are not the
+    # cell's is flagged, kept, and not OK
+    with open(os.path.join(ort_dir, "model_benchmark"), "w") as fh:
+        fh.write("sha256=" + ort_pin["model_benchmark_sha256"])
+    os.remove(push_log)
+    schedule([61.5])
+    native_out = os.path.join(tmp, "ort-native")
+    rc = subprocess.call([sys.executable, os.path.join(ROOT, "android", "bench", "run_cell.py"),
+                          "--runtime", "onnxruntime-genai", "--backend", "cpu", "--model-id", "fake/ortgenai",
+                          "--file", ort_folder, "--task", "native-benchmark-1024x256", "--runs", "1",
+                          "--context-tokens", "2048", "--out", native_out, "--serial", "FAKESELF"], env=env_ort)
+    nat = records(native_out, "onnxruntime-genai-cpu_")
+    nb = nat[0][1]["conditions"].get("nativeBenchmark", {}) if nat else {}
+    ok(rc == 0 and len(nat) == 1
+       and (nat[0][1]["engineVersion"], nat[0][1]["engineArtifact"])
+       == (ort_pin["engine_version"], ort_pin["model_benchmark_sha256"])
+       and nat[0][1]["metrics"]["promptTokenCount"] == 1024 and nat[0][1]["metrics"]["generatedTokenCount"] == 256
+       and nat[0][1]["metrics"]["decodeTokensPerSecond"] == 61.5
+       and nat[0][1]["metrics"]["promptTokensPerSecond"] == 512.0
+       and abs(nat[0][1]["metrics"]["firstTokenLatencyMS"] - 2000.25) < 1e-9
+       and nat[0][1]["metrics"]["loadTimeSeconds"] == 1.50025
+       and (nb.get("prefillCalls"), nb.get("prefillTokensPerCall"), nb.get("sampledFromPrefill"),
+            nb.get("decodeForwardSteps"), nb.get("generatedTokens"), nb.get("countsMatch")) == (1, 1024, 1, 255, 256, True)
+       and "protocolFlags" not in nat[0][1]["conditions"]
+       and nat[0][1]["conditions"]["engineCommand"].endswith(
+           "/data/local/tmp/llmbench/ortgenai/model_benchmark -i /data/local/tmp/llmbench/models/"
+           "fake_ortgenai_cpu-int4-kld-block-128 -e cpu -l 1024 --use_random_tokens -g 256 -r 1 -w 0 -ml 2048")
+       and "unreadable" in nat[0][1]["conditions"]["searchConfig"]
+       and not any("/prompts/" in x for x in open(push_log).read().splitlines()),
+       f"ORT native-benchmark-1024x256: model_benchmark's pin, counts 1024 / 256 from its own lines (one prefill "
+       f"call, one pick + 255 steps), its rates, no prompt pushed (got rc {rc}, {nb})")
+    os.remove(push_log)
+    schedule([61.5])
+    rc = subprocess.call([sys.executable, os.path.join(ROOT, "android", "bench", "run_cell.py"),
+                          "--runtime", "onnxruntime-genai", "--backend", "cpu", "--model-id", "fake/ortgenai",
+                          "--file", ort_folder, "--task", "native-benchmark-1024x300", "--runs", "1",
+                          "--context-tokens", "2048", "--out", native_out, "--serial", "FAKESELF"], env=env_ort)
+    short_nat = [r for _, r in records(native_out, "onnxruntime-genai-cpu_") if r["task"] == "native-benchmark-1024x300"]
+    ok(rc != 0 and len(short_nat) == 1
+       and short_nat[0]["conditions"].get("protocolFlags") == ["decode-token-count-mismatch"]
+       and short_nat[0]["metrics"]["generatedTokenCount"] == 200
+       and short_nat[0]["conditions"]["nativeBenchmark"]["countsMatch"] is False,
+       "ORT native: a generator that stopped short of the cell's decode count is flagged and the run is not OK")
     other = os.path.join(tmp, "fake-ortgenai", "unregistered")
     shutil.copytree(ort_folder, other)
     with open(os.path.join(other, "model.onnx"), "w") as fh:
