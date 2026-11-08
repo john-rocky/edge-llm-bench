@@ -583,3 +583,36 @@ had read `out` in the sitting before: Qwen3 0.6B's `litert-lm-gpu-igpu` and `lla
 rule does not gate, moved by -47.27 to +29.70 % over the 20 cells. The wait alone can make a GPU row's later sitting
 read lower on the same machine (the eight `2026-11-07-windows-gpuwait-*` sittings above); how much of each difference
 the wait, the day or anything else made is not established.
+
+Three more sittings retook, once each, the six cells that read `out` in those five, under a rule set before they ran:
+one retake per cell, runs=3, and the retake becomes the cell's latest sitting whatever its spread reads, with no second
+retake on its spread. Each ran only one model's two `out` rows (a cells file of those two lines of
+`matrices/dashboard-windows-v1.cells`, in that order, 6 runs and 9 records), so each `litert-lm-gpu-igpu` row ran first
+in its sitting, where in the five it ran after the model's `litert-lm-gpu` row. They ran with the job's 2 s wait, on
+2026-11-09 JST: `2026-11-08-windows-gpu-q06-r2` (Qwen3 0.6B's `litert-lm-gpu` and `llama.cpp-cuda`) at 00:15 and
+`-q4b-r2` (Qwen3 4B's `litert-lm-gpu-igpu` and `llama.cpp-gpu`) at 00:20 in one hold of the machine, and `-e4b-r2`
+(Gemma 4 E4B's `litert-lm-gpu-igpu` and `llama.cpp-gpu`) at 01:34 in a second, there being less time left in the first
+hold than that sitting needed (each is named for the UTC date of its records). As in the five, `BENCH_WINDOWS_MODEL_DIR`
+named a folder of its own that held the six model files of these rows by a second path, and their sha256, read on the
+machine at the start of each hold, equal the ones the Hub lists for them. Their `host.json` lists the same 187 engine
+files as `-on-c2`, every run was clean and quiet, no run took a GPU read while its engine ran, and every run's
+`gpuReadToStartSeconds` reads 1.998 to 2.040 s on the NVIDIA rows and 2.373 to 2.442 s on `litert-lm-gpu-igpu`. Run 1 of
+each LiteRT-LM row started without the model's GPU cache files and wrote them, and runs 2 and 3 started with them in
+place. Two SSH connections opened during runs, both from the driving machine's reachability check (one every 5 minutes):
+30.1 s into `-q4b-r2`'s second `litert-lm-gpu-igpu` run and 8.9 s into `-e4b-r2`'s third; the first of these runs read
+the lower cold decode of its row's two counted runs, the second the higher.
+
+| cell | cold spread, the earlier sitting | cold spread, the retake |
+|---|---|---|
+| Qwen3 0.6B `litert-lm-gpu` | 21.59 % | 1.08 % |
+| Qwen3 0.6B `llama.cpp-cuda` | 5.87 % | 1.80 % |
+| Qwen3 4B `litert-lm-gpu-igpu` | 12.02 % | 10.38 % |
+| Qwen3 4B `llama.cpp-gpu` | 20.39 % | 22.88 % |
+| Gemma 4 E4B `litert-lm-gpu-igpu` | 9.29 % | 3.69 % |
+| Gemma 4 E4B `llama.cpp-gpu` | 18.04 % | 0.00 % |
+
+Four of the six read within 5 % in the retake, and the column shows their retake without the column's spread mark;
+Qwen3 4B's two cells read `out` again, and the column shows their retake with it (`⚠ N%`, N the cold spread). Since
+every one of these cells read `out` in its earlier sitting, no change of a cold decode median is given against it (as
+above, a median is compared only where both sittings stayed within 5 %). The cold prefill medians, which the spread
+rule does not gate, moved by -32.90 to +30.77 % against the earlier sittings.
