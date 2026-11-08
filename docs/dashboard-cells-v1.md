@@ -1728,8 +1728,8 @@ is the 19 tokens over the process's first call (the first conversation's `Prefil
 the 4B CPU row, whose first call took 16.1 to 16.4 s, it reads 1.2 tok/s, below that row's decode rate.
 
 Which forms these are, and why, is in `windows/README.md` ("What a Windows machine does differently"): the GPU file,
-the accelerator, the thread counts and YNNPACK, and which CUDA asset the CUDA rows run. Thirty-one sittings were taken:
-two on 2026-11-05 (`2026-11-05-windows-s1`, `2026-11-05-windows`), five on 2026-11-06 (`2026-11-06-windows-drift-s1`,
+the accelerator, the thread counts and YNNPACK, and which CUDA asset the CUDA rows run. Thirty-three sittings were
+taken: two on 2026-11-05 (`2026-11-05-windows-s1`, `2026-11-05-windows`), five on 2026-11-06 (`2026-11-06-windows-drift-s1`,
 `-drift2-s1`, `-drift2`, `-drift3-s1`, `-drift3`), two with the CUDA row just after midnight JST on 2026-11-07
 (`2026-11-06-windows-cuda-s1`, `-cuda`, named for the UTC date of their records), two with the Qwen3 rows at 02:56
 and 03:57 JST on 2026-11-07 (`2026-11-07-windows-qwen3-s1`, `-qwen3`; their records' UTC date is 2026-11-06), two
@@ -1739,16 +1739,19 @@ at 13:26 and 13:43 JST that day (`2026-11-07-windows-igpu-s1`, `-igpu`), four wi
 16:17, 16:32, 16:46 and 17:02 JST that day, alternating the executor's two ways of waiting for the job
 (`2026-11-07-windows-wait-poll-1`, `-session-1`, `-poll-2`, `-session-2`), four with its four GPU rows at 18:17,
 18:37, 18:54 and 19:12 JST that day, alternating the job's NVIDIA reads while the engine runs on and off
-(`2026-11-07-windows-gpuread-on-1`, `-off-1`, `-on-2`, `-off-2`), and eight with two of its GPU rows at a time from
+(`2026-11-07-windows-gpuread-on-1`, `-off-1`, `-on-2`, `-off-2`), eight with two of its GPU rows at a time from
 01:47 to 07:10 JST on 2026-11-08, alternating the job's wait between its NVIDIA read and a GPU row's engine start
 (`2026-11-07-windows-gpuwait-off-a1`, `-on-a1`, `-on-a2`, `-off-a2`, `-off-b1`, `-on-b1`, `-on-b2`, `-off-b2`, named
-for the UTC date of their records); each stands alone, none are pooled, and the column shows each cell's latest.
+for the UTC date of their records), and two with its `litert-lm-gpu` row alone at 12:08 and 12:18 JST that day
+(`2026-11-08-windows-gpuwait-on-c1`, `-on-c2`); each stands alone, none are pooled, and the column shows each cell's
+latest.
 How far the rows moved between them is in `windows/README.md` ("Reproducibility").
 
 Since commit 54b5940c (2026-11-08) the job waits 2 s after its NVIDIA read before it starts a GPU row's engine
-(`windows/README.md`, "Run"); of the sittings above, only the four `2026-11-07-windows-gpuwait-on-*` ones ran their GPU
-rows with that wait. In the eight `2026-11-07-windows-gpuwait-*` sittings, which alternated it on two of Gemma 4 E2B's
-GPU rows at a time ("Reproducibility"), the cold decode median read 24.7 and 27.2 % lower with the wait on
+(`windows/README.md`, "Run"); of the sittings above, only the four `2026-11-07-windows-gpuwait-on-*` ones and the two
+`2026-11-08-windows-gpuwait-on-*` ones ran their GPU rows with that wait. In the eight `2026-11-07-windows-gpuwait-*`
+sittings, which alternated it on two of Gemma 4 E2B's GPU rows at a time ("Reproducibility"), the cold decode median
+read 24.7 and 27.2 % lower with the wait on
 `litert-lm-gpu` (all four of its sittings past the 5 % spread bar) and 13.6 and 11.1 % lower on `llama.cpp-cuda`, and
 within 3.6 % either way on `llama.cpp-gpu` and `litert-lm-gpu-igpu`, and the cold prefill median lower on all four GPU
 rows in both of their pairs (by 4.0 to 48.1 %): a GPU row's later sitting can read lower for the wait alone, on the

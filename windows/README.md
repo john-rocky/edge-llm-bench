@@ -529,3 +529,21 @@ six); in the on sittings that line came at 1.20 to 1.27 s in all eight counted r
 one of `llama.cpp-gpu`'s four counted runs read its cold prefill 64.0 and 74.9 % above the median of the other three;
 in the on sittings none read it more than 5.0 % above its sitting's median. Since then the job waits 2 s after the
 read before it starts a GPU row's engine (Run).
+
+Two more sittings ran Gemma 4 E2B's `litert-lm-gpu` row alone (a cells file of that one line, runs=5) with the job's
+2 s wait: `2026-11-08-windows-gpuwait-on-c1` and `2026-11-08-windows-gpuwait-on-c2`, at 12:08 and 12:18 JST on
+2026-11-08, with five runs of the same engine and model outside the job between them (diagnostic runs, not records).
+`BENCH_WINDOWS_MODEL_DIR` named a folder of its own that held the column's model file by a second path (an NTFS hard
+link to the file in the default model folder, `%USERPROFILE%\models`: the same file, so the same bytes), so that the
+job's cache purge and the runs' cache writes touched only that folder. Each job removed the model's two GPU cache files
+it found there (12 and 742 MB) before its first run; in each sitting run 1 started with none and wrote them (its host
+log's `gpuCacheWrite` reads true), and runs 2 to 5 started with them in place (false). Their `host.json` lists the
+same 187 engine files as the `2026-11-07-windows-gpuwait-*` sittings, every run was clean and quiet, no run took a GPU
+read while its engine ran, no SSH connection opened during a run (`sshConnections`), and every run's
+`gpuReadToStartSeconds` reads 1.996 to 2.041 s.
+`litert-lm-gpu` read `out` in both (cold spreads 11.04 and 6.04 %): the cold decode of 128 tokens took 1.506 to 1.678 s
+in the first sitting's four counted runs and 1.494 to 1.587 s in the second's, and in all eight the engine's `Selected
+adapter:` line came 1.21 to 1.30 s after its first log line (1.20 to 1.27 s in `-on-a1` and `-on-a2`). Its warm decode
+medians (the five runs' second conversations, run 1's included) lay 0.05 % apart, with warm spreads of 8.51 and
+12.10 %. All four sittings of this row with the wait read `out` (cold spreads 11.62, 10.90, 11.04 and 6.04 %); what
+moves its cold decode from run to run with the wait is not established.
