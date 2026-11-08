@@ -1744,3 +1744,12 @@ at 13:26 and 13:43 JST that day (`2026-11-07-windows-igpu-s1`, `-igpu`), four wi
 (`2026-11-07-windows-gpuwait-off-a1`, `-on-a1`, `-on-a2`, `-off-a2`, `-off-b1`, `-on-b1`, `-on-b2`, `-off-b2`, named
 for the UTC date of their records); each stands alone, none are pooled, and the column shows each cell's latest.
 How far the rows moved between them is in `windows/README.md` ("Reproducibility").
+
+Since commit 54b5940c (2026-11-08) the job waits 2 s after its NVIDIA read before it starts a GPU row's engine
+(`windows/README.md`, "Run"); of the sittings above, only the four `2026-11-07-windows-gpuwait-on-*` ones ran their GPU
+rows with that wait. In the eight `2026-11-07-windows-gpuwait-*` sittings, which alternated it on two of Gemma 4 E2B's
+GPU rows at a time ("Reproducibility"), the cold decode median read 24.7 and 27.2 % lower with the wait on
+`litert-lm-gpu` (all four of its sittings past the 5 % spread bar) and 13.6 and 11.1 % lower on `llama.cpp-cuda`, and
+within 3.6 % either way on `llama.cpp-gpu` and `litert-lm-gpu-igpu`, and the cold prefill median lower on all four GPU
+rows in both of their pairs (by 4.0 to 48.1 %): a GPU row's later sitting can read lower for the wait alone, on the
+same machine.
