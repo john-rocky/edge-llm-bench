@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "id": "20be1116-c97c-4399-9f33-7530d8bd578f",
+  "runtime": "onnxruntime-genai-cpu",
+  "engineVersion": "onnxruntime-genai 0.17.0 (release aar) + onnxruntime-android 1.30.0 (Maven)",
+  "engineArtifact": "062bf05d04b42cf057b26bbec639f72fc0b3869dc4f7aa765d3673726f72df04",
+  "model": {
+    "id": "onnx-community/Qwen3-0.6B-ONNX",
+    "hfRevision": "da1453100cf3ff33ef56d17983fc7a8648706db6",
+    "quantization": "int4 + int8 mixed MatMulNBits (92 int4 / 105 int8 of 197; per-layer int8 overrides as published), block 128, asymmetric uint8 zero points, fp32 scales, accuracy_level 4; int8 block-128 GatherBlockQuantized embedding; fp32 activations and KV (onnx-community cpu-int4-kld-block-128, Olive 0.11.0.dev0 + ORT GenAI model builder, PR #3 2026-04-20)",
+    "file": "onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128",
+    "sha256": "35fe34321ea9b1eaa43dfa648dd199903d01d93f97dc2b24fe1d16079ebea957",
+    "bytes": 524589133,
+    "files": {
+      "chat_template.jinja": {
+        "bytes": 4168,
+        "sha256": "a55ee1b1660128b7098723e0abcd92caa0788061051c62d51cbe87d9cf1974d8"
+      },
+      "config.json": {
+        "bytes": 8957,
+        "sha256": "136fdc6ed4513075b60c40cd6e2ed6b302c7baee595c6fa82c46b1fbf72d6cf2"
+      },
+      "genai_config.json": {
+        "bytes": 1520,
+        "sha256": "67348085a5b994a6b6d94e56e395e675d8ef4732c3c46ff75de30a541489fd3f"
+      },
+      "model.onnx": {
+        "bytes": 524589133,
+        "sha256": "35fe34321ea9b1eaa43dfa648dd199903d01d93f97dc2b24fe1d16079ebea957"
+      },
+      "tokenizer.json": {
+        "bytes": 11422648,
+        "sha256": "979d160e081df25a1bf7f4e2e8f4c441b5dfdc9a8e84aec9f32e80445e1b59b8"
+      },
+      "tokenizer_config.json": {
+        "bytes": 663,
+        "sha256": "bfd13b57b2e0c2cb582f311c0895f077d16a868c0dc61e4dbbba544a835341d6"
+      }
+    }
+  },
+  "task": "native-benchmark-1024x256",
+  "timestamp": "2026-11-08T19:30:36Z",
+  "device": {
+    "modelIdentifier": "SM-S942Q",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-08-05",
+    "soc": "SM8850",
+    "product": "m1q",
+    "batteryLevel": 0.79,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "genai_config.json search (model_benchmark sets none)",
+    "cpuAffinity": "none",
+    "cpusAllowedList": "0-7",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 1996.8,
+        "hw": 3628.8,
+        "cpus": "0-5"
+      },
+      "policy6": {
+        "min": 1977.6,
+        "hw": 4742.4,
+        "cpus": "6-7"
+      }
+    },
+    "contextTokens": 2048,
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "on-usb",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "2",
+    "elapsedSeconds": 31.6,
+    "exitCode": 0,
+    "engineSockets": {
+      "unix": 1,
+      "inet": 0
+    },
+    "telemetry": "off: ORT_DISABLE_TELEMETRY=1 before init + OgaSetTelemetryEnabled(false)",
+    "metricDefinitions": "model_benchmark's own cut points, one measured iteration in a fresh process (no warmup): prefill tok/s = its 'Prompt processing' tokens/s = P / the wall clock of the one AppendTokenSequences call of the P token ids (prompt forward pass + logits); TTFT = that call + the first GenerateNextToken ('Token sampling': a pick from the prefill logits, no forward pass); decode tok/s = its 'Token generation' tokens/s = (D - 1) / the summed wall clock of GenerateNextToken calls 2..D (each = one forward pass + a pick); generatedTokenCount = the sampling call + the generation calls (D); min_length = P + D, so EOS cannot end the decode; the pick is the folder's genai_config.json search (model_benchmark sets only max_length = -ml and min_length); memory = the runner's VmRSS / VmHWM sampler of the engine process (rssBasis); past_present_share_buffer true allocates the KV cache for max_length = contextTokens when the generator is created",
+    "threads": "engine default",
+    "engineCommand": "LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai/libonnxruntime.so ORT_DISABLE_TELEMETRY=1 /data/local/tmp/llmbench/ortgenai/model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 -e cpu -l 1024 --use_random_tokens -g 256 -r 1 -w 0 -ml 2048",
+    "engineReport": {
+      "model_creation_ms": 829.487,
+      "tokenizer_creation_ms": 276.242,
+      "generator_creation_ms": 58.8073,
+      "peak_working_set_bytes": 2081693696,
+      "batch_size": 1,
+      "prompt_tokens": 1024,
+      "tokens_to_generate": 256,
+      "prefill_avg_us": 24539200.0,
+      "prefill_avg_tps": 41.7292,
+      "prefill_p50_us": 24539200.0,
+      "prefill_stddev_us": 0,
+      "prefill_n": 1,
+      "prefill_tokens_per_measurement": 1024,
+      "decode_avg_us": 20576.7,
+      "decode_avg_tps": 48.5986,
+      "decode_p50_us": 19948.5,
+      "decode_stddev_us": 3334.19,
+      "decode_n": 255,
+      "decode_tokens_per_measurement": 1,
+      "sampling_avg_us": 328.75,
+      "sampling_avg_tps": 3041.83,
+      "sampling_p50_us": 328.75,
+      "sampling_stddev_us": 0,
+      "sampling_n": 1,
+      "sampling_tokens_per_measurement": 1,
+      "prefill_calls": 1,
+      "prefill_tokens_per_call": 1024,
+      "decode_forward_steps": 255,
+      "sampled_from_prefill": 1,
+      "generated_tokens": 256
+    },
+    "nativeBenchmark": {
+      "tool": "model_benchmark (onnxruntime-genai benchmark/c v0.17.0, unchanged)",
+      "requestedPrefillTokens": 1024,
+      "requestedDecodeTokens": 256,
+      "loggedPromptTokens": 1024,
+      "prefillCalls": 1,
+      "prefillTokensPerCall": 1024,
+      "sampledFromPrefill": 1,
+      "decodeForwardSteps": 255,
+      "generatedTokens": 256,
+      "promptSource": "random token ids in [0, 99] (--use_random_tokens), no text",
+      "decodeStop": "min_length = prompt + decode: EOS cannot end it",
+      "countsMatch": true
+    },
+    "searchConfig": {
+      "diversity_penalty": 0.0,
+      "do_sample": true,
+      "early_stopping": true,
+      "length_penalty": 1.0,
+      "max_length": 40960,
+      "min_length": 0,
+      "no_repeat_ngram_size": 0,
+      "num_beams": 1,
+      "num_return_sequences": 1,
+      "past_present_share_buffer": true,
+      "repetition_penalty": 1.0,
+      "temperature": 0.6,
+      "top_k": 20,
+      "top_p": 0.95
+    },
+    "protocolFlags": [
+      "cpu-capped"
+    ]
+  },
+  "metrics": {
+    "promptTokenCount": 1024,
+    "generatedTokenCount": 256,
+    "promptTokensPerSecond": 41.7292,
+    "firstTokenLatencyMS": 24539.52875,
+    "decodeTokensPerSecond": 48.5986,
+    "loadTimeSeconds": 0.829487,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 1392.09765625,
+    "memoryPeakResidentMB": 1985.2578125
+  },
+  "provenance": {
+    "rawLog": "onnxruntime-genai-cpu_onnx-community_Qwen3-0.6B-ONNX_native-benchmark-1024x256_2026-11-08T19-30-36.528378_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024",
+    "modelShaSource": "device"
+  }
+}
