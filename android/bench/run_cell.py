@@ -488,6 +488,24 @@ def is_sha256(text):
     return len(text) == 64 and all(c in "0123456789abcdef" for c in text)
 
 
+def hub_blob_sha(local):
+    """The sha256 a Hugging Face hub-cache LFS blob is named by (models--*/blobs/<sha256>, or the
+    shared store's blobs/<2 hex>/<sha256>), read from the resolved path; None for any other file
+    (a side-loaded artifact, a small file whose blob is named by its git sha1).
+    2026-11-10: push_verified hashed the host file on every launch, and the unsloth GGUFs the disk
+    cleanup of 2026-10-28 moved to the USB HDD read at a few MB/s while the HDD was saturated: the
+    Pixel 11 Pro's llama.cpp cells took 10.5 min on average against 4.1 on 2026-11-05 (the LiteRT-LM
+    cells, on the SSD, 4.2 against 4.0), and the sitting gave its hold back at 08:06, past release_by
+    08:00. Every record of that sitting named the blob's own name as model.sha256 (the bytes hashed),
+    and the phone still hashes its copy after a push, so a blob whose bytes are not its name fails
+    there (push verification failed) instead of being measured."""
+    real = os.path.realpath(local)
+    name = os.path.basename(real)
+    if is_sha256(name) and f"{os.sep}blobs{os.sep}" in real:
+        return name
+    return None
+
+
 def device_file_state(dev_path, serial):
     """One shell: the file's (size, mtime) on the phone, None when it is absent, and its
     sha256 marker <dev_path>.sha256 ("<size> <mtime> <sha256>", written by push_verified
@@ -521,8 +539,9 @@ def push_verified(local, dev_path, serial, want_sha=None):
     byte size unchanged) never reached the Pixel 8a, whose records named the host file's new
     sha. A bare existence check (before that) kept a truncated file forever after a
     mid-push USB drop (measured: 188 MB of a 1.8 GB .litertlm -> every run died on bad
-    magic). want_sha = the host file's sha256 when the caller holds it already."""
-    want_sha = want_sha or sha256_file(local)
+    magic). want_sha = the host file's sha256 when the caller holds it already; a hub-cache
+    blob's is its name (hub_blob_sha), so its bytes are read only to push them."""
+    want_sha = want_sha or hub_blob_sha(local) or sha256_file(local)
     if STRICT_SMOKE:
         want = os.path.getsize(local)
         have = subprocess.run(["adb"] + (["-s", serial] if serial else []) +

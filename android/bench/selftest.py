@@ -821,6 +821,42 @@ GPU_DYNAMIC_LINE = "INFO: [gpu_registry.cc:138] Dynamically loaded GPU accelerat
 GPU_STATIC_LINE = "INFO: [gpu_registry.cc:121] Statically linked GPU accelerator registered."
 
 
+def check_hub_blob_sha():
+    """run_cell.hub_blob_sha: a hub-cache LFS blob is named by its sha256 (the old layout's
+    models--*/blobs/<sha256> and the shared store's blobs/<2 hex>/<sha256>, reached through the
+    snapshot's link); a small file's git-sha1 blob and a 64-hex name outside a blobs dir (a side-loaded
+    file) are hashed instead (None). 2026-11-10: the per-launch hash of GGUFs on a saturated USB HDD
+    took the Pixel 11 Pro's sitting past release_by."""
+    sys.path.insert(0, os.path.join(ROOT, "android", "bench"))
+    import run_cell
+    top = tempfile.mkdtemp(prefix="hub-blob-sha-")
+    try:
+        data = b"weights"
+        sha, sha1 = hashlib.sha256(data).hexdigest(), hashlib.sha1(data).hexdigest()
+        old, new = (os.path.join(top, "hub", "models--org--" + n) for n in ("old", "new"))
+        for repo in (old, new):
+            os.makedirs(os.path.join(repo, "blobs"))
+            os.makedirs(os.path.join(repo, "snapshots", "r1"))
+        for path in (os.path.join(old, "blobs", sha), os.path.join(old, "blobs", sha1),
+                     os.path.join(top, "hub", "blobs", sha[:2], sha), os.path.join(top, "side", sha)):
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "wb") as fh:
+                fh.write(data)
+        os.symlink(os.path.join("..", "..", "blobs", sha), os.path.join(old, "snapshots", "r1", "m.gguf"))
+        os.symlink(os.path.join("..", "..", "blobs", sha1), os.path.join(old, "snapshots", "r1", "config.json"))
+        os.symlink(os.path.join("..", "..", "blobs", sha[:2], sha), os.path.join(new, "blobs", sha))
+        os.symlink(os.path.join("..", "..", "blobs", sha), os.path.join(new, "snapshots", "r1", "n.gguf"))
+        got = [run_cell.hub_blob_sha(p) for p in (os.path.join(old, "snapshots", "r1", "m.gguf"),
+                                                  os.path.join(new, "snapshots", "r1", "n.gguf"),
+                                                  os.path.join(old, "snapshots", "r1", "config.json"),
+                                                  os.path.join(top, "side", sha))]
+    finally:
+        shutil.rmtree(top)
+    ok(got == [sha, sha, None, None],
+       f"hub blob sha: the old layout's and the shared store's blob names are the sha256; a git-sha1 blob "
+       f"and a 64-hex file outside a blobs dir are hashed ({got})")
+
+
 def check_gpu_accelerator_parser():
     """parsers.litert_gpu_accelerator on synthetic engine output (the forms of the Galaxy S26 logs of
     2026-10-20, 2026-10-26, 2026-11-02 and 2026-11-03): the GPU accelerator's provenance a LiteRT-LM GPU
@@ -873,6 +909,7 @@ def check_gpu_accelerator_parser():
 
 def main():
     check_gpu_accelerator_parser()
+    check_hub_blob_sha()
     tmp = tempfile.mkdtemp(prefix="android-lane-selftest-")
     state = os.path.join(tmp, "state")
     dev = os.path.join(state, "dev")
