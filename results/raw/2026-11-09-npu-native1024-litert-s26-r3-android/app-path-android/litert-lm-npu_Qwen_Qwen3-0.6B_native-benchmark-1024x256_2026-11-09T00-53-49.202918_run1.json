@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "id": "01b83192-98b5-4528-8e0f-51def3fcef8e",
+  "runtime": "litert-lm-npu",
+  "engineVersion": "v0.19.1-qnn247",
+  "engineArtifact": "5d869be730622b854fb87bf74205c7b083edece8197c9279317749dfd26772b7",
+  "model": {
+    "id": "Qwen/Qwen3-0.6B",
+    "quantization": "own export, NPU AOT for SM8850: int8 weights (dynamic_wi8_afp32) with static-range int16 activations, calibration 25 chat-template items x 32 decode steps, rotary position range widened to the cache; prefill 1024, cache 2048 (litert-torch npu_export 6d4c622 + prefill mask broadcast, QAIRT 2.47, 2026-11-09)",
+    "file": "Qwen_Qwen3-0.6B_Qwen3-0.6B_qualcomm_sm8850_p1024_ekv2048_chatcal.litertlm",
+    "sha256": "868a11d5cf85629305a8e310e5acbd1bf8024d7a8c963770e97cfbf442cca246"
+  },
+  "task": "native-benchmark-1024x256",
+  "timestamp": "2026-11-09T00:53:49Z",
+  "device": {
+    "modelIdentifier": "SM-S942Q",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-08-05",
+    "soc": "SM8850",
+    "product": "m1q",
+    "batteryLevel": 0.79,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "none",
+    "cpusAllowedList": "0-7",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 3628.8,
+        "hw": 3628.8,
+        "cpus": "0-5"
+      },
+      "policy6": {
+        "min": 4742.4,
+        "hw": 4742.4,
+        "cpus": "6-7"
+      }
+    },
+    "contextTokens": "aot-fixed-2048",
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "on-usb",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "2",
+    "elapsedSeconds": 11.5,
+    "exitCode": 0,
+    "engineBuild": "v0.19.1-qnn247",
+    "hwCacheUpdateForNpu": true,
+    "engineCommand": "LD_LIBRARY_PATH=/data/local/tmp/llmbench/engines/v0.19.1-qnn247 ADSP_LIBRARY_PATH=\"/data/local/tmp/llmbench/engines/v0.19.1-qnn247/dsp;/system/lib/rfsa/adsp;/vendor/lib/rfsa/adsp;/dsp\" /data/local/tmp/llmbench/engines/v0.19.1-qnn247/litert_lm_advanced_main --backend=npu --model_path=/data/local/tmp/llmbench/models/Qwen_Qwen3-0.6B_Qwen3-0.6B_qualcomm_sm8850_p1024_ekv2048_chatcal.litertlm --benchmark --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --async=false --use_hw_cache_update_for_npu=true --litert_dispatch_lib_dir=/data/local/tmp/llmbench/engines/v0.19.1-qnn247",
+    "backendRegistered": [
+      "Choose backend: npu",
+      "executor_settings: backend: NPU",
+      "use_hw_cache_update_for_npu: true",
+      "litert_dispatch_lib_dir: /data/local/tmp/llmbench/engines/v0.19.1-qnn247",
+      "RegisterAccelerator: ptr=<addr>, name=NpuAccelerator",
+      "NPU accelerator registered.",
+      "Loading shared library: /data/local/tmp/llmbench/engines/v0.19.1-qnn247/libLiteRtDispatch_Qualcomm.so",
+      "BackendType : Htp(2)",
+      "Replacing 1 out of 1 node(s) with delegate (DispatchDelegate) node, yielding 1 partitions for subgraph 0 (prefill_1024).",
+      "Context binary SDK version matches current SDK: 2.47.0",
+      "Creating new QNN context for bytecode <addr> (size 648052736)",
+      "Replacing 1 out of 1 node(s) with delegate (DispatchDelegate) node, yielding 1 partitions for subgraph 1 (decode)."
+    ],
+    "nativeBenchmark": {
+      "tool": "litert_lm_advanced_main --benchmark (the side build's, unchanged)",
+      "requestedPrefillTokens": 1024,
+      "requestedDecodeTokens": 256,
+      "prefillTurns": 1,
+      "loggedPrefillTokens": [
+        1024
+      ],
+      "decodeTurns": 1,
+      "loggedDecodeTokens": [
+        256
+      ],
+      "promptSource": "the engine's default prompt text tokenized without a template, its ids resized to the prefill count (zeros after them), no prompt file",
+      "decodeStop": "the benchmark decode count: stop tokens are not read while it is set",
+      "countsMatch": true
+    }
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 370.0,
+    "promptTokensPerSecond": 3025.84,
+    "decodeTokensPerSecond": 27.65,
+    "promptTokenCount": 1024,
+    "generatedTokenCount": 256,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 134.6875,
+    "memoryPeakResidentMB": 278.55859375
+  },
+  "provenance": {
+    "rawLog": "litert-lm-npu_Qwen_Qwen3-0.6B_native-benchmark-1024x256_2026-11-09T00-53-49.202918_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024; the host process only: the NPU's buffers (Hexagon, through the Qualcomm dispatch and QNN) are not in VmRSS / VmHWM",
+    "modelShaSource": "device"
+  }
+}
