@@ -196,6 +196,23 @@ marker past the job, wait until the file is absent, write `<label> <time>` into 
 `windows-job`, which a job run with the default label takes for its own), rewrite it within every 120 min (a job takes
 an older one over), leave the two variables unset, and remove it at the end.
 
+Before each run the job waits, at most 30 min (`-QuietWaitMinutes`), until the host is quiet: in each of three
+one-second windows in a row, the CPU time all processes used (each process's `TotalProcessorTime` read at the window's
+start and end, the Idle process left out, a process that started inside the window counted from zero) stays under 25 %
+of all logical processors (`-QuietCpuPercent`), and the NVIDIA memory in use under 800 MiB (`-QuietGpuMiB`); an
+`adapter=` run also waits until the GPU engines' use sums under 10 % (`-QuietGpuEnginePercent`, the **Two GPUs**
+bullet below). The record says how the wait ended (`conditions.hostBefore.quietGate`: `quiet`, or `timeout` when the run
+started past the wait) and carries a one-second reading of the same kind right before the engine starts and another
+right after it exits (`hostBefore.cpuBusyPercent`, `hostAfter.cpuBusyPercent`). One read of Windows' `Processor`
+counter set (`Win32_PerfFormattedData_PerfOS_Processor`, not the `Processor Information` set `conditions.hostCpu`
+reads), `_Total` instance, taken before each run, sits beside it and judges nothing (`hostBefore.processorTimePercent`,
+`% Processor Time`; `hostBefore.idleTimePercent`, `% Idle Time`). Records without `hostBefore.processorTimePercent` come
+from the earlier job, whose gate and `cpuBusyPercent` read that `% Processor Time` instead. On this PC, with the laptop
+maker's performance mode (MSI Center, Extreme Performance; no record or host log carries the mode), that counter can
+read far above the processes' own CPU time: on 2026-11-09 at 22:38 three reads gave 26, 20 and 13 %, with `% Idle Time`
+at 88, 88 and 94 %, while a read of the processes' CPU time over the same seconds gave 1.77 s in 5.8 s (about 2 % of the
+16 logical processors).
+
 Each record also carries two reads the job took on the host around its engine process: the SSH connections that
 reached the host meanwhile (`conditions.sshConnections`) and the logical processors' counters over it
 (`conditions.hostCpu`); nothing in the harness judges either. `conditions.sshConnections` holds the SSH connections the

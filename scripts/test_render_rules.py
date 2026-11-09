@@ -1559,6 +1559,32 @@ class WindowsSshExecutor(unittest.TestCase):
         self.assertLess(body.index("$gpuReadToStart = [math]::Round($sinceGpuRead.Elapsed.TotalSeconds, 3)", wait), engine)
         self.assertIn("gpuReadToStartSeconds = $gpuReadToStart", body[engine:])
 
+    def test_the_quiet_gate_reads_the_processes_cpu_time_and_records_the_total_counters(self):
+        # D-932 (2026-11-10). run_job.ps1 runs only on the Windows host, so this reads its text: the gate's CPU is the CPU
+        # time every process used over a one-second window (TotalProcessorTime, the Idle process left out, all logical
+        # processors = 100), three reads in a row under the same line; the _Total counters are read once right after the
+        # gate and go into the run's before, beside the gate's outcome (windows/README.md, Run)
+        text = (pathlib.Path(__file__).resolve().parent.parent / "windows" / "run_job.ps1").read_text(encoding="utf-8")
+        self.assertIn("[int]$QuietCpuPercent = 25,", text)
+        self.assertIn("function Get-CpuBusyPercent([double]$Seconds = 1)", text)
+        busy = text[text.index("function Get-CpuBusyPercent"):]
+        busy = busy[:busy.index("\n}\n")]
+        self.assertIn("$p.TotalProcessorTime.TotalMilliseconds", busy)
+        self.assertIn("if ($p.Id -eq 0) { continue }", busy)
+        self.assertIn("[Environment]::ProcessorCount", busy)
+        self.assertNotIn("PerfOS_Processor", busy)
+        wait = text[text.index("function Wait-Quiet"):]
+        wait = wait[:wait.index("\n}\n")]
+        self.assertIn("$busy = @(1..3 | ForEach-Object { Get-CpuBusyPercent })", wait)
+        self.assertIn("if ($cpu -lt $QuietCpuPercent -and $gpu -lt $QuietGpuMiB -and $engOk)", wait)
+        body = text[text.index("function Invoke-Run"):]
+        gate = body.index("$gate = $(if ($want) { Wait-Quiet -Engines } else { Wait-Quiet })")
+        self.assertEqual(body[gate:].split("\n")[1].strip(), "$counters = Get-ProcessorCounters")
+        before = body[body.index("$before = [ordered]@{"):body.index("gpu = Get-GpuSample }")]
+        for key in ("quietGate = $gate", "processorTimePercent = $counters.processorTimePercent",
+                    "idleTimePercent = $counters.idleTimePercent", "cpuBusyPercent = Get-CpuBusyPercent"):
+            self.assertIn(key, before)
+
     def test_a_resumed_job_keeps_the_caches_and_its_records_are_written_once(self):
         with tempfile.TemporaryDirectory(prefix="render-rules-winresume-") as tmp:
             rc, seen, _ = self.run_job(tmp, invocation="inv1")

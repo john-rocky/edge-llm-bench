@@ -16,8 +16,12 @@ A run already on disk (<id>_run<k>.json) is kept and skipped, so a stopped job c
 -PurgeEngineCaches removes the engines' caches beside the model files first (LiteRT-LM's program, weight and
 XNNPACK caches carry no engine version in their names): the first run of each row is then the one that writes them,
 which is what the record's firstEver says. Before each run the job waits (at most QuietWaitMinutes) until the host
-is quiet: total CPU under QuietCpuPercent and NVIDIA memory in use under QuietGpuMiB; a run that starts past the
-wait says so in its JSON (before.quietGate = timeout) with the load it saw.
+is quiet: the CPU every process used (Get-CpuBusyPercent) under QuietCpuPercent in each of three one-second windows
+in a row, and NVIDIA memory in use under QuietGpuMiB; a run that starts past the wait says so in its JSON
+(before.quietGate = timeout) with the load it saw. The _Total "% Processor Time" counter, the gate's reading in the
+earlier job, is not in the gate: under MSI Center's Extreme Performance it has read well above the processes' load (26,
+20 and 13 % against about 2 %, 2026-11-09 22:38). The job reads it and "% Idle Time" once before each run, for the
+record only (before.processorTimePercent, before.idleTimePercent).
 
 A LiteRT-LM GPU launch with an adapter (job.json gpuPreference, from a cells row's adapter=) runs under Windows'
 per-app graphics preference: the value named the tool's full path under HKCU\Software\Microsoft\DirectX\
@@ -144,10 +148,46 @@ function Get-GpuSample {
     } catch { return $null }
 }
 
-function Get-CpuBusyPercent {
+# The CPU every process used over one window of $Seconds, as a share of all logical processors (100 = all of them busy):
+# each process's TotalProcessorTime read before and after the window, the Idle process (Id 0) left out. A process that
+# started inside the window counts from zero, one that exited inside it is left out, one whose first read failed is
+# left out, and a negative difference (a PID reused inside the window) is not counted. The quiet gate's reading; not
+# the _Total "% Processor Time" counter (Get-ProcessorCounters), which under MSI Center's Extreme Performance has read
+# well above the processes' load (2026-11-09 22:38: 26, 20 and 13 % against about 2 %). $null when the processes cannot
+# be read.
+function Get-CpuBusyPercent([double]$Seconds = 1) {
     try {
-        return [math]::Round((Get-CimInstance Win32_PerfFormattedData_PerfOS_Processor -Filter "Name='_Total'").PercentProcessorTime, 1)
+        $was = @{}
+        foreach ($p in [Diagnostics.Process]::GetProcesses()) {
+            try { $was[$p.Id] = $p.TotalProcessorTime.TotalMilliseconds } catch { $was[$p.Id] = $null }
+        }
+        $sw = [Diagnostics.Stopwatch]::StartNew()
+        Start-Sleep -Milliseconds ([int]($Seconds * 1000))
+        $used = 0.0
+        foreach ($p in [Diagnostics.Process]::GetProcesses()) {
+            if ($p.Id -eq 0) { continue }
+            $from = 0.0
+            if ($was.ContainsKey($p.Id)) {
+                if ($null -eq $was[$p.Id]) { continue }
+                $from = $was[$p.Id]
+            }
+            try { $d = $p.TotalProcessorTime.TotalMilliseconds - $from } catch { continue }
+            if ($d -gt 0) { $used += $d }
+        }
+        return [math]::Round(100.0 * $used / ($sw.Elapsed.TotalMilliseconds * [Environment]::ProcessorCount), 1)
     } catch { return $null }
+}
+
+# The _Total instance of Windows' Processor counters in one read (Win32_PerfFormattedData_PerfOS_Processor): % Processor
+# Time (the gate's reading in the earlier job) and % Idle Time, for the record only. Each $null when unread.
+function Get-ProcessorCounters {
+    $r = [ordered]@{ processorTimePercent = $null; idleTimePercent = $null }
+    try {
+        $c = Get-CimInstance Win32_PerfFormattedData_PerfOS_Processor -Filter "Name='_Total'"
+        $r.processorTimePercent = $c.PercentProcessorTime
+        $r.idleTimePercent = $c.PercentIdleTime
+    } catch { }
+    return $r
 }
 
 # Foreign load right before a run: the top processes by CPU time used over one second. A process that started within
@@ -186,13 +226,13 @@ function Get-GpuEnginePercent {
     } catch { return $null }
 }
 
-# Three reads a second apart, so that one quiet instant does not open the gate. -Engines (a run on a chosen adapter)
-# also waits for the GPU engines.
+# Three one-second reads in a row (Get-CpuBusyPercent), so that one quiet second does not open the gate. -Engines (a
+# run on a chosen adapter) also waits for the GPU engines.
 function Wait-Quiet([switch]$Engines) {
     $deadline = (Get-Date).AddMinutes($QuietWaitMinutes)
     $last = ""
     while ($true) {
-        $busy = @(1..3 | ForEach-Object { Start-Sleep -Seconds 1; Get-CpuBusyPercent })
+        $busy = @(1..3 | ForEach-Object { Get-CpuBusyPercent })
         $cpu = ($busy | Measure-Object -Maximum).Maximum
         $gpu = Get-GpuMemoryMiB
         $eng = $null
@@ -591,8 +631,11 @@ function Invoke-Run($Launch, [int]$RowIndex, [int]$RunIndex, [int]$TimeoutSecond
     }
 
     $gate = $(if ($want) { Wait-Quiet -Engines } else { Wait-Quiet })
+    $counters = Get-ProcessorCounters
     $top = @(Get-TopProcesses)
-    $before = [ordered]@{ quietGate = $gate; cpuBusyPercent = Get-CpuBusyPercent; topProcesses = $top; gpu = Get-GpuSample }
+    $before = [ordered]@{ quietGate = $gate; processorTimePercent = $counters.processorTimePercent
+        idleTimePercent = $counters.idleTimePercent; cpuBusyPercent = Get-CpuBusyPercent; topProcesses = $top
+        gpu = Get-GpuSample }
     $sinceGpuRead = [Diagnostics.Stopwatch]::StartNew()
     if ($want) { $before["gpuEnginePercent"] = Get-GpuEnginePercent }
     if ($gpuRow) { Start-Sleep -Seconds $AfterGpuReadSeconds }
