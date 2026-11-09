@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "id": "2bb469a8-0775-4848-9659-97b432eab8c1",
+  "runtime": "litert-lm-cpu",
+  "engineVersion": "v0.19.0",
+  "engineArtifact": "de8c840290ff971aef6142287216478bded351f23d175414856ea21f7825e3d4",
+  "model": {
+    "id": "litert-community/Qwen3-0.6B",
+    "quantization": "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build 2026-08-04)",
+    "file": "litert-community_Qwen3-0.6B_Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm",
+    "sha256": "bf1aba9ce8d963124407353c6aa4cbf72eba78db21ae133de983eac672ce83e0"
+  },
+  "task": "short-chat",
+  "timestamp": "2026-11-09T21:20:58Z",
+  "device": {
+    "modelIdentifier": "Pixel 11 Pro",
+    "systemName": "Android",
+    "systemVersion": "17",
+    "securityPatch": "2026-09-01",
+    "soc": "Tensor G6",
+    "product": "grizzly",
+    "batteryLevel": 0.76,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "taskset 7c",
+    "cpusAllowedList": "2-6",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 2649,
+        "hw": 2649,
+        "cpus": "0-1"
+      },
+      "policy2": {
+        "min": 3148,
+        "hw": 3379,
+        "cpus": "2-5"
+      },
+      "policy6": {
+        "min": 4013,
+        "hw": 4109,
+        "cpus": "6"
+      }
+    },
+    "contextTokens": "bundle-default",
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "on-usb",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "15",
+    "elapsedSeconds": 34.1,
+    "exitCode": 0,
+    "protocolFlags": [
+      "cpu-capped"
+    ]
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 2320.0,
+    "promptTokensPerSecond": 8.57,
+    "decodeTokensPerSecond": 9.44,
+    "promptTokenCount": 19,
+    "generatedTokenCount": 264,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 1642.5546875,
+    "memoryPeakResidentMB": 1642.8359375
+  },
+  "provenance": {
+    "rawLog": "litert-lm-cpu_litert-community_Qwen3-0.6B_short-chat_2026-11-09T21-20-58.104445_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024",
+    "modelShaSource": "device"
+  }
+}
