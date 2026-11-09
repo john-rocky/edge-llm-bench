@@ -2309,7 +2309,7 @@ def main():
     ok(ctx == "aot-fixed-1024" and label.startswith("own export, NPU AOT for SM8850: int8 weights")
        and "static-range int16 activations" in label,
        f"own_npu_bundle: the Qwen3 0.6B SM8850 export -> its label and cache (got {label!r}, {ctx!r})")
-    label, ctx = own("27ebc2d55ce61b6413319755819126162281c48d232591ac9ff9093fc05a0eba") if own else ("", None)
+    label, ctx = own("868a11d5cf85629305a8e310e5acbd1bf8024d7a8c963770e97cfbf442cca246") if own else ("", None)
     ok(ctx == "aot-fixed-2048" and "prefill 1024, cache 2048" in label
        and "static-range int16 activations" in label,
        f"own_npu_bundle: the Qwen3 0.6B SM8850 prefill-1024 export -> its label and cache (got {label!r}, {ctx!r})")

@@ -200,13 +200,13 @@ OWN_NPU_BUNDLES = {
                          "static-range int16 activations, calibration 3 prompts x 8 decode steps; "
                          "prefill 128, cache 1024 (litert-torch npu_export, 2026-08-21)"),
         "cacheTokens": 1024},
-    # Qwen3 0.6B for SM8850, Qwen3-0.6B_qualcomm_sm8850_p1024_ekv2048.litertlm (810,765,487 bytes):
+    # Qwen3 0.6B for SM8850, Qwen3-0.6B_qualcomm_sm8850_p1024_ekv2048_chatcal.litertlm (810,650,799 bytes):
     # the 2026-11-09 build for native-benchmark-1024x256 (one prefill_1024 signature; its metadata
     # section is litert-community/Qwen3-0.6B's with max_num_tokens 2048); docs/dashboard-cells-v1.md
     # "Forced counts on the NPU" gives the recipe
-    "27ebc2d55ce61b6413319755819126162281c48d232591ac9ff9093fc05a0eba": {
+    "868a11d5cf85629305a8e310e5acbd1bf8024d7a8c963770e97cfbf442cca246": {
         "quantization": ("own export, NPU AOT for SM8850: int8 weights (dynamic_wi8_afp32) with "
-                         "static-range int16 activations, calibration 10 prompts x 32 decode steps, "
+                         "static-range int16 activations, calibration 25 chat-template items x 32 decode steps, "
                          "rotary position range widened to the cache; prefill 1024, cache 2048 "
                          "(litert-torch npu_export 6d4c622 + prefill mask broadcast, QAIRT 2.47, "
                          "2026-11-09)"),

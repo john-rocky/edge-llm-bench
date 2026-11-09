@@ -954,20 +954,26 @@ Qwen3 0.6B, prefill exactly 1,024 token ids in one prefill call, decode
 exactly 256 tokens that EOS cannot stop — the task the other runtimes run in
 `matrices/native-benchmark-1024x256-v1.cells`.
 
-Bundle. `Qwen3-0.6B_qualcomm_sm8850_p1024_ekv2048.litertlm`, 810,765,487
-bytes, sha256 `27ebc2d55ce61b6413319755819126162281c48d232591ac9ff9093fc05a0eba`, side-loaded by local path: litert-torch's
+Bundle. `Qwen3-0.6B_qualcomm_sm8850_p1024_ekv2048_chatcal.litertlm`, 810,650,799
+bytes, sha256 `868a11d5cf85629305a8e310e5acbd1bf8024d7a8c963770e97cfbf442cca246`, side-loaded by local path: litert-torch's
 `npu_export` at commit 6d4c622 on `Qwen/Qwen3-0.6B` (revision c1899de2) with
 one change, the prefill attention mask broadcast over the query heads instead
 of concatenated per head (hf-to-litertlm
 `mnn_pocket_work/npu/litert_torch_6d4c622_split_cache_mask.diff`: at this size
 the concatenated int16 mask would be 12,582,912 bytes, past the 1 MiB at which
 the HTP's ADD mis-pairs rows, google-ai-edge/litert-torch#1184); int8 weights
-(`dynamic_wi8_afp32`), calibration on `npu_export`'s first 10 bundled sample
-prompts × 32 decode steps, the rotary position range widened to the whole cache
+(`dynamic_wi8_afp32`), calibration on 25 items rendered with the model's own
+chat template and passed unformatted (`npu_export`'s first 10 bundled sample
+prompts with thinking on, 10 short questions whose thought is written to its
+end, 2 two-turn chats, 3 prompts with thinking off; 32 decode steps after
+each: with the published metadata's template the stage's own formatting
+falls back to Gemma turn markers for this model, and a bundle calibrated on
+those broke the token after `<think>` and `</think>` on the S26), the rotary
+position range widened to the whole cache
 (2,047.9375, an int16 scale of 1/16) before the static-range quantization with
 16-bit activations; stage 4 compiled ahead of time for SM8850 with QAIRT
 2.47.0.260601 (the aux graphs left to the CPU; weight sharing on, the
-compiler's default: one context binary of 648,167,424 bytes). One prefill
+compiler's default: one context binary of 648,052,736 bytes). One prefill
 signature, `prefill_1024`, and a KV cache of 2,048 tokens, both fixed at
 export; read back from the bundle: `prefill_1024` takes embeddings
 [1, 1024, 1024] and `decode` [1, 1, 1024], each a single `DISPATCH_OP`, and
