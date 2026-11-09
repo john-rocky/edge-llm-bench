@@ -700,16 +700,105 @@ def preflight_iphone(dev, dry, cells_files=()):
     return {}
 
 
+# The USB HDD the disk cleanup of 2026-10-28 moved hub-cache blobs to (window D-923, 2026-11-10). The Mac
+# rows read their models from ~/.cache/huggingface/hub (HFDownloader: HubClient's cache on a non-sandboxed
+# Mac), and ten of the weekly set's repos resolve there (the MLX Gemma 4 E2B / E4B pairs and Qwen3 4B, the
+# five unsloth GGUFs: 33.4 GiB). The Mac headlines warm runs, which read no disk: the 2026-11-08 sittings
+# ran those files from the HDD at their earlier warm speed. The loads do read it, and the HDD is seek-bound
+# (about 20 streams shared 54-76 MB/s on 2026-11-10 01:3x, a few MB/s each), so a part's loads at such a
+# time stretch the sitting toward its timeout. A Mac sitting whose cells read model files there waits
+# while HDD_STREAMS_BUSY or more data files are open on it (the window's line: hdd_streams.sh -q), and
+# does not start while the HDD is gone.
+HDD_MOUNT = "/Volumes/HD-SGDA"
+HDD_STREAMS = os.path.expanduser("~/code/standup/tools/supervisor/hdd_streams.sh")
+HDD_STREAMS_BUSY = 3
+HUB_CACHE = os.path.expanduser("~/.cache/huggingface/hub")
+
+
+def cells_repos(cells_files):
+    """The Hub repos (org/name) the model column of the cells files names."""
+    repos = set()
+    for f in cells_files:
+        try:
+            with open(f if os.path.isabs(f) else os.path.join(ROOT, f), encoding="utf-8") as fh:
+                lines = fh.read().splitlines()
+        except OSError:
+            continue
+        for line in lines:
+            cols = line.split("#", 1)[0].split()
+            if len(cols) >= 3 and "/" in cols[2]:
+                repos.add("/".join(cols[2].split("/")[:2]))
+    return repos
+
+
+def hub_files_on(repos, mount=None, hub=None):
+    """({repo: bytes}, [paths]) for the repos' hub-cache snapshot files that resolve under `mount`
+    (refs/main's snapshot, or every snapshot of a repo downloaded by commit): the bytes of those
+    there, and, when the volume is gone, the paths that resolve to it. A dangling link on a present
+    volume is the runtime's to fetch again, not counted."""
+    mount = mount or HDD_MOUNT
+    present = os.path.isdir(mount)
+    mount = os.path.realpath(mount).rstrip("/")   # the links' targets come back resolved (/var -> /private/var)
+    hub = hub or HUB_CACHE
+    on, gone = {}, []
+    for repo in sorted(repos):
+        base = os.path.join(hub, "models--" + repo.replace("/", "--"))
+        try:
+            with open(os.path.join(base, "refs", "main"), encoding="utf-8") as fh:
+                snaps = [os.path.join(base, "snapshots", fh.read().strip())]
+        except OSError:
+            snaps = [os.path.join(base, "snapshots")]
+        for snap in snaps:
+            for root, _dirs, names in os.walk(snap):
+                for n in names:
+                    real = os.path.realpath(os.path.join(root, n))
+                    if not real.startswith(mount + "/"):
+                        continue
+                    if not present:
+                        gone.append(os.path.join(root, n))
+                        continue
+                    try:
+                        on[repo] = on.get(repo, 0) + os.path.getsize(real)
+                    except OSError:
+                        pass
+    return on, gone
+
+
+def hdd_gate(cells_files):
+    """Busy while the HDD that holds the sitting's model files carries HDD_STREAMS_BUSY or more
+    data streams; NotReady when they resolve to it and it is gone; a sitting with none there passes."""
+    on, gone = hub_files_on(cells_repos(cells_files))
+    if gone:
+        raise NotReady(f"{len(gone)} model file(s) of this sitting resolve to {HDD_MOUNT}, which is not "
+                       f"mounted (first: {gone[0]})")
+    if not on:
+        return
+    gib = sum(on.values()) / 2**30
+    rc, out = sh(["bash", HDD_STREAMS, "-q"], timeout=120)
+    try:
+        n = int(out.strip().splitlines()[-1])
+    except (ValueError, IndexError):
+        log(f"model files on the USB HDD: {len(on)} repos, {gib:.1f} GiB; its stream count unread "
+            f"(hdd_streams.sh rc {rc}), not held to it")
+        return
+    if n >= HDD_STREAMS_BUSY:
+        raise Busy(f"the USB HDD that holds {len(on)} of this sitting's model repos ({gib:.1f} GiB) has {n} "
+                   f"data files open (window D-923: a job reading GBs there waits at {HDD_STREAMS_BUSY} or more)")
+    log(f"model files on the USB HDD: {len(on)} repos, {gib:.1f} GiB; {n} data files open there "
+        f"(below {HDD_STREAMS_BUSY})")
+
+
 def preflight_mac(dev, dry, cells_files=()):
     mac_guard()
+    hdd_gate(cells_files)
     rc, out = sh([os.path.join(ROOT, "bench"), "doctor", "--platform", "mac"], timeout=120)
     if rc != 0:
         raise NotReady("bench doctor --platform mac FAILED:\n" + out)
     return {}
 
 
-# each takes (device entry, dry run, the cells files phase B may run); only the Android
-# preflight reads the files (their side builds)
+# each takes (device entry, dry run, the cells files phase B may run); the Android preflight
+# reads the files for their side builds, the Mac's for model files on the USB HDD (hdd_gate)
 PREFLIGHT = {"android": preflight_android, "iphone": preflight_iphone, "mac": preflight_mac}
 
 

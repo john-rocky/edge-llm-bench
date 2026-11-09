@@ -171,6 +171,61 @@ def main():
        "mac guard: the hf-to-litertlm one-command export (scripts/convert.py) is heavy")
     ok(not heavy("/Users/u/.local/bin/claude --model m 'read scripts/convert.py first'"),
        "mac guard: an agent CLI whose prompt names convert.py is not heavy")
+    # the Mac's HDD gate (window D-923, 2026-11-10): model files that resolve to the USB HDD hold a Mac
+    # sitting while hdd_streams.sh counts HDD_STREAMS_BUSY or more; none there, or fewer streams, it
+    # passes; the volume gone, it is not ready
+    hdir = os.path.join(tmp, "hddgate")
+    mnt, ssd, hub = (os.path.join(hdir, x) for x in ("mnt", "ssd", "hub"))
+    for d in (mnt, ssd):
+        os.makedirs(d)
+
+    def hub_repo(name, target):
+        base = os.path.join(hub, "models--" + name.replace("/", "--"))
+        os.makedirs(os.path.join(base, "refs"))
+        os.makedirs(os.path.join(base, "snapshots", "r1"))
+        with open(os.path.join(base, "refs", "main"), "w") as fh:
+            fh.write("r1")
+        blob = os.path.join(target, name.replace("/", "_"))
+        with open(blob, "wb") as fh:
+            fh.write(b"x" * 1024)
+        os.symlink(blob, os.path.join(base, "snapshots", "r1", "w.bin"))
+    hub_repo("org/onhdd", mnt)
+    hub_repo("org/onssd", ssd)
+    cells_hdd, cells_ssd = os.path.join(hdir, "hdd.cells"), os.path.join(hdir, "ssd.cells")
+    with open(cells_hdd, "w") as fh:
+        fh.write("# x\nmac mlx-swift org/onssd short-chat anchor=1\nmac llama.cpp org/onhdd/Q4_K_M short-chat\n")
+    with open(cells_ssd, "w") as fh:
+        fh.write("mac mlx-swift org/onssd short-chat anchor=1\n")
+    streams = os.path.join(hdir, "streams.sh")
+    saved_hdd = (dj.HDD_MOUNT, dj.HUB_CACHE, dj.HDD_STREAMS)
+    dj.HDD_MOUNT, dj.HUB_CACHE, dj.HDD_STREAMS = mnt, hub, streams
+
+    def hdd_gate_says(cells, n):
+        with open(streams, "w") as fh:
+            fh.write(f"echo {n}\n")
+        try:
+            dj.hdd_gate([cells])
+            return "pass"
+        except dj.Busy as e:
+            return f"busy: {e}"
+        except dj.NotReady as e:
+            return f"notready: {e}"
+    try:
+        hdd_busy, hdd_calm, hdd_none = (hdd_gate_says(cells_hdd, 5), hdd_gate_says(cells_hdd, 2),
+                                        hdd_gate_says(cells_ssd, 9))
+        os.rename(mnt, mnt + ".gone")
+        hdd_gone = hdd_gate_says(cells_hdd, 0)
+        os.rename(mnt + ".gone", mnt)
+    finally:
+        dj.HDD_MOUNT, dj.HUB_CACHE, dj.HDD_STREAMS = saved_hdd
+    ok(dj.cells_repos([cells_hdd]) == {"org/onssd", "org/onhdd"},
+       f"hdd gate: the repos the model column names ({sorted(dj.cells_repos([cells_hdd]))})")
+    ok(hdd_busy.startswith("busy: the USB HDD that holds 1 of this sitting's model repos")
+       and "has 5 data files open" in hdd_busy, f"hdd gate: 5 streams hold a sitting with a file there ({hdd_busy})")
+    ok(hdd_calm == "pass" and hdd_none == "pass",
+       f"hdd gate: 2 streams, or no file there at 9, pass ({hdd_calm}; {hdd_none})")
+    ok(hdd_gone.startswith("notready: 1 model file(s) of this sitting resolve to"),
+       f"hdd gate: the volume gone = not ready ({hdd_gone})")
     # the Mac measurement window: the sitting flocks the lock schedule.json names and writes the
     # timing label; a lock another process holds is Busy; the release empties it
     import fcntl as _fcntl
