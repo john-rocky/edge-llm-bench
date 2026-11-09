@@ -1756,7 +1756,11 @@ Pixel 8a's Qwen3-4B rows stay out (section "Per-device exclusion").
 0.6B / 1.7B / 4B (the Qwen3 rows from 02:56 JST on 2026-11-07, the E4B rows from 06:51 JST that day, the `adapter=igpu` rows from 13:26
 JST that day), `short-chat`,
 run by hand over SSH (`windows/README.md`). It is not in `dashboard-text-v1.cells`: the night job has no Windows
-device, and its campaign names carry no `dashboard`, so the team page does not read them. Render the column with
+device, so its campaign names carry no `dashboard`. The team page reads its rows by platform instead (since
+2026-11-10: every admitted `windows` row, whatever its campaign name, `arm_row` taking each cell's latest session as
+this repo's own column does), so a by-hand Windows sitting reaches the page as its cells' newest session as soon as its
+records are committed; a sitting that is not meant for the page is kept out by `SESSION.json` `"admitted": false` or by
+leaving its records out of the commit, not by its name. Render the column with
 `python3 scripts/render_dashboard.py --cells matrices/dashboard-windows-v1.cells`.
 
 | row | engine | file | allocation |
