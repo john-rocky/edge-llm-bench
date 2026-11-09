@@ -82,9 +82,12 @@ class IosCell:
 
     @property
     def app_args(self) -> tuple:
+        args = []
         if self.opts.get("ynnpack") == "1":
-            return ("--litert-ynnpack", "on")
-        return ()
+            args += ["--litert-ynnpack", "on"]
+        if self.runtime == "litert-lm" and self.opts.get("output-cap"):
+            args += ["--litert-output-cap", self.opts["output-cap"]]
+        return tuple(args)
 
 
 def parse_model_dirs(pairs: list) -> dict:

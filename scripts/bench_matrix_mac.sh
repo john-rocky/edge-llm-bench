@@ -315,13 +315,14 @@ run_cell(){
   local rt mid task rest
   read -r rt mid task rest <<<"$line"
   read -r -a opts <<<"${rest:-}"
-  local runs cool ctx maxtok backend ynnpack slug
+  local runs cool ctx maxtok backend ynnpack outcap slug
   runs="$(cell_opt runs "$DEFAULT_RUNS" ${opts[@]+"${opts[@]}"})"
   cool="$(cell_opt cooldown "$BASE_COOLDOWN" ${opts[@]+"${opts[@]}"})"
   ctx="$(cell_opt context-tokens "" ${opts[@]+"${opts[@]}"})"
   maxtok="$(cell_opt max-tokens "" ${opts[@]+"${opts[@]}"})"
   backend="$(cell_opt backend "" ${opts[@]+"${opts[@]}"})"
   ynnpack="$(cell_opt ynnpack "" ${opts[@]+"${opts[@]}"})"
+  outcap="$(cell_opt output-cap "" ${opts[@]+"${opts[@]}"})"
   # Capture file = cell identity. backend= and context-tokens= are part of it
   # (2026-09-18): the long-context column runs one (arm, model, task) at several
   # KV allocations, and the litert cpu/gpu arms never pool — without the suffix
@@ -536,6 +537,7 @@ run_cell(){
       # ynnpack=1 on a litert-lm cpu row: YNNPACK kernels instead of XNNPACK's
       # (yardstick --litert-ynnpack on; the iOS app's flag, Android's ynnpack=1).
       [ "$ynnpack" = "1" ] && extra+=(--litert-ynnpack on)
+      [ -n "$outcap" ] && extra+=(--litert-output-cap "$outcap")
     elif [ "$rt" = "core-ai" ] && [ "$backend" = "ane" ]; then
       :   # the Core AI stock arm: arm identity only (core-ai-ane); the engine picks the Neural Engine
     else

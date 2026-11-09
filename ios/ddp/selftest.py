@@ -957,6 +957,17 @@ def check_native(tmp, archive, template):
     argv = mat.session_argv(task_cell, mat.pathlib.Path(archive), ns)
     ok("--app-arg=--cool-wait" in argv and "--app-arg=--native-cool-wait" not in argv,
        f"session_argv: a task row keeps --cool-wait ({argv})")
+    # output-cap= forwarding + MediaPipeRuntime single-turn parity defaults
+    cap_cells = os.path.join(tmp, "outcap.cells")
+    write(cap_cells, f"ios litert-lm {mid} short-chat backend=gpu output-cap=drain runs=2\n")
+    (cap_cell,) = mat.plan_cells([cap_cells], None, "litert", {}, None)
+    cap_argv = mat.session_argv(cap_cell, mat.pathlib.Path(archive), ns)
+    ok("--app-arg=--litert-output-cap" in cap_argv and "--app-arg=drain" in cap_argv,
+       f"session_argv: output-cap=drain forwards --litert-output-cap drain ({cap_argv})")
+    mp_src = open(os.path.join(ROOT, "ios", "BenchmarkApp", "Sources", "Runtimes", "MediaPipeRuntime.swift")).read()
+    ok("static var engineOutputCap = true" in mp_src
+       and "ExperimentalFlags.filterChannelContentFromKvCache = false" in mp_src,
+       "MediaPipeRuntime.swift defaults to engineOutputCap and disables channel KV rewind")
 
 
 def main():
