@@ -29,6 +29,9 @@ windows/build_litert_lm.ps1 makes that dir and that entry. The NPU row loads Ope
   BENCH_WINDOWS_INVOCATION    an invocation to resume (its finished runs are kept)
   BENCH_WINDOWS_GPU_SAMPLE_SECONDS  N: the job reads the NVIDIA GPU every N s while a GPU row's engine runs
                               (run_job.ps1 -GpuSampleSeconds; default 0 = no read while it runs)
+  BENCH_WINDOWS_ENGINE_QOS    on | off | alt: High QoS on each run's engine process, none, or every other run of a
+                              row (run_job.ps1 -EngineQos; default on); each record's conditions.engineQos says what
+                              the job did
 
 Before anything runs on the host, a job with LiteRT-LM rows stops (exit 1) when --litert-label is in neither
 windows/engine-pins.json nor BENCH_EXTRA_PINS, or when the files in <root>\\engines\\<dir> are not that label's build:
@@ -196,6 +199,17 @@ def gpu_sample_seconds() -> str:
     return str(int(value)) if value else ""
 
 
+ENGINE_QOS = ("on", "off", "alt")
+
+
+def engine_qos() -> str:
+    """BENCH_WINDOWS_ENGINE_QOS as run_job.ps1 takes it: "" when unset (the job's default, on), else on, off or alt."""
+    value = env("BENCH_WINDOWS_ENGINE_QOS").strip()
+    if value and value not in ENGINE_QOS:
+        raise RuntimeError(f"BENCH_WINDOWS_ENGINE_QOS={value!r}: one of {', '.join(ENGINE_QOS)}")
+    return value
+
+
 def run_job_command(job_dir: str, log_dir: str, purge: bool = False) -> str:
     words = [
         "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", f'"{root()}\\run_job.ps1"',
@@ -212,6 +226,8 @@ def run_job_command(job_dir: str, log_dir: str, purge: bool = False) -> str:
         words += ["-LitertDirName", f'"{env("BENCH_WINDOWS_LITERT_DIR")}"']
     if gpu_sample_seconds():
         words += ["-GpuSampleSeconds", gpu_sample_seconds()]
+    if engine_qos():
+        words += ["-EngineQos", engine_qos()]
     if purge:
         words.append("-PurgeEngineCaches")
     return " ".join(words)
@@ -402,6 +418,7 @@ def run(plan: rwm.Plan, campaign_dir: pathlib.Path, args) -> int:
         print(f"{invocation}: its records are written already ({marker})", file=sys.stderr)
         return 2
     gpu_sample_seconds()  # a bad value stops here, before anything reaches the host
+    engine_qos()
     check_litert_build(plan, args.litert_label)
     job_remote = f"{root()}\\jobs\\{invocation}"
     logs_remote = f"{root()}\\logs\\{invocation}"

@@ -1225,6 +1225,34 @@ class WindowsRunnerRows(unittest.TestCase):
         # recorded, never judged: neither read adds a flag
         self.assertEqual({f for c in read + unreadable for f in c["protocolFlags"]}, set())
 
+    def test_a_runs_engine_qos_passes_into_each_of_its_records(self):
+        # run_job.ps1 (2026-11-09, D-907) writes what -EngineQos did to the run's engine process: every iteration record
+        # of the run carries it as the job wrote it, the runs that set nothing too, and a run an older job script wrote
+        # carries no key; never a flag
+        head = "I0000 00:00:1.0 1 litert_lm_lib.cc:728] Choose backend: cpu\nnumber_of_threads: 4\nmax_tokens: 2048\n"
+        states = (
+            {"mode": "alt", "state": "high", "engineStartToSetSeconds": 0.041,
+             "readBack": {"controlMask": 1, "stateMask": 0}},
+            {"mode": "alt", "state": "none"},
+            {"mode": "on", "state": "no-pid"},
+            {"mode": "on", "state": "error", "engineStartToSetSeconds": 0.052,
+             "error": "SetProcessInformation: Windows error 87"},
+        )
+        with tempfile.TemporaryDirectory(prefix="render-rules-winqos-") as tmp:
+            clean, recs = self.records(tmp, "backend=cpu file=m.litertlm context-tokens=2048", head,
+                                       metas=tuple({"engineQos": q} for q in states) + ({},))
+        self.assertEqual(clean, 5)
+        runs = {}
+        for r in recs:
+            runs.setdefault(r["conditions"]["launchID"], []).append(r["conditions"])
+        got = list(runs.values())
+        self.assertEqual([len(conds) for conds in got], [2] * 5)
+        for conds, want in zip(got, states):
+            self.assertEqual([c["engineQos"] for c in conds], [want, want])
+        for c in got[4]:
+            self.assertNotIn("engineQos", c)
+        self.assertEqual({f for conds in got for c in conds for f in c["protocolFlags"]}, set())
+
     NPU_HEAD = ("I0000 00:00:1.0 1 litert_lm_lib.cc:728] Choose backend: npu\nmax_tokens: 0\n"
                 "RegisterAccelerator: ptr=000001C4D6DD87A0, name=NpuAccelerator\n"
                 "INFO: [invocation_context.cc:297] OpenVINO partition '(unnamed)' using device: NPU\n")
@@ -1469,6 +1497,49 @@ class WindowsSshExecutor(unittest.TestCase):
                     self.run_job(tmp)
             self.assertIn("BENCH_WINDOWS_GPU_SAMPLE_SECONDS='5s'", str(cm.exception))
             self.assertFalse((pathlib.Path(tmp) / "c" / "host-logs").exists())
+
+    def test_the_engine_qos_goes_to_the_job_and_a_bad_one_stops_before_the_host(self):
+        started = lambda seen: [c for c in seen["commands"] if "Win32_Process" in c][0]
+        for value in ("on", "off", "alt"):
+            with tempfile.TemporaryDirectory(prefix="render-rules-winqos-") as tmp:
+                with patch.dict(os.environ, {"BENCH_WINDOWS_ENGINE_QOS": value}):
+                    rc, seen, _ = self.run_job(tmp)
+                self.assertEqual(rc, 0)
+                self.assertIn(f" -EngineQos {value}", started(seen))
+        with tempfile.TemporaryDirectory(prefix="render-rules-winqos-") as tmp:
+            rc, seen, _ = self.run_job(tmp)  # unset: the job's own default (on), no word on the command line
+            self.assertEqual(rc, 0)
+            self.assertNotIn("-EngineQos", started(seen))
+        with tempfile.TemporaryDirectory(prefix="render-rules-winqos-") as tmp:
+            with patch.dict(os.environ, {"BENCH_WINDOWS_ENGINE_QOS": "high"}):
+                with self.assertRaises(RuntimeError) as cm:
+                    self.run_job(tmp)
+            self.assertIn("BENCH_WINDOWS_ENGINE_QOS='high'", str(cm.exception))
+            self.assertFalse((pathlib.Path(tmp) / "c" / "host-logs").exists())
+
+    def test_the_job_sets_high_qos_on_the_engine_right_after_finding_it(self):
+        # D-907 (2026-11-09). run_job.ps1 runs only on the Windows host, so this reads its text: on by default, the value
+        # Microsoft's SetProcessInformation page gives for High QoS, the type compiled before the first run and not for
+        # off, alt's runs fixed by row and run, the set right after the job finds the engine and before the run's loop,
+        # and the result in the run's JSON
+        text = (pathlib.Path(__file__).resolve().parent.parent / "windows" / "run_job.ps1").read_text(encoding="utf-8")
+        self.assertIn('[ValidateSet("on", "off", "alt")][string]$EngineQos = "on",', text)
+        self.assertIn("s.Version = 1; s.ControlMask = 1; s.StateMask = 0;", text)
+        self.assertIn("SetProcessInformation(h, 4, ref s, size)", text)
+        self.assertIn("if ($EngineQos -eq \"off\" -or ('BenchEngineQos' -as [type])) { return }", text)
+        main = text[text.index("$job = Get-Content"):]
+        self.assertLess(main.index("Initialize-EngineQos"), main.index("Invoke-Run $launch $row $r "))
+        body = text[text.index("function Invoke-Run"):]
+        self.assertIn('$qosWanted = ($EngineQos -eq "on") -or (($EngineQos -eq "alt") -and '
+                      '((($RowIndex + $RunIndex) % 2) -eq 1))', body)
+        find = "$engine = Find-Engine $shell.Id (Split-Path $tool -Leaf)"
+        found = body.index(find)
+        qos = body.index('if ($engine) { $qos = Set-EngineQos $engine } else { $qos.state = "no-pid" }')
+        loop = body.index("while (-not $shell.HasExited)")
+        self.assertLess(found, qos)
+        self.assertLess(qos, loop)
+        self.assertEqual(body[found + len(find):qos].split(), ["if", "($qosWanted)", "{"])
+        self.assertIn("engineQos             = $qos", body[loop:])
 
     def test_a_gpu_row_waits_two_seconds_after_the_gpu_read_before_its_engine(self):
         # run_job.ps1 runs only on the Windows host, so this reads the order of its steps from the script's text

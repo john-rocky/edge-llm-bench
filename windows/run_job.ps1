@@ -7,6 +7,7 @@ file, the host facts and the sha256 of every engine file in host.json. Windows P
       -ModelDir <dir> -EngineDir <dir> [-BusyFile <file> -BusyLabel <text>] [-DeviceModel <text>]
       [-LitertDirName <dir under EngineDir>] [-PurgeEngineCaches] [-QuietCpuPercent N] [-QuietGpuMiB N]
       [-QuietGpuEnginePercent N] [-QuietWaitMinutes N] [-GpuSampleSeconds N] [-AfterGpuReadSeconds N]
+      [-EngineQos on|off|alt]
 
 EngineDir holds the tools by name: litert\litert_lm_advanced_main_windows.exe and its DLLs (another build of it
 in the dir -LitertDirName names), llama-cpu\llama-cli.exe, llama-gpu\llama-cli.exe (Vulkan),
@@ -52,6 +53,20 @@ N s while its engine runs (gpuSamples, each labelled with its whole second into 
 into the run, to the ms, at which each read started and ended); the default 0 takes none. gpuSampleSeconds is the N the
 job ran with, engineStartSeconds when the engine's process started, in seconds from the run's start.
 
+-EngineQos on (the default) takes Windows' power throttling off each run's engine process: right after the job finds
+the engine's process (Find-Engine), it sets that process to High QoS, the level Windows gives a windowed app in the
+foreground and in focus (SetProcessInformation, ProcessPowerThrottling: Version 1, ControlMask
+PROCESS_POWER_THROTTLING_EXECUTION_SPEED, StateMask 0), and reads the value back (the state before the set is not
+read). The engine has no window and is started through cmd.exe by this job, itself started by the executor through
+WMI, so without the value Windows' own heuristics pick its level. off sets nothing, as the job did before -EngineQos.
+alt sets it on every other run of a row, by a fixed rule: on the odd runs of the even rows (r00, r02, ...) and on the
+even runs of the odd rows, so that one sitting holds both states of each row. Each run's JSON says what the job did
+(engineQos): mode (-EngineQos); state (high: set; none: the mode set nothing for that run; no-pid: the job found no
+engine process, so nothing was set; error: a step failed); error (the failed call and Windows' error code, Add-Type:
+and the compiler's message when the type did not compile, or an exception's message); engineStartToSetSeconds, from
+the engine process's start to the set; and the ControlMask and StateMask read back (readBack; a high whose read back
+failed carries error in its place). Nothing in the harness judges it.
+
 Written for the host side of scripts/windows_ssh_executor.py; the log and JSON shapes are what
 scripts/run_windows_matrix.py write_records reads.
 #>
@@ -73,11 +88,13 @@ param(
     [string]$SshLogName = "OpenSSH/Operational",
     [int]$GpuSampleSeconds = 0,
     [int]$AfterGpuReadSeconds = 2,
+    [ValidateSet("on", "off", "alt")][string]$EngineQos = "on",
     [switch]$PurgeEngineCaches
 )
 
 $ErrorActionPreference = "Stop"
 $LitertExe = "litert_lm_advanced_main_windows.exe"
+$EngineQosError = ""     # why the High QoS call's type did not compile (-EngineQos on or alt)
 $GpuPrefKey = "Software\Microsoft\DirectX\UserGpuPreferences"
 $GpuCacheAdapter = @{}   # model file -> the adapter ("" = the engine's own choice) that wrote its GPU caches
 $CpuCategory = $null     # the Processor Information counter category, once read
@@ -461,7 +478,64 @@ function Find-Engine([int]$ParentId, [string]$ExeName) {
     return $null
 }
 
-function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
+# The type behind -EngineQos, compiled once before the first run so that no run waits for the compiler. Not compiled
+# for -EngineQos off.
+function Initialize-EngineQos {
+    if ($EngineQos -eq "off" -or ('BenchEngineQos' -as [type])) { return }
+    try {
+        Add-Type -TypeDefinition @"
+using System; using System.Runtime.InteropServices;
+public static class BenchEngineQos {
+  [StructLayout(LayoutKind.Sequential)]
+  struct PowerThrottlingState { public uint Version; public uint ControlMask; public uint StateMask; }
+  [DllImport("kernel32.dll", SetLastError=true)] static extern IntPtr OpenProcess(uint access, bool inherit, int pid);
+  [DllImport("kernel32.dll", SetLastError=true)] static extern bool CloseHandle(IntPtr handle);
+  [DllImport("kernel32.dll", SetLastError=true)]
+  static extern bool SetProcessInformation(IntPtr process, int infoClass, ref PowerThrottlingState info, uint size);
+  [DllImport("kernel32.dll", SetLastError=true)]
+  static extern bool GetProcessInformation(IntPtr process, int infoClass, ref PowerThrottlingState info, uint size);
+  // High QoS on one process: ProcessPowerThrottling (4), Version 1, ControlMask EXECUTION_SPEED (1), StateMask 0,
+  // through a handle with PROCESS_SET_INFORMATION | PROCESS_QUERY_LIMITED_INFORMATION. -> { step, Windows error,
+  // ControlMask and StateMask read back }: step 0 = set and read back, 1 = OpenProcess failed,
+  // 2 = SetProcessInformation failed, 3 = set, but the read back failed.
+  public static int[] High(int pid) {
+    IntPtr h = OpenProcess(0x0200 | 0x1000, false, pid);
+    if (h == IntPtr.Zero) return new int[] { 1, Marshal.GetLastWin32Error(), -1, -1 };
+    try {
+      uint size = (uint)Marshal.SizeOf(typeof(PowerThrottlingState));
+      PowerThrottlingState s = new PowerThrottlingState();
+      s.Version = 1; s.ControlMask = 1; s.StateMask = 0;
+      if (!SetProcessInformation(h, 4, ref s, size)) return new int[] { 2, Marshal.GetLastWin32Error(), -1, -1 };
+      PowerThrottlingState r = new PowerThrottlingState();
+      r.Version = 1;
+      if (!GetProcessInformation(h, 4, ref r, size)) return new int[] { 3, Marshal.GetLastWin32Error(), -1, -1 };
+      return new int[] { 0, 0, (int)r.ControlMask, (int)r.StateMask };
+    } finally { CloseHandle(h); }
+  }
+}
+"@
+    } catch { $script:EngineQosError = ($_.Exception.Message -replace '\s+', ' ') }
+}
+
+# High QoS on the run's engine process (-EngineQos on, and alt's runs that ask for it) -> the run JSON's engineQos.
+function Set-EngineQos($Engine) {
+    $out = [ordered]@{ mode = $EngineQos; state = "error" }
+    if ($script:EngineQosError) { $out["error"] = "Add-Type: $script:EngineQosError"; return $out }
+    try {
+        $res = [BenchEngineQos]::High([int]$Engine.Id)
+        $setAt = Get-Date
+        try { $out["engineStartToSetSeconds"] = [math]::Round(($setAt - $Engine.StartTime).TotalSeconds, 3) } catch { }
+        $step = @("", "OpenProcess", "SetProcessInformation", "GetProcessInformation")[$res[0]]
+        if ($res[0] -eq 0 -or $res[0] -eq 3) { $out.state = "high" }
+        if ($res[0] -eq 0) { $out["readBack"] = [ordered]@{ controlMask = $res[2]; stateMask = $res[3] } }
+        if ($res[0] -ne 0) { $out["error"] = "${step}: Windows error $($res[1])" }
+    } catch {
+        $out["error"] = ($_.Exception.Message -replace '\s+', ' ')
+    }
+    return $out
+}
+
+function Invoke-Run($Launch, [int]$RowIndex, [int]$RunIndex, [int]$TimeoutSeconds) {
     $name = "$($Launch.id)_run$RunIndex"
     $metaPath = Join-Path $LogDir "$name.json"
     if (Test-Path $metaPath) { Say "$name kept from an earlier start"; return }
@@ -530,6 +604,9 @@ function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
     $t0 = $null
     $t1 = $null
     $limits = New-CpuLimits
+    # -EngineQos alt: High QoS on the odd runs of the even rows and the even runs of the odd rows (row = the NN of rNN)
+    $qosWanted = ($EngineQos -eq "on") -or (($EngineQos -eq "alt") -and ((($RowIndex + $RunIndex) % 2) -eq 1))
+    $qos = [ordered]@{ mode = $EngineQos; state = "none" }
     try {
         if ($want) {
             Set-GpuPreference $tool $want
@@ -548,6 +625,9 @@ function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
         $null = $shell.Handle   # keeps ExitCode readable after the exit
 
         $engine = Find-Engine $shell.Id (Split-Path $tool -Leaf)
+        if ($qosWanted) {
+            if ($engine) { $qos = Set-EngineQos $engine } else { $qos.state = "no-pid" }
+        }
         $peak = [int64]0
         $timedOut = $false
         $gpuSamples = @()
@@ -620,6 +700,7 @@ function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
             gpuSampleWindows      = @($gpuWindows)
             engineStartSeconds    = $engineStart
             gpuReadToStartSeconds = $gpuReadToStart
+            engineQos             = $qos
             gpuPreference         = $applied
             gpuPreferenceRemoved  = $prefGone
             gpuPreferenceLeftover = $leftover
@@ -628,7 +709,10 @@ function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
             sshConnections        = $ssh
             hostCpu               = Get-CpuDuringRun $cpu0 $cpu1 $limits
         })
-    Say "$name exit=$exit timedOut=$timedOut elapsed=$([math]::Round($elapsed, 1)) peakMB=$([int]($peak / 1MB))"
+    $qosText = $qos.state
+    if ($qos.Contains("engineStartToSetSeconds")) { $qosText += " $($qos.engineStartToSetSeconds) s after the engine started" }
+    if ($qos.Contains("error")) { $qosText += " ($($qos.error))" }
+    Say "$name exit=$exit timedOut=$timedOut elapsed=$([math]::Round($elapsed, 1)) peakMB=$([int]($peak / 1MB)) engineQos=$qosText"
     if ($want -and -not $prefGone) {
         throw "the GpuPreference value on $tool is still set after ${name}: every later run of the tool would take that GPU"
     }
@@ -643,6 +727,12 @@ try {
     Wait-Busy
     Say "job $($job.campaign): $(@($job.launches).Count) launches"
     Say $(if ($GpuSampleSeconds -gt 0) { "GPU reads while a GPU run's engine runs: one every $GpuSampleSeconds s" } else { "GPU reads while a GPU run's engine runs: none (-GpuSampleSeconds 0)" })
+    Initialize-EngineQos
+    Say $(switch ($EngineQos) {
+            "on" { "engine QoS: High QoS on every run's engine process (-EngineQos on)" }
+            "off" { "engine QoS: nothing set (-EngineQos off)" }
+            "alt" { "engine QoS: High QoS on the odd runs of the even rows and the even runs of the odd rows (-EngineQos alt)" } })
+    if ($EngineQosError) { Say "engine QoS: the call's type did not compile, each run that asks for it says error: $EngineQosError" }
     Write-Json (Join-Path $LogDir "host.json") (Get-HostFacts)
     $cpuLoad = [Diagnostics.Stopwatch]::StartNew()
     if ($null -eq (Read-CpuCounters)) { Say "Processor Information counters not read: $CpuReadError (each run's hostCpu carries the reason)" }
@@ -665,12 +755,14 @@ try {
         if (-not (Test-Path $p)) { throw "model file $p is not on this host" }
         if ((Get-Item $p).Length -ne [int64]$model.bytes) { throw "model file $p is not $($model.bytes) bytes" }
     }
+    $row = 0
     foreach ($launch in @($job.launches)) {
         for ($r = 1; $r -le [int]$launch.runs; $r++) {
             Wait-Busy
-            Invoke-Run $launch $r ([int]$job.runTimeoutSeconds)
+            Invoke-Run $launch $row $r ([int]$job.runTimeoutSeconds)
             Start-Sleep -Seconds $BetweenRunsSeconds
         }
+        $row++
     }
 } catch {
     $failure = "$_"

@@ -23,7 +23,11 @@ The host needs an OpenSSH server whose default shell is Windows PowerShell (`Def
 Mac: the executor calls `ssh <host>` for each step and waits for the job through one session it holds open until the
 job ends. The session the server gives is session 0; Direct3D 12,
 Vulkan and the Intel NPU all work from it, and a process started through WMI outlives the connection, which is how the
-build and the job run.
+build and the job run. By default the job sets each engine process it starts to High QoS, the level Windows gives an
+app in the foreground and in focus, so its runs are measured with Windows' power throttling off for the engine; what
+the job did for each run is in its record (Run, `conditions.engineQos`; records from before `-EngineQos` lack the
+key). The job runs from an SSH session while the PC's desktop is locked; an engine started from the desktop has not
+been measured.
 
 For the build, the host needs what the build script's header lists: Visual Studio 2022 or its Build Tools with the C++
 workload, Git for Windows with LFS, Python 3.13 for all users, Bazelisk, a JDK with `JAVA_HOME`, LongPathsEnabled, and an
@@ -215,6 +219,20 @@ fewer than two were, in which case both come from the read after the engine exit
 carries the run's values. `host.json` lists each logical processor's efficiency class, core, last-level cache index
 (`llc`: processors with the same index share that cache) and `maxMhz` (`cpuSets`), by which to read the keys of
 `hostCpu`. Records from the sittings up to `2026-11-07-windows-igpu` carry neither key: the job read neither then.
+
+Right after the job finds a run's engine process, it sets that process to High QoS (`SetProcessInformation`,
+`ProcessPowerThrottling`: `ControlMask` `PROCESS_POWER_THROTTLING_EXECUTION_SPEED`, `StateMask` 0) and reads the value
+back (the state before the set is not read); the value belongs to that process and ends with it. Without it, Windows'
+own heuristics pick the level of the engine, a process with no window that the job starts through `cmd.exe`, the job
+itself started by the executor through WMI. `BENCH_WINDOWS_ENGINE_QOS` (the job's `-EngineQos`) is `on` by default;
+`off` sets nothing, as the job did before `-EngineQos`, and `alt` sets it on every other run of a row (runs 1, 3, ... of
+rows `r00`, `r02`, ... and runs 2, 4, ... of the other rows, the `rNN` of the host logs, so that each row holds both
+states). Each record carries what the job did (`conditions.engineQos`): `mode`; `state` (`high`; `none` when the mode
+set nothing for that run; `no-pid` when the job found no engine process, so nothing was set; `error` when a step
+failed); the `error` key (the failed call and Windows' error code, `Add-Type:` and the compiler's message when
+`Add-Type` could not compile the call's code, or an exception's message); `engineStartToSetSeconds`, from the engine
+process's start to the set; and the masks read back (`readBack`; a `high` whose read back failed carries `error` in its
+place). Nothing in the harness judges it. Records from the sittings that ran the job before `-EngineQos` lack the key.
 
 Each run's host log (`host-logs/<invocation>/r<NN>_run<N>.json`) also holds the NVIDIA GPU's state, one `nvidia-smi`
 read each (name, driver, P-state, temperature, graphics and memory clocks, power, utilization, memory used), taken
