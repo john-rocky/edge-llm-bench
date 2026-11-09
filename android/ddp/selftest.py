@@ -621,6 +621,39 @@ def check_engine_build(tmp, bin_dir, models):
     ok(w1 == (LABEL, want["litert_lm_main"]) and w2 == (LABEL, want["litert_lm_advanced_main"])
        and w3[0].startswith(f"unknown (on-device {LABEL} litert_lm_main with lib {names[2]} unmatched"),
        f"record.witness of the unit's sha256: {w1[0]} for either tool; one .so off -> {w3[0][:70]}")
+    # llama.cpp CPU side build (GGML_BACKEND_DL=ON): shared launcher sha across b10903/b11721/b12110
+    # stamps the tag whose so_files match, and cell_engine_files also stages libggml-cpu*.so in bin/
+    llama_dir = os.path.join(label_bin, "llama-b99999")
+    write(os.path.join(llama_dir, "bin", "llama-cli"), "launcher\n", 0o755)
+    write(os.path.join(llama_dir, "bin", "llama-bench"), "bench\n", 0o755)
+    write(os.path.join(llama_dir, "lib", "libggml.so"), "ggml-b99999\n")
+    write(os.path.join(llama_dir, "lib", "libggml-cpu-android_armv9.2_2.so"), "cpu-b99999\n")
+    lcli_sha = hashlib.sha256(b"launcher\n").hexdigest()
+    lbench_sha = hashlib.sha256(b"bench\n").hexdigest()
+    lggml_sha = hashlib.sha256(b"ggml-b99999\n").hexdigest()
+    lcpu_sha = hashlib.sha256(b"cpu-b99999\n").hexdigest()
+    llama_pins = {"llama.cpp": {
+        "b10903": {"llama_cli_sha256": lcli_sha, "llama_bench_sha256": lbench_sha,
+                   "so_files": {"libggml.so": "0" * 64}},
+        "b99999": {"llama_cli_sha256": lcli_sha, "llama_bench_sha256": lbench_sha,
+                   "so_files": {"libggml.so": lggml_sha, "libggml-cpu-android_armv9.2_2.so": lcpu_sha}}}}
+    letag, lfiles = run_ddp.cell_engine_files(
+        label_bin, {"runtime": "llama.cpp", "opts": {"engine-build": "b99999"}}, llama_pins, TAG)
+    ldev_paths = {f["device"]: f["object"] for f in lfiles}
+    eng_root = f"{run_cell.ENGINES_DIR}/b99999"
+    lw = record.witness("llama-cli", {
+        f"{eng_root}/bin/llama-cli": lcli_sha,
+        f"{eng_root}/lib/libggml.so": lggml_sha,
+        f"{eng_root}/lib/libggml-cpu-android_armv9.2_2.so": lcpu_sha,
+    }, llama_pins, engine_dir=eng_root)
+    ok(letag == "b99999"
+       and f"{eng_root}/bin/libggml-cpu-android_armv9.2_2.so" in ldev_paths
+       and ldev_paths[f"{eng_root}/bin/libggml-cpu-android_armv9.2_2.so"]
+           == ldev_paths[f"{eng_root}/lib/libggml-cpu-android_armv9.2_2.so"]
+       and f"{eng_root}/bin/libggml.so" not in ldev_paths
+       and lw == ("b99999", lcli_sha),
+       "llama.cpp CPU side build: libggml-cpu*.so staged in bin/ + lib/ (shared GCS object), "
+       f"record.witness skips earlier matching launcher sha -> {lw[0]}")
     # (iv) bench passes --engine-build to the driver (a subprocess reads the real pins: the pinned tag named
     # explicitly plans as before, the stand-in label stops naming pins_add.py)
     trap = os.path.join(tmp, "trap-bin-engine-build")
