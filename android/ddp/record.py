@@ -168,16 +168,18 @@ def witness(binname, shas, pins, engine_dir=None):
     sha = shas.get(dev_path)
     if sha is None:
         return f"unknown (on-device {binname} sha not in provenance.txt)", None
+    misses = []
     for tag, entry in pins.get(engine, {}).items():
         if entry.get(field) == sha:
             libs = entry.get("so_files") or {}
             bad = [name for name in sorted(libs)
                    if shas.get(run_cell.side_path(engine_dir, run_cell.SIDE_DIRS[engine][1], name)
                                if engine_dir else f"{run_cell.DEV_DIR}/{name}") != libs[name]]
-            if bad:
-                return (f"unknown (on-device {tag} {binname} with lib {', '.join(bad)} "
-                        "unmatched in android/engine-pins.json)"), sha
-            return pins[engine][tag].get("engine_version", tag), sha
+            if not bad:
+                return pins[engine][tag].get("engine_version", tag), sha
+            misses.append(f"on-device {tag} {binname} with lib {', '.join(bad)}")
+    if misses:
+        return f"unknown ({'; '.join(misses)} unmatched in android/engine-pins.json)", sha
     return f"unknown (on-device {binname} sha unmatched in android/engine-pins.json)", sha
 
 

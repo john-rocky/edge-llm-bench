@@ -90,9 +90,10 @@ public actor MediaPipeRuntime: LLMRuntime {
     /// context bound after the app's cap (the DRAIN branch in `runGenerate`). The engine's decode
     /// counters then cover exactly the budget, as the Android CLI's `--max_output_tokens` rows do,
     /// and a launch at an 8,192-token allocation does not decode thousands of uncounted tokens
-    /// between run 1 and run 2 (catalog X2's iPhone leg, 2026-10-17). Default off: the dashboard's
-    /// iOS cells keep the drain path and the wall-clock decode rate under a cap, unchanged.
-    public nonisolated(unsafe) static var engineOutputCap = false
+    /// between run 1 and run 2 (catalog X2's iPhone leg, 2026-10-17). Default on to match Android's
+    /// `--max_output_tokens` single-turn benchmark behavior (`--litert-output-cap drain` restores
+    /// the legacy unbounded drain path).
+    public nonisolated(unsafe) static var engineOutputCap = true
     /// `--litert-ynnpack on|off`: the CPU backend's YNNPACK kernels (`ExperimentalFlags.enableYnnpack`)
     /// instead of XNNPACK's; nil leaves the engine's default. Only a LiteRT-LM built with YNNPACK
     /// (`--define=litert_enable_ynnpack=true`) and an API that has the flag, compiled in with the
@@ -151,6 +152,9 @@ public actor MediaPipeRuntime: LLMRuntime {
         // clock and the token counts from the tokenizer-free fallback.
         ExperimentalFlags.optIntoExperimentalAPIs()
         ExperimentalFlags.enableBenchmark = Self.engineBenchmarkCounters
+        // Single-turn benchmarks should not rewind and re-prefill to strip `<think>` channel
+        // tokens after decode (matching llama.cpp, MLX, and ExecuTorch).
+        ExperimentalFlags.filterChannelContentFromKvCache = false
         #if LITERTLM_YNNPACK
         if let ynnpack = Self.enableYnnpack {
             ExperimentalFlags.enableYnnpack = ynnpack
@@ -705,7 +709,7 @@ public actor MediaPipeRuntime: LLMRuntime {
             generationTokenCount: decodeTokens,
             promptTime: promptTime,
             generateTime: generateTime,
-            stopReason: capped ? .length : .stop
+            stopReason: (capped || decodeTokens >= parameters.maxTokens) ? .length : .stop
         )))
         continuation.finish()
     }
@@ -741,7 +745,7 @@ public final class MediaPipeRuntime: LLMRuntime, @unchecked Sendable {
     /// As in the real runtime, so the app's --litert-* flags and the DDP harness compile without
     /// the LiteRTLM package (the other engines' lab builds).
     public nonisolated(unsafe) static var launchBackend: ComputeBackend = .gpu
-    public nonisolated(unsafe) static var engineOutputCap = false
+    public nonisolated(unsafe) static var engineOutputCap = true
     public nonisolated(unsafe) static var enableYnnpack: Bool?
     public enum ComputeBackend: String, Sendable { case cpu, gpu }
     public nonisolated(unsafe) static var debugSyncSend = false

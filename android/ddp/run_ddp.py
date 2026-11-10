@@ -221,10 +221,18 @@ def cell_engine_files(bin_dir, cell, pins, litert_tag):
                 sha = sha256_file(path)
                 if name in pinned_libs and sha != pinned_libs[name]:
                     raise SystemExit(f"{path}: sha256 {sha} is not the pin's {pinned_libs[name]}")
+                obj = f"{INPUTS}/engines/llama.cpp/{etag}/{sha}/lib/{name}"
                 files.append({"kind": "engine", "name": f"lib/{name}", "local": path,
                               "bytes": os.path.getsize(path), "sha256": sha,
                               "device": f"{run_cell.ENGINES_DIR}/{etag}/lib/{name}",
-                              "object": f"{INPUTS}/engines/llama.cpp/{etag}/{sha}/lib/{name}"})
+                              "object": obj})
+                # GGML_BACKEND_DL=ON CPU builds (b10903+, e.g. b12110) dlopen libggml-cpu*.so from
+                # get_executable_path() ({ENGINES_DIR}/<tag>/bin), not LD_LIBRARY_PATH (lib/).
+                if name.startswith("libggml-cpu") and not opts.get("backend"):
+                    files.append({"kind": "engine", "name": f"bin/{name}", "local": path,
+                                  "bytes": os.path.getsize(path), "sha256": sha,
+                                  "device": f"{run_cell.ENGINES_DIR}/{etag}/bin/{name}",
+                                  "object": obj})
             for name in sorted(pinned_libs):
                 if not os.path.isfile(os.path.join(local_dir, "lib", name)):
                     raise SystemExit(f"{os.path.join(local_dir, 'lib', name)}: missing")

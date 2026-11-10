@@ -178,6 +178,14 @@ struct YardstickApp {
                     "--litert-ynnpack: this yardstick's LiteRT-LM has no YNNPACK switch (build with YS_SWIFT_CONDITIONS=LITERTLM_YNNPACK)\n".utf8))
                 exit(2)
                 #endif
+            case "--litert-output-cap":
+                let raw = argv.value(after: &i).lowercased()
+                guard raw == "engine" || raw == "drain" else {
+                    FileHandle.standardError.write(Data(
+                        "bad --litert-output-cap '\(raw)' — expected engine|drain\n".utf8))
+                    exit(2)
+                }
+                MediaPipeRuntime.engineOutputCap = (raw == "engine")
             case "--output":
                 outputPath = argv.value(after: &i)
             case "--warm":

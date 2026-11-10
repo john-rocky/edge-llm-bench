@@ -62,9 +62,9 @@ INT_KEYS = {"runs", "context-tokens", "max-tokens", "cooldown", "cool-wait"}
 FLAG_KEYS = {"anchor", "manual", "local", "ynnpack"}          # value must be 1
 STR_KEYS = {"exclude", "exclude-on", "file", "backend", "recipe", "thinking", "engine-counters",
             "engine-build", "revision",
-            # litert-lm on the iPhone: where a task run stops at its output budget — engine (the
-            # engine's maxOutputTokens, counters over exactly the budget, as the Android CLI's
-            # --max_output_tokens rows) or drain (the default: the app caps and drains the stream)
+            # litert-lm on Mac / iPhone: where a task run stops at its output budget — engine (the
+            # default: the engine's maxOutputTokens, counters over exactly the budget, as the Android
+            # CLI's --max_output_tokens rows) or drain (the legacy path: the app caps and drains)
             "output-cap",
             # a windows litert-lm backend=gpu row's GPU when it is not the one the engine takes by itself
             # (arm litert-lm-gpu-<adapter>; scripts/run_windows_matrix.py ADAPTERS)

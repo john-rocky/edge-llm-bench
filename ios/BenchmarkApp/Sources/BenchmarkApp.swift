@@ -305,7 +305,8 @@ enum HeadlessAutoRun {
         }
         if value("--litert-send-mode") == "sync" { MediaPipeRuntime.debugSyncSend = true }
         // `--litert-output-cap engine|drain`: where a LiteRT-LM task run stops at the output
-        // budget (see MediaPipeRuntime.engineOutputCap). drain = the default, the dashboard's path.
+        // budget (see MediaPipeRuntime.engineOutputCap). engine = the default, matching the
+        // Android CLI's `--max_output_tokens`; drain restores the legacy unbounded drain path.
         if let cap = value("--litert-output-cap") {
             guard cap == "engine" || cap == "drain" else { fatal("bad --litert-output-cap '\(cap)' — expected engine or drain") }
             MediaPipeRuntime.engineOutputCap = (cap == "engine")
