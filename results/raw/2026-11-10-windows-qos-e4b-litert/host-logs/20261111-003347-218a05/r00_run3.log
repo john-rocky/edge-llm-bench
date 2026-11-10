@@ -1,0 +1,231 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1794324980.349898   30024 litert_lm_lib.cc:728] Choose backend: cpu
+I0000 00:00:1794324980.350081   30024 litert_lm_lib.cc:967] executor_settings: backend: CPU
+backend_config:
+kv_increment_size: 16
+prefill_chunk_size: -1
+number_of_threads: 4
+enable_ynnpack: false
+
+max_tokens: 2048
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+pad_token_id: -1
+cache_dir: 
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: C:\Users\USER\pcup\l23\models\gemma-4-E4B-it.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+advanced_settings: prefill_batch_sizes: []
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+mtp_gating_config: Not set
+
+speculative_decoding_config: SpeculativeDecodingConfig{mode: Not set}
+
+I0000 00:00:1794324980.352458   30024 litert_lm_lib.cc:974] vision_executor_settings: not set
+I0000 00:00:1794324980.352473   30024 litert_lm_lib.cc:980] audio_executor_settings: not set
+I0000 00:00:1794324980.352486   30024 litert_lm_lib.cc:1003] Creating engine
+INFO: [external/litert/litert/core/environment.cc:36] Creating LiteRT environment with options
+WARNING: [external/litert/litert/runtime/accelerators/npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001E47AC083E0, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerators/gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001E47AC08440, name=CpuAccelerator
+INFO: [external/litert/litert/runtime/accelerators/cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+W0000 00:00:1794324980.353485   19452 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+W0000 00:00:1794324980.382681   30024 magic_number_configs_helper.cc:339] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+INFO: [external/litert/litert/core/environment.cc:36] Creating LiteRT environment with options
+WARNING: [external/litert/litert/runtime/accelerators/npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001E47AC08980, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerators/gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001E47AC082C0, name=CpuAccelerator
+INFO: [external/litert/litert/runtime/accelerators/cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+W0000 00:00:1794324980.382814   30024 litert_lm_loader.cc:407] Section not found: ExecutorMetadataProto
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:101] Loaded: num_subgraphs=1340, num_signatures=4
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=decode, subgraph_index=0, num_tensors=3514, num_inputs=53, num_outputs=50, num_ops=2712
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=2309, num_inputs=53, num_outputs=48, num_ops=1773
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=2, num_tensors=2309, num_inputs=53, num_outputs=48, num_ops=1773
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=verify, subgraph_index=3, num_tensors=3606, num_inputs=53, num_outputs=50, num_ops=2801
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:536] 577 tensors of signature decode have been updated for magic number  32003 to target number 2048
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:536] 426 tensors of signature prefill_1024 have been updated for magic number  32003 to target number 2048
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:536] 426 tensors of signature prefill_128 have been updated for magic number  32003 to target number 2048
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:536] 581 tensors of signature verify have been updated for magic number  32003 to target number 2048
+INFO: [external/litert/litert/runtime/compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1794324980.519782   30024 litert_lm_loader.cc:407] Section not found: ExecutorMetadataProto
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=embedder, subgraph_index=0, num_tensors=16, num_inputs=1, num_outputs=1, num_ops=8
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [external/litert/litert/runtime/compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=eoa, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [external/litert/litert/runtime/compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: [external/litert/litert/runtime/compiled_model.cc:2092] Tracked constant output tensor eoa_embedding with locked address
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=eoi, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [external/litert/litert/runtime/compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: [external/litert/litert/runtime/compiled_model.cc:2092] Tracked constant output tensor eoi_embedding with locked address
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=per_layer_embedder, subgraph_index=0, num_tensors=97, num_inputs=1, num_outputs=1, num_ops=49
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [external/litert/litert/runtime/compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: [external/litert/litert/core/environment.cc:36] Creating LiteRT environment with options
+WARNING: [external/litert/litert/runtime/accelerators/npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001E40C0B7290, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerators/gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001E40C0B6990, name=CpuAccelerator
+INFO: [external/litert/litert/runtime/accelerators/cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+I0000 00:00:1794324980.623538   30024 litert_lm_lib.cc:1298] Creating conversation
+W0000 00:00:1794324980.624459   30024 mel_filterbank.cc:163] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+I0000 00:00:1794324980.624511   30024 litert_lm_lib.cc:1310] Running single-turn conversation
+Imagine you have a super-smart assistant, but instead of that assistant living in a giant, powerful computer far away (like in the cloud), **it lives right inside your own device**—your phone, your laptop, or even your smart glasses.
+
+**That is On-Device AI.**
+
+Here is a simple breakdown using analogies:
+
+---
+
+### 🧠 The "Cloud AI" vs. "On-Device AI" Analogy
+
+**1. Cloud AI (The Restaurant Model):**
+* **How it works:** You send your request (like a photo of a cat) to a massive, powerful kitchen (
+I0000 00:00:1794324989.105669   30024 litert_lm_lib.cc:211] Captured model output: Imagine you have a super-smart assistant, but instead of that assistant living in a giant, powerful computer far away (like in the cloud), **it lives right inside your own device**—your phone, your laptop, or even your smart glasses.
+
+**That is On-Device AI.**
+
+Here is a simple breakdown using analogies:
+
+---
+
+### 🧠 The "Cloud AI" vs. "On-Device AI" Analogy
+
+**1. Cloud AI (The Restaurant Model):**
+* **How it works:** You send your request (like a photo of a cat) to a massive, powerful kitchen (
+
+I0000 00:00:1794324989.105751   30024 litert_lm_lib.cc:461] BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.11 ms
+    - Init Executor: 270.09 ms
+    - Init LLM metadata: 0.03 ms
+    - Init Model assets: 0.73 ms
+    - Init Tokenizer: 57.57 ms
+    - Init Total: 271.02 ms
+--------------------------------------------------
+  Time to first token: 1.13 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 20 tokens in 1.0751286s duration.
+      Prefill Speed: 18.60 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 128 tokens in 7.4053428s duration.
+      Decode Speed: 17.28 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 0 turns):
+    No text to token ids turns recorded.
+--------------------------------------------------
+I0000 00:00:1794324989.105874   30024 litert_lm_lib.cc:1298] Creating conversation
+W0000 00:00:1794324989.106522   30024 mel_filterbank.cc:163] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+I0000 00:00:1794324989.106549   30024 litert_lm_lib.cc:1310] Running single-turn conversation
+Imagine you have a super-smart assistant, but instead of that assistant living in a giant, powerful computer far away (like in the cloud), **it lives right inside your own device**—your phone, your laptop, or even your smart glasses.
+
+**That is On-Device AI.**
+
+Here is a simple breakdown using analogies:
+
+---
+
+### 🧠 The "Cloud AI" vs. "On-Device AI" Analogy
+
+**1. Cloud AI (The Restaurant Model):**
+* **How it works:** You send your request (like a photo of a cat) to a massive, powerful kitchen (
+I0000 00:00:1794324997.217768   30024 litert_lm_lib.cc:211] Captured model output: Imagine you have a super-smart assistant, but instead of that assistant living in a giant, powerful computer far away (like in the cloud), **it lives right inside your own device**—your phone, your laptop, or even your smart glasses.
+
+**That is On-Device AI.**
+
+Here is a simple breakdown using analogies:
+
+---
+
+### 🧠 The "Cloud AI" vs. "On-Device AI" Analogy
+
+**1. Cloud AI (The Restaurant Model):**
+* **How it works:** You send your request (like a photo of a cat) to a massive, powerful kitchen (
+
+I0000 00:00:1794324997.217855   30024 litert_lm_lib.cc:461] BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.05 ms
+    - Init Executor: 270.09 ms
+    - Init LLM metadata: 0.03 ms
+    - Init Model assets: 0.73 ms
+    - Init Tokenizer: 57.57 ms
+    - Init Total: 271.02 ms
+--------------------------------------------------
+  Time to first token: 0.93 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 20 tokens in 874.7065ms duration.
+      Prefill Speed: 22.86 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 128 tokens in 7.235951s duration.
+      Decode Speed: 17.69 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 0 turns):
+    No text to token ids turns recorded.
+--------------------------------------------------
+I0000 00:00:1794324997.218040   30024 litert_lm_lib.cc:673] Aggregated BenchmarkInfo (median of 2 iterations):
+  Init Phases (7):
+    - Init Conversation: 0.08 ms
+    - Init Executor: 270.09 ms
+    - Init LLM metadata: 0.03 ms
+    - Init Model assets: 0.73 ms
+    - Init Session: 0.02 ms
+    - Init Tokenizer: 57.57 ms
+    - Init Total: 271.02 ms
+--------------------------------------------------
+  Time to first token: 1.03 s
+--------------------------------------------------
+    Prefill Turn 1:
+      Prefill Speed: 20.73 tokens/sec.
+    Decode Turn 1:
+      Decode Speed: 17.49 tokens/sec.
+--------------------------------------------------
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=000001E47AC08980, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=000001E47AC082C0, name=CpuAccelerator
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=000001E40C0B7290, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=000001E40C0B6990, name=CpuAccelerator

@@ -1803,7 +1803,7 @@ is the 19 tokens over the process's first call (the first conversation's `Prefil
 the 4B CPU row, whose first call took 16.1 to 16.4 s, it reads 1.2 tok/s, below that row's decode rate.
 
 Which forms these are, and why, is in `windows/README.md` ("What a Windows machine does differently"): the GPU file,
-the accelerator, the thread counts and YNNPACK, and which CUDA asset the CUDA rows run. Forty-four sittings were
+the accelerator, the thread counts and YNNPACK, and which CUDA asset the CUDA rows run. Fifty-four sittings were
 taken: two on 2026-11-05 (`2026-11-05-windows-s1`, `2026-11-05-windows`), five on 2026-11-06 (`2026-11-06-windows-drift-s1`,
 `-drift2-s1`, `-drift2`, `-drift3-s1`, `-drift3`), two with the CUDA row just after midnight JST on 2026-11-07
 (`2026-11-06-windows-cuda-s1`, `-cuda`, named for the UTC date of their records), two with the Qwen3 rows at 02:56
@@ -1823,16 +1823,24 @@ for the UTC date of their records), two with its `litert-lm-gpu` row alone at 12
 Gemma 4 E2B, Qwen3 4B and Gemma 4 E4B), one with the five Gemma 4 E2B rows of the 2026-11-05 sittings at 21:27 JST that
 day (`2026-11-08-windows-drift4-s1`), three with one model's two GPU rows whose cells read past the 5 % spread bar in
 those five, at 00:15, 00:20 and 01:34 JST on 2026-11-09 (`2026-11-08-windows-gpu-q06-r2`, `-q4b-r2`, `-e4b-r2`, named
-for the UTC date of their records), and two with those five Gemma 4 E2B rows again at 21:27 and 21:41 JST on 2026-11-10
-(`2026-11-10-windows-drift4-s1`, `-drift4`); each stands alone, none are pooled, and the column shows each cell's latest.
-How far the rows moved between them is in `windows/README.md` ("Reproducibility").
+for the UTC date of their records), two with those five Gemma 4 E2B rows again at 21:27 and 21:41 JST on 2026-11-10
+(`2026-11-10-windows-drift4-s1`, `-drift4`), and ten that took every cell again, one model's LiteRT-LM rows or
+llama.cpp rows each, from 23:13 JST on 2026-11-10 to 00:51 JST on 2026-11-11 (`2026-11-10-windows-qos-q06-litert`,
+`-q06-llama`, `-q17-litert`, `-q17-llama`, `-e2b-litert`, `-e2b-llama`, `-q4b-litert`, `-q4b-llama`, `-e4b-litert`,
+`-e4b-llama`, named for the UTC date of their records); each stands alone, none are pooled, and the column shows each
+cell's latest, which is now one of those ten for every cell. How far the rows moved between them is in
+`windows/README.md` ("Reproducibility").
+
+Since commit 1289e714 (2026-11-09) the job sets High QoS on each engine process by default (`windows/README.md`,
+"Run"). Of the sittings above, only the ten `2026-11-10-windows-qos-*` ones ran with it, with the job of commit
+9ffa57be, whose quiet gate reads the CPU time of all processes, not the `_Total` `% Processor Time` counter; the two
+`-drift4` ones of 2026-11-10 ran with it off.
 
 Since commit 54b5940c (2026-11-08) the job waits 2 s after its NVIDIA read before it starts a GPU row's engine
 (`windows/README.md`, "Run"); of the sittings above, only the four `2026-11-07-windows-gpuwait-on-*` ones, the two
-`2026-11-08-windows-gpuwait-on-*` ones, the five `2026-11-08-windows-gpu-q06` to `-e4b` ones, the three `-r2` ones and
-the three `-drift4` ones ran their GPU rows with that wait, and the column's 20 GPU cells show nine of them: six
-cells their `-r2` sitting, Gemma 4 E2B's `litert-lm-gpu` and `llama.cpp-gpu` `2026-11-10-windows-drift4`, the other
-12 one of the five. In the eight `2026-11-07-windows-gpuwait-*`
+`2026-11-08-windows-gpuwait-on-*` ones, the five `2026-11-08-windows-gpu-q06` to `-e4b` ones, the three `-r2` ones,
+the three `-drift4` ones and the ten `2026-11-10-windows-qos-*` ones ran their GPU rows with that wait, and each of
+the column's 20 GPU cells now shows one of those ten. In the eight `2026-11-07-windows-gpuwait-*`
 sittings, which alternated it on two of Gemma 4 E2B's GPU rows at a time ("Reproducibility"), the cold decode median
 read 24.7 and 27.2 % lower with the wait on
 `litert-lm-gpu` (all four of its sittings past the 5 % spread bar) and 13.6 and 11.1 % lower on `llama.cpp-cuda`, and

@@ -712,3 +712,72 @@ of each 2026-11-06 and 2026-11-10 sitting on those three rows (its `litert-lm-gp
 sittings on every row. What keeps the three rows at the 2026-11-06 level is not established: between the pairs the
 night, the job and the executor (Run) and how much of the machine's mode was read (Mode and overlay before and after
 the 2026-11-10 pair, the overlay alone before the 2026-11-06 pair, nothing for the 2026-11-05 pair) all differ.
+
+Ten more sittings, `2026-11-10-windows-qos-q06-litert`, `-q06-llama`, `-q17-litert`, `-q17-llama`, `-e2b-litert`,
+`-e2b-llama`, `-q4b-litert`, `-q4b-llama`, `-e4b-litert` and `-e4b-llama`, took every cell of the column again with
+the job and the executor of commit 9ffa57be: the job sets High QoS on each engine process (its default; Setup and Run)
+and its quiet gate reads the CPU time of all processes, not the `_Total` `% Processor Time` counter (Run). Each ran
+one model's LiteRT-LM rows (`-litert`) or llama.cpp rows (`-llama`), those lines of
+`matrices/dashboard-windows-v1.cells` in that file's order, runs=3, 93 runs and 141 records in all. They ran from 23:13
+JST on 2026-11-10 to 00:51 JST on 2026-11-11 (2026-11-10 in UTC, the date of their names), in five holds of the machine
+of at most 30 minutes each, no sitting crossing a hold. At each
+hold's start the model files' sha256, read on the machine, equal the Hub's, and at each hold's start and end MSI
+Center's scenario read Balanced (User Scenario Mode 2, the power mode overlay all zeros) with the desktop locked. Their
+`host.json` lists the same 187 engine files as `-on-c2`; every run was clean and quiet, and every record carries
+`conditions.engineQos` with mode `on` and state `high`, set 0.056 to 0.437 s after the engine process started. Each GPU
+row's run started 1.998 to 2.025 s after the NVIDIA read on the NVIDIA rows and 2.358 to 2.408 s after it on
+`litert-lm-gpu-igpu` (the job's 2 s wait; every GPU cell's previous sitting below ran with it as well). Two SSH
+connections opened during runs: 0.4 s into `-e2b-litert`'s second `litert-lm-gpu-igpu` run and 1.8 s into
+`-e4b-llama`'s third `llama.cpp-cuda` run. These sittings differ from the ones before them in the job's High QoS (the
+earlier sittings ran the job before `-EngineQos`, except `2026-11-10-windows-drift4`, which ran it with `off`), in
+the quiet gate, in the day (`2026-11-10-windows-drift4` ran the same night, about two hours earlier) and in which rows
+shared a sitting. The eight cells set against `2026-11-07-windows-e4b` also differ in the executor's wait for the
+job (a new SSH connection every 30 s then, one session held open now) and in the job's reads of the logical
+processors' counters every 5 s while the engine runs (`hostCpu`; Run). Which of these moved a cell is not established.
+
+Each cell's change from its previous sitting, its latest before these ten (each sitting stands alone, never pooled):
+the cold decode median where both sittings' cold spread stayed within 5 %
+(`out` where either passed it), and the cold prefill median for every cell, which the spread rule does not gate:
+
+| cell | previous sitting | cold spread, previous / this | cold decode | cold prefill |
+|---|---|---|---|---|
+| Qwen3 0.6B `litert-lm-cpu` | `2026-11-07-windows-e4b` | 2.60 % / 0.86 % | +122.69 % | -3.20 % |
+| Qwen3 0.6B `litert-lm-gpu` | `2026-11-08-windows-gpu-q06-r2` | 1.08 % / 0.41 % | -1.43 % | -0.16 % |
+| Qwen3 0.6B `litert-lm-gpu-igpu` | `2026-11-08-windows-gpu-q06` | 0.20 % / 0.06 % | +0.68 % | -0.53 % |
+| Qwen3 0.6B `llama.cpp` | `2026-11-07-windows-e4b` | 12.26 % (out) / 1.95 % | out | +7.95 % |
+| Qwen3 0.6B `llama.cpp-gpu` | `2026-11-08-windows-gpu-q06` | 0.15 % / 0.04 % | -0.96 % | -9.98 % |
+| Qwen3 0.6B `llama.cpp-cuda` | `2026-11-08-windows-gpu-q06-r2` | 1.80 % / 0.78 % | -3.05 % | +12.00 % |
+| Qwen3 1.7B `litert-lm-cpu` | `2026-11-07-windows-e4b` | 0.20 % / 1.78 % | +82.35 % | -1.29 % |
+| Qwen3 1.7B `litert-lm-gpu` | `2026-11-08-windows-gpu-q17` | 0.46 % / 2.56 % | +128.73 % | +185.85 % |
+| Qwen3 1.7B `litert-lm-gpu-igpu` | `2026-11-08-windows-gpu-q17` | 0.55 % / 1.64 % | +44.29 % | +325.96 % |
+| Qwen3 1.7B `llama.cpp` | `2026-11-07-windows-e4b` | 2.53 % / 1.23 % | +2.35 % | +2.87 % |
+| Qwen3 1.7B `llama.cpp-gpu` | `2026-11-08-windows-gpu-q17` | 1.33 % / 1.02 % | +15.45 % | -3.09 % |
+| Qwen3 1.7B `llama.cpp-cuda` | `2026-11-08-windows-gpu-q17` | 0.07 % / 1.41 % | -1.41 % | +4.48 % |
+| Gemma 4 E2B `litert-lm-cpu` | `2026-11-10-windows-drift4` | 0.06 % / 0.00 % | +64.82 % | -0.17 % |
+| Gemma 4 E2B `litert-lm-gpu` | `2026-11-10-windows-drift4` | 2.84 % / 0.26 % | +58.89 % | +25.90 % |
+| Gemma 4 E2B `litert-lm-gpu-igpu` | `2026-11-08-windows-gpu-e2b` | 1.64 % / 3.03 % | +31.11 % | +27.80 % |
+| Gemma 4 E2B `litert-lm-npu` | `2026-11-10-windows-drift4` | 1.28 % / 0.30 % | +0.68 % | +2.92 % |
+| Gemma 4 E2B `llama.cpp` | `2026-11-10-windows-drift4` | 1.32 % / 12.47 % (out) | out | +0.72 % |
+| Gemma 4 E2B `llama.cpp-gpu` | `2026-11-10-windows-drift4` | 0.40 % / 0.26 % | +27.69 % | +127.66 % |
+| Gemma 4 E2B `llama.cpp-cuda` | `2026-11-08-windows-gpu-e2b` | 2.96 % / 0.94 % | +16.63 % | +95.56 % |
+| Qwen3 4B `litert-lm-cpu` | `2026-11-07-windows-e4b` | 0.38 % / 2.66 % | +114.67 % | +188.98 % |
+| Qwen3 4B `litert-lm-gpu` | `2026-11-08-windows-gpu-q4b` | 0.03 % / 2.59 % | +58.15 % | +188.22 % |
+| Qwen3 4B `litert-lm-gpu-igpu` | `2026-11-08-windows-gpu-q4b-r2` | 10.38 % (out) / 0.24 % | out | +68.08 % |
+| Qwen3 4B `llama.cpp` | `2026-11-07-windows-e4b` | 1.48 % / 1.11 % | -0.37 % | +0.40 % |
+| Qwen3 4B `llama.cpp-gpu` | `2026-11-08-windows-gpu-q4b-r2` | 22.88 % (out) / 32.24 % (out) | out | +51.89 % |
+| Qwen3 4B `llama.cpp-cuda` | `2026-11-08-windows-gpu-q4b` | 0.78 % / 2.53 % | +2.23 % | -11.18 % |
+| Gemma 4 E4B `litert-lm-cpu` | `2026-11-07-windows-e4b` | 0.66 % / 1.04 % | +90.88 % | +0.89 % |
+| Gemma 4 E4B `litert-lm-gpu` | `2026-11-08-windows-gpu-e4b` | 4.80 % / 0.78 % | +28.82 % | +228.03 % |
+| Gemma 4 E4B `litert-lm-gpu-igpu` | `2026-11-08-windows-gpu-e4b-r2` | 3.69 % / 1.45 % | +25.48 % | +101.59 % |
+| Gemma 4 E4B `llama.cpp` | `2026-11-07-windows-e4b` | 12.83 % (out) / 0.47 % | out | +30.62 % |
+| Gemma 4 E4B `llama.cpp-gpu` | `2026-11-08-windows-gpu-e4b-r2` | 0.00 % / 0.18 % | +13.36 % | +72.01 % |
+| Gemma 4 E4B `llama.cpp-cuda` | `2026-11-08-windows-gpu-e4b` | 1.39 % / 1.69 % | +5.96 % | +83.49 % |
+
+Twenty-six cells were compared on decode. Their cold decode medians moved by +64.82 to +122.69 % on the five
+`litert-lm-cpu` cells, -1.43 to +128.73 % on the five `litert-lm-gpu` cells, +0.68 to +44.29 % on the four
+`litert-lm-gpu-igpu` cells compared, +0.68 % on `litert-lm-npu`, -0.37 and +2.35 % on the two `llama.cpp` cells
+compared, -0.96 to +27.69 % on the four `llama.cpp-gpu` cells compared and -3.05 to +16.63 % on the five
+`llama.cpp-cuda` cells. Two cells read `out` in these sittings (Gemma 4 E2B's `llama.cpp`, 12.47 %, and Qwen3 4B's
+`llama.cpp-gpu`, 32.24 %) and four read `out` in their previous sitting; the cold prefill medians moved by -11.18 to
++325.96 % over the 31 cells. Since these ten, `render_leaderboard.latest_session` gives one of them for every cell of
+the column.
