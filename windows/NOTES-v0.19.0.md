@@ -24,8 +24,12 @@ graphics-preference runs were one-off, not schema records; their logs and comman
    one value on Direct3D 12 only. The low-priority setting (`gpu_context_low_priority`, which the tool has no flag for) has
    not been tried.
 
-4. **On this hybrid CPU the default thread count is not the fastest for decode.** With `gemma-4-E2B-it.litertlm`, a
-   20-token prompt and 128 tokens out, a fresh process's first conversation, two or three runs per count, one evening (JST):
+4. **On this hybrid CPU the default thread count is not the fastest for decode.** Measured on 2026-11-05, before the
+   benchmark job set High QoS on each engine process (from commit 1289e714, 2026-11-09; [README.md](README.md), Run);
+   the counts have not been re-measured with High QoS on, except the tool's default, whose benchmark rows have run with
+   it since ([`results/raw/2026-11-10-windows-qos-e2b-litert`](../results/raw/2026-11-10-windows-qos-e2b-litert)). With
+   `gemma-4-E2B-it.litertlm`, a 20-token prompt and 128 tokens out, a fresh process's first conversation, two or three
+   runs per count, one evening (JST):
 
    | started | threads | decode tok/s |
    |---|---|---|
