@@ -586,7 +586,7 @@ moves its cold decode from run to run with the wait is not established.
 Five more sittings each ran one model's four GPU rows of the column (a cells file of that model's four GPU lines of
 `matrices/dashboard-windows-v1.cells`, runs=3, 12 runs each) with the job's 2 s wait, on 2026-11-08 JST:
 `2026-11-08-windows-gpu-q06` (Qwen3 0.6B) at 14:57, `-q17` (Qwen3 1.7B) at 16:00, `-e2b` (Gemma 4 E2B) at 16:12, `-q4b`
-(Qwen3 4B) at 16:51 and `-e4b` (Gemma 4 E4B) at 17:58; since then each of the column's 20 GPU cells shows one of them.
+(Qwen3 4B) at 16:51 and `-e4b` (Gemma 4 E4B) at 17:58; the column's 20 GPU cells showed them until the sittings below.
 As in `-on-c1` and `-on-c2`, `BENCH_WINDOWS_MODEL_DIR` named a folder of its own that held the ten model files of these
 rows by a second path (NTFS hard links to the files in `%USERPROFILE%\models`); the ten files' sha256, read on the
 machine after the first sitting, equal the ones the Hub lists for them. Their `host.json` lists the same 187 engine
@@ -651,3 +651,64 @@ Qwen3 4B's two cells read `out` again, and the column shows their retake with it
 every one of these cells read `out` in its earlier sitting, no change of a cold decode median is given against it (as
 above, a median is compared only where both sittings stayed within 5 %). The cold prefill medians, which the spread
 rule does not gate, moved by -32.90 to +30.77 % against the earlier sittings.
+
+Three more sittings ran the five Gemma 4 E2B rows that the seven sittings above ran (a cells file of those five lines of
+`matrices/dashboard-windows-v1.cells`, runs=3, 15 runs each), at the hour of the two pairs above:
+`2026-11-08-windows-drift4-s1` at 21:27 JST on 2026-11-08, with the job and the executor as of commit 54b5940c, and
+`2026-11-10-windows-drift4-s1` and `2026-11-10-windows-drift4` back to back at 21:27 and 21:41 JST on 2026-11-10,
+with those as of commit 1289e714 and `BENCH_WINDOWS_ENGINE_QOS=off` (the 2026-11-08 sitting was the first of a pair
+whose second did not start: the first ran longer than the time left before the machine's reservation ended at 21:57).
+So, as in the sittings these are set against, the job set no High QoS on the engine processes (Run: `off`; each
+2026-11-10 record's `conditions.engineQos` reads `mode` `off`, `state` `none`) and its quiet gate read the `_Total`
+`% Processor Time` counter (the earlier job of the Run section; the records carry no `hostBefore.processorTimePercent`).
+Since those seven sittings were taken, the executor waits for the job in one SSH session instead of a new connection
+every 30 s, the job takes no NVIDIA read while a GPU row's engine runs and waits 2 s after its read before it starts a
+GPU row's engine (`gpuReadToStartSeconds` 1.998 to 2.015 s on `litert-lm-gpu` and `llama.cpp-gpu`, 0.002 to 0.057 s on
+the other three rows), and the records carry `sshConnections` and `hostCpu`.
+
+No record or host log carries MSI Center's mode (Run); it was read on the machine. No sitting of this set ran on
+2026-11-09. MSI Center was set to Extreme Performance (`Mode` 1 in the 21:06 read) at 20:12 JST on 2026-11-09, and at
+21:06 that evening Windows' power mode overlay
+(`ActiveOverlayAcPowerScheme` and `ActiveOverlayDcPowerScheme` under
+`HKLM\SYSTEM\CurrentControlSet\Control\Power\User\PowerSchemes`) read Best Performance
+(`ded574b5-45a0-4f42-8737-46345c09c238`). MSI Center was set to Balanced
+in its window at 20:42 JST on 2026-11-10 and the desktop locked; at the hold's start, right before the first sitting
+and after the second, MSI Center's `User Scenario` `Mode` value read 2, as it had on 2026-11-07, and the overlay read
+none (all zeros), as it had in every read from 17:17 JST on 2026-11-06 to 14:36 on 2026-11-07, one of them at 21:25 on
+2026-11-06, seven minutes before `2026-11-06-windows-drift3-s1`. Neither was read on 2026-11-05 or 2026-11-08. In all
+of the sittings set side by side here the desktop was locked and the machine in Modern Standby (the idle state the
+Kernel-Power log names, entered on `Idle Timeout`; the job ran on through it), as Windows' Kernel-Power and Winlogon
+events show.
+
+As in `-on-c1` and `-on-c2`, `BENCH_WINDOWS_MODEL_DIR` named a folder of its own that held the three model files by a
+second path (NTFS hard links to the files in `%USERPROFILE%\models`); the files' sha256, read on the machine before each
+night's first sitting, equal the Hub's. Their `host.json` lists the same 187 engine files as `-on-c2`, the seven
+sittings' 133 among them with the same sha256; every run was clean and quiet, no LiteRT-LM cache was present at a
+sitting's start (the job removes any it finds; the two `-s1` sittings found none), and one SSH connection opened during
+a run, from the driving machine's reachability check (one every 5 minutes): 7.6 s into `2026-11-10-windows-drift4-s1`'s
+third `litert-lm-cpu` run, which read the higher cold decode of its row's two counted runs.
+
+The 2026-11-10 pair set against the two pairs above (the four differences: each 2026-11-10 sitting against each
+sitting of the other pair):
+
+| row | n | same night, 2026-11-10 | against the 2026-11-06 pair, four differences | against the 2026-11-05 pair, four differences | cold spread, 21:27 and 21:41 |
+|---|---|---|---|---|---|
+| `litert-lm-cpu` | 2 | +0.1 % | -0.4 % (all four) | -13.4 to -14.0 % | 0.28, 0.06 % |
+| `litert-lm-gpu` | 2 | -0.7 % | out | -35.1 to -36.7 % | 0.79, 2.84 % |
+| `litert-lm-npu` | 2 | -0.6 % | -0.1 to +0.6 % | +1.6 to +2.4 % | 0.00, 1.28 % |
+| `llama.cpp` | 3 | +0.8 % | -0.3 to +1.1 % | +5.3 to +6.8 % | 0.80, 1.32 % |
+| `llama.cpp-gpu` | 2 | 0.0 % | -1.0 to -2.8 % | -20.9 to -21.2 % | 1.13, 0.40 % |
+
+On the two CPU rows and the NPU row, the four differences against the 2026-11-06 pair stayed within the larger of two
+bars set before these sittings ran, the two pairs' same-night differences and the four sittings' cold spreads (1.55,
+1.28 and 3.21 % on
+`litert-lm-cpu`, `litert-lm-npu` and `llama.cpp`), and the four against the 2026-11-05 pair passed both bars (0.69 and
+1.74, 0.60 and 1.28, 0.80 and 1.69 %, in the same order), each in the direction the 2026-11-06 pair had moved from the
+2026-11-05 one: on those three rows the 2026-11-10 pair read at the level of 2026-11-06, not of 2026-11-05. The two GPU
+rows ran with the job's 2 s wait after the NVIDIA read in the 2026-11-10 pair and without it in the other two (Run), so
+their differences carry that change as well. `2026-11-08-windows-drift4-s1`, with no pair of its own, read within 1.2 %
+of each 2026-11-06 and 2026-11-10 sitting on those three rows (its `litert-lm-gpu` row read `out`, cold spread
+9.19 %). The 2026-11-10 sittings' peak memory stayed within 1.1 % of the 2026-11-05 21:42 and 2026-11-06 21:46
+sittings on every row. What keeps the three rows at the 2026-11-06 level is not established: between the pairs the
+night, the job and the executor (Run) and how much of the machine's mode was read (Mode and overlay before and after
+the 2026-11-10 pair, the overlay alone before the 2026-11-06 pair, nothing for the 2026-11-05 pair) all differ.

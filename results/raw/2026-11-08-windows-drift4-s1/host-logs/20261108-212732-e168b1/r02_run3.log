@@ -1,0 +1,262 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1794141364.410768   26284 litert_lm_lib.cc:728] Choose backend: npu
+I0000 00:00:1794141364.410959   26284 litert_lm_lib.cc:967] executor_settings: backend: NPU
+backend_config:
+enable_neon_for_npu_greedy_sampling: true
+use_hw_masking_for_npu: true
+use_hw_cache_update_for_npu: true
+enable_npu_debug_logging: false
+
+max_tokens: 0
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+pad_token_id: -1
+cache_dir: 
+cache_file: Not set
+litert_dispatch_lib_dir: C:\Users\USER\bench\engines\litert
+model_assets: model_path: C:\Users\USER\pcup\l9b\models\gemma-4-E2B-it_intel_PTL.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+advanced_settings: prefill_batch_sizes: []
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+mtp_gating_config: Not set
+
+speculative_decoding_config: SpeculativeDecodingConfig{mode: Not set}
+
+I0000 00:00:1794141364.411539   26284 litert_lm_lib.cc:974] vision_executor_settings: not set
+I0000 00:00:1794141364.411552   26284 litert_lm_lib.cc:980] audio_executor_settings: not set
+I0000 00:00:1794141364.411564   26284 litert_lm_lib.cc:1003] Creating engine
+INFO: [external/litert/litert/core/environment.cc:36] Creating LiteRT environment with options
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001ED12F9F810, name=NpuAccelerator
+INFO: [external/litert/litert/runtime/accelerators/npu_registry.cc:30] NPU accelerator registered.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001ED12F9F090, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerators/gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001ED12F9F330, name=CpuAccelerator
+INFO: [external/litert/litert/runtime/accelerators/cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+INFO: W0000 00:00:1794141364.412588   28060 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+[external/litert/litert/core/environment.cc:36] Creating LiteRT environment with options
+WARNING: [external/litert/litert/runtime/accelerators/npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001ED12F9EF70, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerators/gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001ED12F9F2D0, name=CpuAccelerator
+INFO: [external/litert/litert/runtime/accelerators/cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+I0000 00:00:1794141364.413469   26284 llm_litert_npu_compiled_model_executor.cc:3088] Detected NPU prefill size: 128 (signature "prefill_128").
+WARNING: [external/litert/litert/runtime/compiled_model.cc:949] Compiler plugin path is provided in the environment, but the model is pre-compiled. Plugins won't be applied.
+INFO: [external/litert/litert/runtime/compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: [external/litert/litert/runtime/dispatch/dispatch_delegate.cc:99] DispatchDelegate::DispatchDelegate
+INFO: [external/litert/litert/runtime/accelerators/dispatch/dispatch_accelerator.cc:138] Dispatch delegate getting hooks.
+INFO: [external/litert/litert/runtime/dispatch/dispatch_delegate.cc:188] Lazy initializing Dispatch API for GetHooks.
+INFO: [external/litert/litert/runtime/dispatch/litert_dispatch.cc:208] Loading shared library: C:/Users/USER/bench/engines/litert/LiteRtDispatch.dll
+INFO: [external/litert/litert/runtime/compiled_model.cc:1226] Accelerator returned null hooks.
+INFO: [external/litert/litert/runtime/dispatch/dispatch_delegate.cc:129] DispatchDelegate::Initialize 
+INFO: [external/litert/litert/vendors/intel_openvino/dispatch/invocation_context.cc:257] Dispatch: no bytecode header found, defaulting to 'NPU'
+INFO: [external/litert/litert/vendors/intel_openvino/dispatch/invocation_context.cc:297] OpenVINO partition '(unnamed)' using device: NPU
+INFO: [external/litert/litert/vendors/intel_openvino/openvino_version_info.cc:279] [OpenVINO Dispatch] Runtime version: OpenVINO 2026.4.1-22982-e213a147257-releases/2026/4 (OpenVINO Runtime)
+INFO: [external/litert/litert/vendors/intel_openvino/openvino_version_info.cc:304] [OpenVINO Dispatch] Found device: NPU
+INFO: [external/litert/litert/vendors/intel_openvino/openvino_version_info.cc:128] [OpenVINO Dispatch]   Device 'NPU' full name: Intel(R) AI Boost
+INFO: [external/litert/litert/vendors/intel_openvino/openvino_version_info.cc:144] [OpenVINO Dispatch]   Device 'NPU' NPU platform: AUTO_DETECT
+INFO: [external/litert/litert/vendors/intel_openvino/openvino_version_info.cc:161] [OpenVINO Dispatch]   Device 'NPU' Level Zero / NPU driver version: 1004841 (0xF5529)
+INFO: [external/litert/litert/vendors/intel_openvino/openvino_version_info.cc:180] [OpenVINO Dispatch]   Device 'NPU' NPU compiler version: 8.4 (raw: 0x00080004)
+INFO: [external/litert/litert/vendors/intel_openvino/openvino_version_info.cc:195] [OpenVINO Dispatch]   Device 'NPU' NPU max tiles: 3
+INFO: [external/litert/litert/vendors/intel_openvino/dispatch/invocation_context.cc:425] Openvino InvocationContext Initialize SUCCESS
+INFO: [external/litert/litert/runtime/dispatch/dispatch_delegate.cc:129] DispatchDelegate::Initialize 
+INFO: [external/litert/litert/vendors/intel_openvino/dispatch/invocation_context.cc:257] Dispatch: no bytecode header found, defaulting to 'NPU'
+INFO: [external/litert/litert/vendors/intel_openvino/dispatch/invocation_context.cc:297] OpenVINO partition '(unnamed)' using device: NPU
+INFO: [external/litert/litert/vendors/intel_openvino/dispatch/invocation_context.cc:425] Openvino InvocationContext Initialize SUCCESS
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1794141365.215887   26284 litert_lm_loader.cc:407] Section not found: ExecutorMetadataProto
+INFO: [external/litert/litert/core/environment.cc:36] Creating LiteRT environment with options
+WARNING: [external/litert/litert/runtime/accelerators/npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001ED0193A760, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerators/gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001ED0193AE20, name=CpuAccelerator
+INFO: [external/litert/litert/runtime/accelerators/cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+WARNING: [external/litert/litert/runtime/compiled_model.cc:949] Compiler plugin path is provided in the environment, but the model is pre-compiled. Plugins won't be applied.
+INFO: [external/litert/litert/runtime/compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: [external/litert/litert/runtime/dispatch/dispatch_delegate.cc:99] DispatchDelegate::DispatchDelegate
+INFO: [external/litert/litert/runtime/accelerators/dispatch/dispatch_accelerator.cc:138] Dispatch delegate getting hooks.
+INFO: [external/litert/litert/runtime/dispatch/dispatch_delegate.cc:188] Lazy initializing Dispatch API for GetHooks.
+INFO: [external/litert/litert/runtime/tensor_buffer_registry.cc:42] Same custom tensor buffer handler has already been registered for buffer type CustomBuffer
+INFO: [external/litert/litert/runtime/compiled_model.cc:1226] Accelerator returned null hooks.
+INFO: [external/litert/litert/runtime/dispatch/dispatch_delegate.cc:129] DispatchDelegate::Initialize 
+INFO: [external/litert/litert/runtime/dispatch/dispatch_delegate.cc:129] DispatchDelegate::Initialize 
+INFO: [external/litert/litert/runtime/dispatch/dispatch_delegate.cc:129] DispatchDelegate::Initialize 
+INFO: [external/litert/litert/runtime/dispatch/dispatch_delegate.cc:129] DispatchDelegate::Initialize 
+INFO: [external/litert/litert/runtime/dispatch/dispatch_delegate.cc:129] DispatchDelegate::Initialize 
+INFO: [external/litert/litert/vendors/intel_openvino/dispatch/invocation_context.cc:257] Dispatch: no bytecode header found, defaulting to 'NPU'
+INFO: [external/litert/litert/vendors/intel_openvino/dispatch/invocation_context.cc:297] OpenVINO partition '(unnamed)' using device: NPU
+INFO: [external/litert/litert/vendors/intel_openvino/dispatch/invocation_context.cc:425] Openvino InvocationContext Initialize SUCCESS
+INFO: [external/litert/litert/runtime/dispatch/dispatch_delegate.cc:129] DispatchDelegate::Initialize 
+INFO: [external/litert/litert/runtime/compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: [external/litert/litert/runtime/compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: [external/litert/litert/runtime/compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: [external/litert/litert/runtime/compiled_model.cc:2092] Tracked constant output tensor eoi_embedding with locked address
+INFO: [external/litert/litert/runtime/compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: [external/litert/litert/runtime/compiled_model.cc:2092] Tracked constant output tensor eoa_embedding with locked address
+I0000 00:00:1794141365.365918   26284 litert_lm_lib.cc:1298] Creating conversation
+W0000 00:00:1794141365.367031   26284 mel_filterbank.cc:163] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+I0000 00:00:1794141365.367087   26284 litert_lm_lib.cc:1310] Running single-turn conversation
+W0000 00:00:1794141365.424555   26284 tasks.cc:637] Failed to get prefill profile summary: UNIMPLEMENTED: GetProfileSummary not implemented for backend: LiteRT NPU Compiled Model
+=== Source Location Trace: ===
+.\runtime/executor/llm_executor_base.h:250
+
+W0000 00:00:1794141367.854248   26284 tasks.cc:709] Failed to get decode profile summary: UNIMPLEMENTED: GetProfileSummary not implemented for backend: LiteRT NPU Compiled Model
+=== Source Location Trace: ===
+.\runtime/executor/llm_executor_base.h:250
+
+Imagine you have a smart device, like your smartphone, a smart speaker, or even a specialized sensor.
+
+**On-device AI simply means that the "brain" or the intelligence that powers the AI is running *directly on that device*, rather than sending all the data to a distant, powerful server (like a giant cloud computer) to do the thinking.**
+
+Here’s a breakdown using simple analogies:
+
+---
+
+### 1. The Traditional Way (Cloud AI)
+
+Think of this like asking a very smart, but very busy, expert (the Cloud Server) to do the heavy lifting.
+
+* **You ask
+I0000 00:00:1794141367.854525   26284 litert_lm_lib.cc:211] Captured model output: Imagine you have a smart device, like your smartphone, a smart speaker, or even a specialized sensor.
+
+**On-device AI simply means that the "brain" or the intelligence that powers the AI is running *directly on that device*, rather than sending all the data to a distant, powerful server (like a giant cloud computer) to do the thinking.**
+
+Here’s a breakdown using simple analogies:
+
+---
+
+### 1. The Traditional Way (Cloud AI)
+
+Think of this like asking a very smart, but very busy, expert (the Cloud Server) to do the heavy lifting.
+
+* **You ask
+
+I0000 00:00:1794141367.854642   26284 litert_lm_lib.cc:461] BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.11 ms
+    - Init Executor: 953.36 ms
+    - Init LLM metadata: 0.04 ms
+    - Init Model assets: 0.76 ms
+    - Init Tokenizer: 60.67 ms
+    - Init Total: 954.32 ms
+--------------------------------------------------
+  Time to first token: 0.07 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 20 tokens in 53.8275ms duration.
+      Prefill Speed: 371.56 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 128 tokens in 2.429584s duration.
+      Decode Speed: 52.68 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 0 turns):
+    No text to token ids turns recorded.
+--------------------------------------------------
+I0000 00:00:1794141367.862939   26284 litert_lm_lib.cc:1298] Creating conversation
+W0000 00:00:1794141367.864659   26284 mel_filterbank.cc:163] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+I0000 00:00:1794141367.864733   26284 litert_lm_lib.cc:1310] Running single-turn conversation
+W0000 00:00:1794141367.914594   26284 tasks.cc:637] Failed to get prefill profile summary: UNIMPLEMENTED: GetProfileSummary not implemented for backend: LiteRT NPU Compiled Model
+=== Source Location Trace: ===
+.\runtime/executor/llm_executor_base.h:250
+
+W0000 00:00:1794141370.346420   26284 tasks.cc:709] Failed to get decode profile summary: UNIMPLEMENTED: GetProfileSummary not implemented for backend: LiteRT NPU Compiled Model
+=== Source Location Trace: ===
+.\runtime/executor/llm_executor_base.h:250
+
+Imagine you have a smart device, like your smartphone, a smart speaker, or even a specialized sensor.
+
+**On-device AI simply means that the "brain" or the intelligence that powers the AI is running *directly on that device*, rather than sending all the data to a distant, powerful server (like a giant cloud computer) to do the thinking.**
+
+Here’s a breakdown using simple analogies:
+
+---
+
+### 1. The Traditional Way (Cloud AI)
+
+Think of this like asking a very smart, but very busy, expert (the Cloud Server) to do the heavy lifting.
+
+* **You ask
+I0000 00:00:1794141370.346687   26284 litert_lm_lib.cc:211] Captured model output: Imagine you have a smart device, like your smartphone, a smart speaker, or even a specialized sensor.
+
+**On-device AI simply means that the "brain" or the intelligence that powers the AI is running *directly on that device*, rather than sending all the data to a distant, powerful server (like a giant cloud computer) to do the thinking.**
+
+Here’s a breakdown using simple analogies:
+
+---
+
+### 1. The Traditional Way (Cloud AI)
+
+Think of this like asking a very smart, but very busy, expert (the Cloud Server) to do the heavy lifting.
+
+* **You ask
+
+I0000 00:00:1794141370.346773   26284 litert_lm_lib.cc:461] BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.12 ms
+    - Init Executor: 953.36 ms
+    - Init LLM metadata: 0.04 ms
+    - Init Model assets: 0.76 ms
+    - Init Tokenizer: 60.67 ms
+    - Init Total: 954.32 ms
+--------------------------------------------------
+  Time to first token: 0.06 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 20 tokens in 41.0718ms duration.
+      Prefill Speed: 486.95 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 128 tokens in 2.4316686s duration.
+      Decode Speed: 52.64 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 0 turns):
+    No text to token ids turns recorded.
+--------------------------------------------------
+I0000 00:00:1794141370.355295   26284 litert_lm_lib.cc:673] Aggregated BenchmarkInfo (median of 2 iterations):
+  Init Phases (7):
+    - Init Conversation: 0.12 ms
+    - Init Executor: 953.36 ms
+    - Init LLM metadata: 0.04 ms
+    - Init Model assets: 0.76 ms
+    - Init Session: 0.03 ms
+    - Init Tokenizer: 60.67 ms
+    - Init Total: 954.32 ms
+--------------------------------------------------
+  Time to first token: 0.07 s
+--------------------------------------------------
+    Prefill Turn 1:
+      Prefill Speed: 429.25 tokens/sec.
+    Decode Turn 1:
+      Decode Speed: 52.66 tokens/sec.
+--------------------------------------------------
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=000001ED12F9F810, name=NpuAccelerator
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=000001ED12F9F090, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=000001ED12F9F330, name=CpuAccelerator
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=000001ED0193A760, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=000001ED0193AE20, name=CpuAccelerator
