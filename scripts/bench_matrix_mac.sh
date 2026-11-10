@@ -223,6 +223,7 @@ dry_run_ys_cell(){
       return
     fi
   fi
+  [ -n "$outcap" ] && [ "$rt" = "litert-lm" ] && extra+=(--litert-output-cap "$outcap")
   case "$task" in native-benchmark-*)
     if [ "$rt" = "core-ai" ]; then
       extra+=(--coreai-native-benchmark "${task#native-benchmark-}")
@@ -537,7 +538,6 @@ run_cell(){
       # ynnpack=1 on a litert-lm cpu row: YNNPACK kernels instead of XNNPACK's
       # (yardstick --litert-ynnpack on; the iOS app's flag, Android's ynnpack=1).
       [ "$ynnpack" = "1" ] && extra+=(--litert-ynnpack on)
-      [ -n "$outcap" ] && extra+=(--litert-output-cap "$outcap")
     elif [ "$rt" = "core-ai" ] && [ "$backend" = "ane" ]; then
       :   # the Core AI stock arm: arm identity only (core-ai-ane); the engine picks the Neural Engine
     else
@@ -545,6 +545,8 @@ run_cell(){
       return
     fi
   fi
+  # output-cap= on a mac litert-lm row (engine | drain), with or without backend= (a GPU row names none)
+  [ -n "$outcap" ] && [ "$rt" = "litert-lm" ] && extra+=(--litert-output-cap "$outcap")
   case "$task" in native-benchmark-*)
     # The native benchmark runs INSTEAD of a task (yardstick resolves --task
     # before the native branch, so it must still name a real task id): LiteRT-LM's
