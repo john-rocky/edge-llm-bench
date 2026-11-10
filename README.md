@@ -1,151 +1,52 @@
 # edge-llm-bench
 
-A neutral, reproducible benchmark harness for local LLM engines on real
-devices — built to run continuously, not as one-off campaigns.
+A neutral, reproducible benchmark harness for local LLM engines on real devices. It has stored runs for LiteRT-LM, llama.cpp, MLX, Apple Core AI, ExecuTorch and ONNX Runtime GenAI on a Mac Studio, iPhones, Android phones and a Windows laptop.
 
-- **Engines**: LiteRT-LM, llama.cpp, MLX, Apple Core AI, Cactus — every pin
-  lives in `environment.lock.json`
-- **Devices**: Mac Studio (M4 Max), iPhone 17 Pro, Pixel 8a, Galaxy S26,
-  a Windows laptop (Core Ultra 9 386H / RTX 5080 Laptop) —
-  one schema (`schema/result.v1.json`), one accumulation layer, one
-  leaderboard
+![Bar chart of LiteRT-LM v0.16.0 against the previous run of each measurement on a Mac Studio, a Pixel 8a and an iPhone 17 Pro. Decode on Qwen3-0.6B improved 14.2 % on the Mac, and the other five measurements moved less than 1 %.](docs/charts/v0160_regression_verdicts.png)
 
-![LiteRT-LM v0.16.0 release-regression verdicts — one bar per scored cell, anchor-normalized where cross-session](docs/charts/v0160_regression_verdicts.png)
+Use it to check whether a new engine release changed speed on your devices, or to measure a model and keep every raw log. The chart shows that check for LiteRT-LM v0.16.0: each bar compares one measurement with its previous run.
 
-This repo is shared as a **harness**. The pipeline, every raw capture record,
-and the machine-readable regression verdicts ship here — but the repo does
-not publish cross-runtime standings. Render your own locally any time from
-the shipped raw:
+This repo publishes no rankings between runtimes. Every raw record is here, so you can build a leaderboard yourself with no device:
 
 ```bash
+git clone https://github.com/john-rocky/edge-llm-bench && cd edge-llm-bench
 python3 scripts/build_summary.py && python3 scripts/render_leaderboard.py
 # -> LEADERBOARD.md (local, gitignored)
 ```
 
-## Quickstart: the Android cells on a DDP lab phone
+## Setup
 
-- Needs: no phone and no adb; gcloud signed in, a Cloud project with the Device Run API enabled and a bucket in it you can read and write, and python3 >= 3.10 with `huggingface_hub` (step 1 of the DDP section below).
-- Clone: `git clone https://github.com/john-rocky/edge-llm-bench && cd edge-llm-bench`
-- Put the pinned LiteRT-LM Android files in place (the lines of step 2 below; 7 s with the clone on a fresh Ubuntu 24.04, 2026-10-16):
-  ```bash
-  TAG=$(python3 -c 'import json; print(json.load(open("android/engine-pins.json"))["android_pins"]["litert-lm"])')
-  mkdir -p android/bin
-  curl -fL https://github.com/john-rocky/edge-llm-bench/releases/download/android-litert-lm-$TAG/litert-lm-$TAG-android-arm64.tar.gz \
-    | tar xz -C android/bin && mv android/bin/litert-lm-$TAG-android-arm64 android/bin/$TAG
-  ```
-- Check: `./bench doctor --platform ddp` (gcloud and its sign-in, `huggingface_hub`, the 9 engine files) and `./android/ddp/selftest.py` (no network, nothing billed; 17 s).
-- Run, billed to your project (8 jobs in one session, 37 min on 2026-10-15): `./bench matrix matrices/dashboard-text-v1.cells --ddp akita-35 --project <your project> --bucket gs://<your bucket>`
-- A first check of one job and two runs: the same command on `matrices/ddp-first-run.cells` (7 min from the command to the records on 2026-10-16).
-- Read: the records in `results/raw/<date>-ddp-akita-35-android/app-path-android/*.json`; in `results/summary/device-runs.csv` their device is `Pixel 8a (DDP akita-35)`.
-- More: "Run the Android cells on a Developer Device Platform phone" below (the dry run, the cost, what this route does not carry).
+You can read the records without any setup. To measure, start with `./bench doctor`, which says what is missing and how to fix it.
 
-## The loop
+| Device | First time | Guide |
+|---|---|---|
+| Mac | about 45 minutes | [docs/setup.md](docs/setup.md) |
+| Android | about 15 minutes with an authorized device | [`android/README.md`](android/README.md) |
+| iPhone | half a day, with Xcode signing | [`docs/OPERATIONS.md`](docs/OPERATIONS.md) |
+| Windows, over SSH | about an hour, mostly building LiteRT-LM | [`windows/README.md`](windows/README.md) |
+
+## Measure a new release
+
+A `.cells` file lists what to measure. Each line, called a cell, names a platform, an engine, a model and a task.
 
 ```bash
-./bench release-watch        # upstream releases vs environment.lock.json pins
+./bench release-watch        # upstream releases vs environment.lock.json
 ./bench matrix  matrices/apple-warm-matrix.cells
 ./bench regress matrices/release-regression-litert.cells \
     --engine litert-lm --version v0.16.0 --baseline engine:v0.15.0
 ```
 
-Adding a model is one line in a cells file. This exact line is behind the
-Pixel 8a LFM2.5 gpu rows:
+Adding a model takes one more line. For example, this one measures LFM2.5-1.2B on an Android phone's GPU:
 
 ```
 android litert-lm litert-community/LFM2.5-1.2B-Instruct short-chat backend=gpu file=LFM2.5-1.2B-Instruct_int4_gpu.litertlm
 ```
 
-Every run emits schema-v1 JSON per record plus its raw console log
-(`results/raw/<campaign>/`) — a number without a stored report is not a
-measurement. `results/summary/*.csv` is the derived accumulation layer; a
-local `LEADERBOARD.md` renders from it (`scripts/render_leaderboard.py`);
-regression verdicts persist as machine-readable JSON under
-`results/regression-reports/`. CI keeps all of it consistent.
+Every run writes a JSON record and its raw console log under `results/raw/<campaign>/`. The operating manual is [`docs/OPERATIONS.md`](docs/OPERATIONS.md), and [`skills/`](skills/) has playbooks for coding agents.
 
-**Operating manual** — release regressions, adding a model / arm / device,
-what stays manual and why: [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
-**Agent skills** — playbooks an agent loads to run the harness ad hoc:
-[`skills/`](skills/).
+## Quickstart: the Android cells on a DDP lab phone
 
-## Setup
-
-Reading needs none: every raw record (`results/raw/`) and the regression
-verdicts ship in the repo, and the standings render locally from them (one
-command, above). To measure, start with
-
-```bash
-./bench doctor        # says exactly what is missing, with the fix command
-```
-
-**Mac lane** — the shortest path to a first number (~45 min first time,
-measured 2026-08-26: 37 min bootstrap on a contended machine — expect
-~20–30 min solo — plus a 4-min build, then seconds to measure;
-`docs/first-run-rehearsal-2026-08-26.md`):
-
-```bash
-brew install xcodegen coreutils
-ios/BenchmarkApp/scripts/bootstrap.sh      # vendored engines — the long step
-scripts/build_yardstick_mac.sh             # full-flavor CLI build
-./bench matrix matrices/deepseek-r1-1.5b-crossarm.cells --platform mac
-```
-
-**Android lane** — prebuilt engine binaries are on the
-[releases page](https://github.com/john-rocky/edge-llm-bench/releases), so no
-bazel/NDK build is needed: `android/README.md` (~15 min with an authorized
-device).
-
-**iPhone lane** — the heavy one: building and installing BenchmarkApp needs
-Xcode signing plus two increased-memory entitlements that are GUI-only. Plan
-half a day the first time; `docs/OPERATIONS.md` has the runbook.
-
-**Windows lane** — driven over SSH from another machine; LiteRT-LM has no
-Windows release asset, so the engine is built on the host (about 50 min on a
-16-core laptop) and llama.cpp comes from the pinned release assets:
-`windows/README.md`.
-
-Mac and iPhone captures self-police: a run that starts hot, lands with wide
-trial spread, or records no decode at all is quarantined and retried once
-automatically (`scripts/cell_gate.py`); what stays flagged is marked ⚠ in the
-locally rendered leaderboard and charts, never silently kept. The Android driver's guards are
-a thermal-nominal wait and a per-device campaign lock (two interleaved
-drivers corrupt both campaigns — measured; `methodology/android.md`); its
-post-capture gate is a disclosed phase-2 gap.
-
-## Run the Android cells on a Developer Device Platform phone (fresh gLinux / gMac, no adb)
-
-The Android LiteRT-LM cells also run on a lab phone of Google's Developer
-Device Platform (DDP): the host uploads the pinned engine files, the model and
-the prompt to a Cloud Storage bucket, Device Run executes the same engine
-command on a lab unit, and the host pulls the output and writes the same
-schema-v1 records. No phone is attached, so the host needs no adb and no
-Android SDK.
-
-**1. What the machine needs.**
-
-- gcloud, signed in, with your project set:
-  `gcloud auth login && gcloud config set project <your project>`. The driver
-  uses `gcloud auth print-access-token` and `gcloud storage`. A run takes its
-  project from `--project`, then `$BENCH_DDP_PROJECT`, then gcloud's active project.
-- A Cloud project where the Device Run API is enabled
-  (`gcloud services enable devicerun.googleapis.com --project <your project>`),
-  your account allowed to create sessions there, and a bucket in it you can
-  read and write (`gs://<your project>-devicerun` is the name
-  `gcloud beta device-run` uses, and the run's default without `--bucket` or
-  `$BENCH_DDP_BUCKET`). A dry run calls no gcloud: without the flag or the
-  variable its plan shows `$PROJECT`.
-- python3 >= 3.10 as `python3` on the PATH (`bench` starts with
-  `#!/usr/bin/env python3`) and `huggingface_hub`, for instance in a venv:
-  `python3 -m venv ~/elb-venv && . ~/elb-venv/bin/activate && pip install huggingface_hub`
-  (a stock Debian / Ubuntu needs the `python3-venv` package first: `sudo apt install python3-venv`).
-  A gated model repo needs your Hugging Face token on the host.
-- The pinned LiteRT-LM Android binaries: the files (`litert_lm_main`,
-  `litert_lm_advanced_main` and the tag's `.so` files: 7 in all at v0.19.0) of the tag that
-  `android/engine-pins.json` `android_pins` `litert-lm` names, in
-  `android/bin/<tag>/` (or `$BENCH_ANDROID_BIN_DIR/<tag>/`). They come from
-  this repo's GitHub release `android-litert-lm-<tag>`; the release for the
-  pinned tag is published with the pin bump. Step 2 puts them in place.
-
-**2. Clone, and put the pinned binaries in place.**
+If you have no phone of your own, this route runs the Android cells on a phone in Google's Developer Device Platform (DDP), with no adb. You need gcloud signed in, a Cloud project with the Device Run API enabled, a bucket in it you can read and write, and python3 >= 3.10 with `huggingface_hub`.
 
 ```bash
 git clone https://github.com/john-rocky/edge-llm-bench && cd edge-llm-bench
@@ -153,205 +54,43 @@ TAG=$(python3 -c 'import json; print(json.load(open("android/engine-pins.json"))
 mkdir -p android/bin
 curl -fL https://github.com/john-rocky/edge-llm-bench/releases/download/android-litert-lm-$TAG/litert-lm-$TAG-android-arm64.tar.gz \
   | tar xz -C android/bin && mv android/bin/litert-lm-$TAG-android-arm64 android/bin/$TAG
+./bench doctor --platform ddp
+./android/ddp/selftest.py
 ```
 
-Without the release, `LITERTLM_TAG=$TAG ANDROID_NDK_HOME=<NDK r28b+> android/scripts/build_litert_lm_main.sh`
-builds the tag from source (bazelisk; it writes that build's sha256 into
-`android/engine-pins.json`, so the driver's check passes with it and the
-records carry its sha256 in `engineArtifact`). Before anything is uploaded,
-the driver checks each of the files against the sha256 that
-`android/engine-pins.json` pins for the tag. LiteRT-LM main, a pull request or
-a build made elsewhere runs with `--engine-build <label>` instead:
-[`android/README.md`](android/README.md), "Build from head or a PR".
-
-Then check the checkout with no network and nothing billed: the selftest runs
-the plan, the job wrapper, the billed path and the records against a fake
-gcloud, a temp dir as the bucket and a fake Device Run server on localhost, and
-checks the files against `android/engine-pins.json`.
+`selftest.py` runs offline and costs nothing. The next command is billed to your project. It runs one job twice on `akita-35`, a Pixel 8a, and took 7 minutes on 2026-10-16:
 
 ```bash
-./android/ddp/selftest.py      # last line: ddp selftest OK (<N> checks); exit 0
-```
-
-**3. Dry run** (no gcloud call, no network, nothing billed): the jobs, the
-sessions, the pushes with their sizes and sha256, the timeouts and an
-estimate of the device-minutes. It already checks the 9 engine files.
-
-```bash
-./bench matrix matrices/dashboard-text-v1.cells --ddp akita-35 --dry-run \
+./bench matrix matrices/ddp-first-run.cells --ddp akita-35 \
     --project <your project> --bucket gs://<your bucket>
 ```
 
-`--ddp` takes a DDP catalog id from `android/ddp/devices.json` (`akita-35` =
-Pixel 8a, `m1q-36` = Galaxy S26, …). On `akita-35` this cells file makes 8 jobs
-in one session: Qwen3-1.7B and Gemma 4 E2B, short chat and the 1K text task,
-CPU and GPU, 3 runs each. A model not yet in your Hugging Face cache shows as
-`"uncached"`; the billed run downloads it.
+The records land in `results/raw/<date>-ddp-akita-35-android/app-path-android/*.json`.
 
-**4. The run** (billed to your project):
+### Run the Android cells on a Developer Device Platform phone
 
-```bash
-./bench matrix matrices/dashboard-text-v1.cells --ddp akita-35 \
-    --project <your project> --bucket gs://<your bucket>
-```
+The [full steps](docs/ddp-phone.md) include a dry run and what it costs.
 
-It downloads the models into the local Hugging Face cache, uploads the inputs
-the bucket does not hold yet (content-addressed under
-`automation/inputs/edge-llm-bench/`), creates one Device Run session per 8
-jobs, polls it every 30 s until it finishes, pulls the session's output from
-the bucket, replaces the lab network's identifiers in the pulled logcats, and
-writes the records (one per run; two for a 1K run, its cold and its warm
-iteration). On 2026-10-15 the 8-job session took 37 min on
-`akita-35`; its 8 jobs ran side by side on 8 units.
+## How the numbers are checked
 
-**5. Where the rows land.** `results/raw/<date>-ddp-<id>-android/app-path-android/`
-(the records, `*.json`, beside their raw logs) and `results/raw/<date>-ddp-<id>-android/ddp/`
-(request, operation, session report, the pulled files, `scrub.json`).
-`bench` then rebuilds `results/summary/device-runs.csv`, where these rows carry
-the device `<model> (DDP <id>)`, e.g. `Pixel 8a (DDP akita-35)`; `./bench dashboard`
-renders them into the local `DASHBOARD.md` as a column of their own.
+- Every row names its quantization recipe and engine version.
+- Trials that disagree too much come back UNRELIABLE instead of scored.
+- A crash, an out-of-memory run or an unsupported configuration stays in the table with its reason.
+- Devices drift between sessions, so each session measures an anchor first and changes are normalized through it.
+- Two runs with different token budgets or modes are not scored against each other.
 
-**6. What this route does not carry.** Mac and iPhone cells; the Android
-llama.cpp rows (their build is not wired for DDP; they are skipped with the
-reason); session anchors, so a DDP row gets no anchor-normalized comparison
-across sessions, and it is never pooled with an attached phone's rows (its
-device name differs); control of which unit runs a job, its temperature and
-its CPU clock caps (each record names its unit by build fingerprint and serial,
-and carries its thermal and cap readings and flags).
-
-**7. Cost.** Device Run bills device time to the project you pass. The dry
-run prints an estimate; the session report (`ddp/session-<n>.json`) gives the
-real start and end of every job and execution; the price is in your project's
-billing.
-
-**8. More.** What is pushed, run and recorded, and how a DDP row differs from
-an attached phone's: [`docs/ddp-integration.md`](docs/ddp-integration.md),
-"Route C as `bench matrix --ddp`". The step-by-step runbook (resume, checking
-the outputs, committing): [`docs/OPERATIONS.md`](docs/OPERATIONS.md), "Run
-cells on DDP". The iPhone app's LiteRT-LM rows run on a DDP iPhone through
-XCTest: [`ios/ddp/README.md`](ios/ddp/README.md).
-
-**One command: the autopilot.** `./bench autopilot` runs steps 3 to 5 and what
-follows them on the bench host every night: the checks and the plan, the billed
-run, the check of the records, one local commit of the campaign dir and
-`results/summary` when every rule passes (`REVIEW.md` in the dir when one does
-not), the local `DASHBOARD.md`, the red points of the team page's regression
-rule and the pending retake and bisect requests; its last screen says what to
-do next.
-
-```bash
-./bench autopilot --ddp akita-35 --dry-run --project <your project> --bucket gs://<your bucket>
-```
-
-The dry run calls no network and bills nothing; without `--dry-run` it is the
-billed run, `--no-commit` stops after the check, `--cells` replaces
-`matrices/ddp-first-run.cells` (one job, two runs; `m1q-36` takes its weekly
-file). The commit is made with git's `user.name` and `user.email`. Left out on
-your host: the private team page, any push (the commit stays local), retakes
-(they run on the bench host's attached phones) and the bisect itself
-(`scripts/engine_bisect.py` comes after PR #4). Design:
-[`docs/dashboard-autopilot-v1.md`](docs/dashboard-autopilot-v1.md), section 10.
-
-## What keeps the numbers honest
-
-- **The recipe is part of every row.** Arms run their own best available
-  build; quantization and engine pin sit in the row because a faster number
-  under a different recipe is a different deployment profile, not a win.
-  "int4" is not a spec — Gemma-4 `.litertlm` is the wNa8o8 mobile schema and
-  is labeled as such.
-- **Wide trial spread throws the cell out.** Trials that disagree come back
-  UNRELIABLE instead of scored.
-- **Failed runs stay in the table.** Crashes, OOMs, and unsupported configs
-  keep their row; the reason is the datum.
-- **Cross-session deltas only count through session anchors.** Devices drift
-  between sittings, so every session runs an anchor cell first and deltas
-  are normalized through it.
-- **Mismatched budgets or modes refuse to score.**
-
-Full rules, cited by slug from the code: [`methodology/fairness-rules.md`](methodology/fairness-rules.md).
+See the [full rules](methodology/fairness-rules.md) and [how records are kept](docs/background.md).
 
 ## Coverage
 
-**measured** = stored capture sessions in `results/raw/` today. **wired** =
-the arm builds at its pinned version but has no stored captures yet. **n/a**
-always carries its reason — that is part of the method, not an apology.
-
-| engine | Mac Studio (M4 Max) | iPhone 17 Pro | Pixel 8a | Galaxy S26 | Windows laptop (Core Ultra 9 386H / RTX 5080 Laptop) |
-|---|---|---|---|---|---|
-| LiteRT-LM | measured | measured | measured (cpu, gpu) | measured (cpu, gpu) | measured (cpu, gpu, npu: Gemma 4 E2B; cpu, gpu: Gemma 4 E4B, Qwen3 0.6B / 1.7B / 4B; gpu on the integrated GPU too (`adapter=igpu`): all five models) |
-| llama.cpp | wired | wired | measured (cpu) | measured (cpu) | measured (cpu, vulkan, cuda: Gemma 4 E2B / E4B, Qwen3 0.6B / 1.7B / 4B) |
-| MLX | measured | measured | n/a — Apple-only | n/a — Apple-only | n/a — Apple-only |
-| Core AI | measured (Qwen3 0.6B / 1.7B / 4B, own exports; Gemma 4 rows excluded with the reason) | measured | n/a — Apple-only | n/a — Apple-only | n/a — Apple-only |
-| Cactus | n/a — no Mac arm | wired | planned | planned | n/a — no Windows arm |
-
-- Android LiteRT NPU is n/a on both devices — the NPU path is Early Access
-  only (`methodology/android.md`).
-- Android llama.cpp is the official CPU release binary at the same tag as
-  the Apple arm; GPU would need a custom NDK build and is a disclosed gap.
-- Android v1 has no warm regime and no TTFT on llama-cli; every disclosed
-  deviation is in `methodology/android.md`.
-- Mac Core AI runs through the yardstick's `CoreAIRuntime` since 2026-09-08
-  (the pinned `coreai-models` checkout, macOS 27 SDK): the dashboard's Qwen3
-  0.6B / 1.7B / 4B rows are our own side-loaded exports, published under
-  `mlboydaisuke/*-CoreAI-official` where they exist
-  (`docs/dashboard-cells-v1.md`, "Core AI arm (v2)"; identities in
-  `environment.lock.json`).
-- The Core AI arm is best-effort for Gemma 4: PLE models need an
-  unpublished engine patch (`COREAI_STATIC_INPUTS`); a clean clone reports
-  `unsupported`, and the dashboard keeps those rows as `exclude=` with the
-  reason. Missing exports stay visible as reasoned rows (DeepSeek-R1
-  1.5B: bundle pending export).
-- Cactus Android is a phase-2 slot at the pinned commit; until then the
-  driver reports the row with its reason.
-- Energy cells are manual by design (battery-delta needs the cable out).
+[docs/coverage.md](docs/coverage.md) lists which engine has been measured on which device, and why the others haven't. `results/summary/device-runs.csv` has every stored run.
 
 ## Endurance
 
-Run-once benchmarks answer "how fast is turn 1". A chat app lives with a
-different question: what happens to the 40th turn of a conversation the
-process has been holding for half an hour. The endurance task
-(`endurance-chat-30m`) measures that on real devices — one engine process,
-one conversation with accumulating KV, a fixed 12-prompt script, a native
-256-token per-turn cap. Every turn is recorded as it completes: engine
-decode rate, KV occupancy, memory, thermal state, degeneracy. A crash at
-turn 37 keeps turns 1–36 as evidence. When the conversation outgrows its
-context budget it rolls over the way a chat app would; the rollover is
-counted, never a silently widened budget.
-
-Each session derives four verdicts: decode decay (first 5 minutes vs last
-5), memory slope (leak-class detection, rollover-attributed), degeneracy
-onset, and completion. Protocol and fairness rules:
-[`methodology/endurance.md`](methodology/endurance.md). Lanes: Mac
-(`matrices/endurance-mac.cells`) and Android on Galaxy S26
-(`matrices/endurance-android.cells`) — the Android lane builds a small
-harness driver against the pinned LiteRT-LM tag because no stock CLI can
-hold a scripted multi-turn conversation. LiteRT-LM only for now; no
-cross-runtime rows. The whole Android path also runs with no phone attached
-(`android/bench/selftest.py`, fake adb), so CI proves the wiring on every
-push.
-
-This is deliberately the half of the eval story that quality harnesses
-don't cover: tools like ai-edge-eval measure what a model answers; this
-repo measures what the device and engine do over time. Sustained
-performance on real hardware, with the raw per-turn series stored behind
-every claim.
-
-## Seed baseline
-
-This repo starts with the 2026-08-17 LiteRT-LM v0.15.0 → v0.16.0 regression
-run as its founding baseline: Pixel 8a (Android lane) and Mac Studio M4 Max,
-verdicts in `results/regression-reports/`. On the Pixel GPU the release is a
-clean pass (decode +0.3%); on the Mac, Qwen3-0.6B decode improved ~14% over
-the July v0.13.1 rows (anchor-normalized) and Gemma-4-E2B stayed flat.
+`endurance-chat-30m` holds one conversation in one engine process for 30 minutes and records every turn: decode rate, KV occupancy, memory and thermal state. It runs on a Mac and a Galaxy S26, with LiteRT-LM only for now ([protocol](methodology/endurance.md)).
 
 ## Provenance
 
-The harness was carved out of
-[apple-silicon-llm-bench](https://github.com/john-rocky/apple-silicon-llm-bench),
-which remains the measurement archive (published campaign tables, full raw
-history back to 2026-05, and the `./reproduce` registry mapping each
-published table to its pinned command). Numbers in that archive were
-measured with the same harness code; this repo is canonical for the harness
-going forward.
+This harness was carved out of [apple-silicon-llm-bench](https://github.com/john-rocky/apple-silicon-llm-bench), which remains the archive of published tables and raw history back to 2026-05.
 
 License: MIT.

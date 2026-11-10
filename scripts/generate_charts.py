@@ -123,11 +123,9 @@ def chart_regression():
     ax.set_xlim(min(lo * 1.5, -2.5), None)
     ax.set_yticks(list(ys))
     ax.set_yticklabels([c[0] for c in cells], fontsize=9, color=INK)
-    ax.set_xlabel("decode / prefill / TTFT delta vs previous capture (%, anchor-normalized "
-                  "where cross-session)", fontsize=9, color=MUTED)
-    ax.set_title("LiteRT-LM v0.16.0 — release regression verdicts (scored cells only; "
-                 "spread- or n-gated cells not shown)", fontsize=11, color=INK,
-                 loc="left", pad=12)
+    ax.set_xlabel("Change from the previous run (%)", fontsize=9, color=MUTED)
+    ax.set_title("LiteRT-LM v0.16.0 against the previous run of each measurement",
+                 fontsize=11, color=INK, loc="left", pad=12)
     fig.tight_layout()
     fig.savefig(os.path.join(OUT, "v0160_regression_verdicts.png"),
                 facecolor=SURFACE, bbox_inches="tight")
