@@ -54,6 +54,12 @@ public protocol LLMRuntime: AnyObject, Sendable {
     /// `conditions`) — llama.cpp: how it built the prompt from the model's chat template.
     /// `nil` (the default): the record has no `conditions`.
     var recordConditions: RunConditions? { get async }
+
+    /// Appended to `BenchmarkRunner.harnessStamp` in this runtime's records when its own
+    /// measurement contract changed under the same stamp (LiteRT-LM since 2026-11-10: where a
+    /// task run stops at its output budget, and channel content kept in the KV cache), so the
+    /// rows before and after the change never read as one series. "" (the default): none.
+    var harnessSuffix: String { get async }
 }
 
 public extension LLMRuntime {
@@ -61,6 +67,7 @@ public extension LLMRuntime {
     var recordRuntimeLabel: String { get async { kind.rawValue } }
     var recordedContextTokens: Int? { get async { nil } }
     var recordConditions: RunConditions? { get async { nil } }
+    var harnessSuffix: String { get async { "" } }
 }
 
 public enum GenerationEvent: Sendable {

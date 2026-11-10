@@ -13,7 +13,8 @@ Pins:
       exit 0 on the same red set and 1 with the difference named; the prompt version cuts a series
       as the regime does (a -20 % first point on a new task text is not compared, prompt_changed,
       listed "prompt none -> <version>"; the next point compares within the version and can be red;
-      a retake on another version than its previous point is not judged)
+      a retake on another version than its previous point is not judged); the harness stamp cuts a
+      series the same way (harness_changed, "harness <old> -> <new>", a retake across it not judged)
   (b) a red point that is its cell's newest sitting -> one pending retake whose row is the cells
       file's line byte for byte; the same sitting again adds none; a red point a newer sitting has
       replaced adds none; the job's close marks it done (exit 0) or counts the attempt (abandoned
@@ -288,6 +289,59 @@ def main():
                         "--definitions", defs_path], capture_output=True, text=True)
     ok(p.returncode == 0 and f"| {M3} | prompt none -> noref-2026-10-19 (not compared)" in p.stdout,
        f"the console lists the break: exit {p.returncode}")
+
+    print("--- (a'') the harness stamp cuts a series as the prompt version does (2026-11-10: the Apple LiteRT-LM "
+          "output cap and channel KV filter, PR #8)")
+    root_h = os.path.join(tmp, "bench-harness")
+    for rel in ("matrices/st-text.cells", "matrices/st-protocol.cells", "matrices/anchors.cells",
+                "ops/dashboard-v1/schedule.json"):
+        with open(os.path.join(root, rel)) as fh:
+            write(os.path.join(root_h, rel), fh.read())
+    H_OLD, H_NEW = "2026-07-30-agreed-protocol-r4", "2026-07-30-agreed-protocol-r4+litert-cap-engine-kvfilter-off"
+    M5, M6 = "2026-09-15-dashboard-v1-m4max-mac", "2026-09-22-dashboard-v1-m4max-mac"
+
+    def mac_runs_h(camp, day, decode, stamp):
+        out = runs(camp, "Mac16,9", "mac", "litert-lm", QWEN, "short-chat", day, 20, "v0.16.0", decode, 1000.0, 1000,
+                   warm=3)
+        for r in out:
+            r["harness_stamp"] = stamp
+        return out
+    # M1 100 / M2 100 on the old stamp, M5 80 (-20 %) on the new stamp, M6 75.6 (-5.5 % within the new stamp)
+    rows_h = []
+    for r in rows:
+        if r["campaign"] in (f"results/raw/{M1}", f"results/raw/{M2}"):
+            r = dict(r, harness_stamp=H_OLD)
+            rows_h.append(r)
+    rows_h += mac_runs_h(M5, 15, 80.0, H_NEW) + mac_runs_h(M6, 22, 75.6, H_NEW)
+    summary_h = os.path.join(root_h, "results", "summary", "device-runs.csv")
+    write_summary(summary_h, rows_h)
+    for camp in (M1, M2, M5, M6):
+        session(root_h, camp, "m4max")
+    doc_h = rw.compute(root_h, summary_h, cfg)
+    mac_h = series_of(doc_h, "Mac16,9", "litert-lm", "short-chat")
+    v5, v6 = point(mac_h, M5)["vs_prev"], point(mac_h, M6)["vs_prev"]
+    ok(point(mac_h, M2)["harness"] == H_OLD and point(mac_h, M5)["harness"] == H_NEW
+       and all(v5[k]["pct"] is None and v5[k]["harness_changed"] is True and v5[k]["prev_harness"] == H_OLD
+               and v5[k]["prompt_changed"] is False and v5[k]["regression"] is False for k in v5),
+       "the first point on a new harness stamp is compared with none on every metric: harness_changed, the old "
+       "stamp kept, never red (80 vs 100 tok/s, no pct)")
+    ok(v6["decode_tps"]["prev_campaign"] == M5 and v6["decode_tps"]["harness_changed"] is False
+       and v6["decode_tps"]["regression"] is True and round(v6["decode_tps"]["pct"], 2) == -5.5,
+       f"the next point compares within the stamp: -5.50 % vs {M5}, red ({v6['decode_tps']['pct']:.2f})")
+    ok(doc_h["meta"]["harness_changes"] == 1 and doc_h["meta"]["prompt_changes"] == 0
+       and [(b["campaign"], b["prev_harness"], b["harness"]) for b in doc_h["harness_breaks"]] == [(M5, H_OLD, H_NEW)]
+       and "harness changes 1" in rw.summary_line(doc_h)
+       and f"- Mac16,9 Qwen 3 0.6B short-chat GPU {M5}: harness {H_OLD} -> {H_NEW}" in rw.markdown(doc_h),
+       f"the break counted and listed ({doc_h['harness_breaks']})")
+    result, judged = rw.judge({"metrics": [{"metric": "decode_tps", "prev_campaign": M2}]}, mac_h, M5, cfg)
+    ok(result == "unjudged" and f"the retake's harness is {H_NEW}, the previous point's {H_OLD}" in judged[0].get("why", ""),
+       f"a retake on another harness stamp than its previous point is not judged ({result}: {judged[0].get('why')})")
+    p = subprocess.run([sys.executable, os.path.join(ROOT, "scripts", "regression_watch.py"), "--root", root_h,
+                        "--definitions", defs_path], capture_output=True, text=True)
+    ok(p.returncode == 0 and f"| {M5} | harness {H_OLD} -> {H_NEW} (not compared)" in p.stdout,
+       f"the console lists the break: exit {p.returncode}")
+    ok(doc["meta"]["harness_changes"] == 0 and doc_p["meta"]["harness_changes"] == 0 and not doc["harness_breaks"],
+       "the series of (a) and (a') carry one stamp each: no harness break, their red points unchanged")
 
     print("--- (b) a red point that is its cell's newest sitting -> one pending retake, the row byte for byte")
     now = datetime.datetime(2026, 9, 16, 3, 0)

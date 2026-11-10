@@ -113,6 +113,13 @@ public actor MediaPipeRuntime: LLMRuntime {
     public var recordRuntimeLabel: String {
         backend == .cpu ? "\(kind.rawValue)-cpu" : kind.rawValue
     }
+    /// `LLMRuntime.harnessSuffix`: where a task run stops at its output budget (`engineOutputCap`:
+    /// the engine's turn ends at the budget and decode reads the engine's counters; drain: the app
+    /// caps the stream and decode reads its wall clock) and the channel KV filter `loadModel` turns
+    /// off. Rows stamped before 2026-11-10 drained with the engine's default filter (on).
+    public var harnessSuffix: String {
+        "+litert-cap-\(Self.engineOutputCap ? "engine" : "drain")-kvfilter-off"
+    }
     private var engineBackend: Backend { backend == .cpu ? .cpu() : .gpu }
 
     private var engine: Engine?

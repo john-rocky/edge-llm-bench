@@ -373,7 +373,7 @@ public actor BenchmarkRunner {
             memoryMedianResidentMB: memoryMedianResident > 0 ? memoryMedianResident : nil,
             memoryFinalResidentMB: memoryFinalResident > 0 ? memoryFinalResident : nil,
             contextTokensConfigured: runtimeContextTokens ?? contextTokens,
-            harnessStamp: Self.harnessStamp,
+            harnessStamp: Self.harnessStamp + (await configuration.runtime.harnessSuffix),
             initialThermalState: ThermalMonitor.describe(await thermalSampler.initialState),
             peakThermalState: ThermalMonitor.describe(await thermalSampler.peakState),
             finalThermalState: ThermalMonitor.describe(await thermalSampler.finalState),

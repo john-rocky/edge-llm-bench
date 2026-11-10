@@ -22,7 +22,10 @@ a value of the same prompt version - on decode also of the same regime - by the 
 red = below -render_leaderboard.SPREAD_FLAG. The prompt version (the summary's prompt_version: the 1K
 task's tail changed under its id on 2026-10-19) cuts a series as the regime does: the first point of
 a new version is compared with none (prompt_changed, "prompt <old> -> <new>: not compared"), so a
-changed task text never reads as a regression or queues a retake.
+changed task text never reads as a regression or queues a retake. The harness stamp (the summary's
+harness_stamp; on the Apple LiteRT-LM rows since 2026-11-10 its suffix says where a run stops at its
+output budget and that the channel KV filter is off) cuts a series the same way (harness_changed,
+"harness <old> -> <new>: not compared"): a changed measurement contract is not the engine's change.
 
 --compare reads the page's regression.json and compares the red sets (device, arm, model id,
 task, context, file, campaign, metric) and each red point's percentage: exit 0 when they agree,
@@ -253,6 +256,15 @@ def prompt_of(crows):
     return "+".join(sorted({r.get("prompt_version") or "" for r in crows}))
 
 
+def harness_of(crows):
+    """A point's harness stamp: the summary's harness_stamp of its campaign's rows of the cell, joined by '+'
+    when a sitting holds two (then equal to no single stamp: compared with nothing on either side). A stamp
+    changes when what a recorded field means changes (BenchmarkRunner.harnessStamp; on the Apple LiteRT-LM
+    rows since 2026-11-10 its suffix says where a run stops at its output budget): it cuts a series as the
+    prompt version does."""
+    return "+".join(sorted({r.get("harness_stamp") or "" for r in crows}))
+
+
 def prompt_word(v):
     """A prompt version as the marks write it: 'none' for the task's first text."""
     return v or "none"
@@ -301,6 +313,7 @@ def build_series(defs, devices, rows, cfg):
                 points.append({
                     "campaign": os.path.basename(a["campaign"]), "captured": a["date"], "shown": True,
                     "sittings_that_day": 1, "regime": regime, "engine": a["engine"], "prompt": prompt_of(crows),
+                    "harness": harness_of(crows),
                     "status": status,
                     "decode_tps": dec, "n": n, "spread_pct": None if status.startswith(NO_NUMBER) else spread,
                     "prefill_tps": a["prefill"], "mem_peak_mb": a["mem_peak"],
@@ -331,7 +344,10 @@ def build_series(defs, devices, rows, cfg):
                     # earlier point with a value on another version = the series' break, marked)
                     before = earlier[-1]["prompt"] if earlier else None
                     prompt_changed = before is not None and before != p["prompt"]
-                    earlier = [q for q in earlier if q["prompt"] == p["prompt"]]
+                    # harness cut, the same way: a figure compares within its harness stamp only
+                    h_before = earlier[-1]["harness"] if earlier else None
+                    harness_changed = h_before is not None and h_before != p["harness"]
+                    earlier = [q for q in earlier if q["prompt"] == p["prompt"] and q["harness"] == p["harness"]]
                     if key == "decode_tps":
                         # cold-warm-split: a decode figure compares within its regime only
                         changed = bool(earlier) and earlier[-1]["regime"] != p["regime"]
@@ -343,6 +359,7 @@ def build_series(defs, devices, rows, cfg):
                         "regression": pct is not None and pct < -SPREAD_FLAG, "regime_changed": changed,
                         "engine_changed": prev["engine"] != p["engine"] if prev else None,
                         "prompt_changed": prompt_changed, "prev_prompt": before if prompt_changed else None,
+                        "harness_changed": harness_changed, "prev_harness": h_before if harness_changed else None,
                         "value": v, "prev_value": regression_value(prev, key) if prev else None,
                         "prev_engine": prev["engine"] if prev else None}
             # the sitting the page's cell shows now (cells.json: arm_row over every row of the cell)
@@ -375,8 +392,11 @@ def compute(root, summary, cfg):
                      "regime_changes": sum(1 for p in pts if p["vs_prev"].get("decode_tps")
                                            and p["vs_prev"]["decode_tps"]["regime_changed"]),
                      "prompt_changes": sum(1 for p in pts if p["vs_prev"].get("decode_tps")
-                                           and p["vs_prev"]["decode_tps"]["prompt_changed"])},
-            "series": series, "excluded": excluded, "red": red, "prompt_breaks": prompt_breaks(series)}
+                                           and p["vs_prev"]["decode_tps"]["prompt_changed"]),
+                     "harness_changes": sum(1 for p in pts if p["vs_prev"].get("decode_tps")
+                                            and p["vs_prev"]["decode_tps"]["harness_changed"])},
+            "series": series, "excluded": excluded, "red": red, "prompt_breaks": prompt_breaks(series),
+            "harness_breaks": harness_breaks(series)}
 
 
 def series_key(s):
@@ -410,6 +430,19 @@ def prompt_breaks(series):
                 out.append({"device": s["device"], "model": s["model"], "task": s["task"], "backend": s["backend"],
                             "campaign": p["campaign"], "captured": p["captured"], "prompt": p["prompt"],
                             "prev_prompt": vp["prev_prompt"]})
+    return out
+
+
+def harness_breaks(series):
+    """The points where a series' harness stamp changed (harness_changed on decode): never compared, listed."""
+    out = []
+    for s in series:
+        for p in s["points"]:
+            vp = p["vs_prev"].get("decode_tps")
+            if vp and vp["harness_changed"]:
+                out.append({"device": s["device"], "model": s["model"], "task": s["task"], "backend": s["backend"],
+                            "campaign": p["campaign"], "captured": p["captured"], "harness": p["harness"],
+                            "prev_harness": vp["prev_harness"]})
     return out
 
 
@@ -469,7 +502,8 @@ def summary_line(doc):
     r = m["red_by_metric"]
     return (f"regression: {m['series']} series, {m['points']} sittings ({m['shown']} shown), red points decode "
             f"{r.get('decode_tps', 0)} / prefill {r.get('prefill_tps', 0)} / memory {r.get('mem_peak_mb', 0)}, "
-            f"regime changes {m['regime_changes']}, prompt changes {m['prompt_changes']}")
+            f"regime changes {m['regime_changes']}, prompt changes {m['prompt_changes']}, "
+            f"harness changes {m.get('harness_changes', 0)}")
 
 
 def markdown(doc, cmp=None, respond=None):
@@ -484,6 +518,10 @@ def markdown(doc, cmp=None, respond=None):
         lines += ["", "prompt version changes (the series' task text changed: not compared):"]
         lines += [f"- {b['device']} {b['model']} {b['task']} {b['backend']} {b['campaign']}: prompt "
                   f"{prompt_word(b['prev_prompt'])} -> {prompt_word(b['prompt'])}" for b in doc["prompt_breaks"]]
+    if doc.get("harness_breaks"):
+        lines += ["", "harness changes (what a recorded field means changed: not compared):"]
+        lines += [f"- {b['device']} {b['model']} {b['task']} {b['backend']} {b['campaign']}: harness "
+                  f"{b['prev_harness']} -> {b['harness']}" for b in doc["harness_breaks"]]
     if cmp is not None:
         lines += ["", f"compare: {'equal' if cmp['equal'] else 'DIFFERENT'} (red bench {cmp['red']['bench']}, page "
                       f"{cmp['red']['page']}; " + ", ".join(f"{k} {v['bench']} / {v['page']}" for k, v in cmp["counts"].items())
@@ -853,6 +891,8 @@ def judge(entry, s, retake_name, cfg, root=None):
         elif p["prompt"] != prev["prompt"]:
             row["why"] = (f"the retake's prompt version is {prompt_word(p['prompt'])}, the previous point's "
                           f"{prompt_word(prev['prompt'])}")
+        elif p.get("harness") != prev.get("harness"):
+            row["why"] = f"the retake's harness is {p.get('harness')}, the previous point's {prev.get('harness')}"
         elif key == "decode_tps" and p["regime"] != prev["regime"]:
             row["why"] = f"the retake's regime is {p['regime']}, the previous point's {prev['regime']}"
         else:
@@ -1107,6 +1147,9 @@ def main(argv=None):
     for b in doc.get("prompt_breaks", []):
         print(f"  prompt  {b['device']} | {b['model']} | {b['task']} | {b['backend']} | {b['campaign']} | "
               f"prompt {prompt_word(b['prev_prompt'])} -> {prompt_word(b['prompt'])} (not compared)")
+    for b in doc.get("harness_breaks", []):
+        print(f"  harness  {b['device']} | {b['model']} | {b['task']} | {b['backend']} | {b['campaign']} | "
+              f"harness {b['prev_harness']} -> {b['harness']} (not compared)")
     if cmp is not None:
         print(f"compare with {args.compare}: {'equal' if cmp['equal'] else 'DIFFERENT'} (red bench "
               f"{cmp['red']['bench']}, page {cmp['red']['page']}; "
