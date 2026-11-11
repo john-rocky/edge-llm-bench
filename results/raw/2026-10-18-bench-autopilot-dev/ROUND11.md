@@ -35,7 +35,7 @@ Source: `git show HEAD:<file> | grep -n litert-lm | grep -i 'qwen3-0\.6b\|qwen3_
 | `dashboard-text-v1.cells` | 121, 125, 200, 206 | id → `/dynamic_wi4b32_afp32` | iPhone / Mac page rows (D3) |
 | `dashboard-text-v1-android-a.cells` | 11, 12, 14, 15 | file= 替えた, exclude-on 削除 | storage half A, byte-identical to the parent |
 | `dashboard-longctx1024-v1-android-a.cells` | 15 | file= 替えた | anchor row (D2) |
-| `dashboard-longctx1024-v1-android-a.cells` | 18, 19 | file= 替えた, exclude-on 削除 | the team page's Android 1K source |
+| `dashboard-longctx1024-v1-android-a.cells` | 18, 19 | file= replaced, exclude-on removed | the dashboard page's Android 1K source |
 | `dashboard-longctx1024-v1-android-b1.cells` | 15 | file= 替えた | anchor row only (D2) |
 | `dashboard-longctx1024-v1-android-b2.cells` | 15 | file= 替えた | anchor row only (D2) |
 | `dashboard-protocol1024-v1-android.cells` | 9 | file= 替えた | anchor row (D2) |
@@ -134,7 +134,7 @@ results/raw/2026-10-18-bench-autopilot-dev/ROUND11.md`; the hash is in the round
 
 ## 提案
 
-1. Page and series key: add the artifact file to the cell key of `render_dashboard.build`, the team page's
+1. Page and series key: add the artifact file to the cell key of `render_dashboard.build`, the dashboard page's
    `build.py` (l.645 cells, l.1282 regression series) and the regression watch, and mark a file change in a
    series the way `engine_changed` marks an engine change. Until then a regression pair across 2026-10-19 that
    normalizes through the Android LiteRT-LM anchor compares two files.
@@ -183,11 +183,11 @@ results/raw/2026-10-18-bench-autopilot-dev/ROUND11.md`; the hash is in the round
 
 - The launch kept the moved rows' other options ("他の option は不変"), but 12 Android rows carried
   `exclude-on=pixel8a,s26:…issue-3688`, which skips them on the S26 and the Pixel 8a and shows "excluded" on the
-  page before any number (`render_dashboard.py` l.398, team page `build.py` l.583) → D1.
+  page before any number (`render_dashboard.py` l.398, dashboard page `build.py` l.583) → D1.
 - "anchor 行は据え置き" and step 3: the Apple anchors carry no `file=`, so a catalog edit would have moved them too
   (`anchors.cells` l.9, l.12; admission keys rows by runtime, model id, task: `dashboard_job.py` l.760-773) → D3.
 - The Android anchor row is the GPU short-chat page cell's key, and the page selects rows without the file
-  (`render_dashboard.py` l.359, team page `build.py` l.645) → D2.
+  (`render_dashboard.py` l.359, dashboard page `build.py` l.645) → D2.
 - `dashboard-text-v1-android-{b,b1,b2}.cells` have no Qwen3 0.6B LiteRT-LM row; `dashboard-longctx1024-v1-android-
   {b1,b2}.cells` hold only the anchor row; `dashboard-aa-v1-ios*.cells` only the iPhone anchor row.
 - The 2K ladders (`dashboard-longctx-v1-android-s26*.cells`, `dashboard-longctx-v1.cells`) already ran the new file

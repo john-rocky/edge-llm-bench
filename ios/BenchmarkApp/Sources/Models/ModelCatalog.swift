@@ -113,7 +113,7 @@ public enum ModelCatalog {
             onDiskSizeMB: 7000,
             hfRepoId: "mlx-community/gemma-4-12b-it-4bit"
         ),
-        // Comparators for Lu's models. LFM2-350M is v2.0, kept for its published
+        // Comparators for the LFM2 and MiniCPM models. LFM2-350M is v2.0, kept for its published
         // rows; mlx-community has since published LFM2.5-1.2B (entry below,
         // 2026-08-27) — the size-matched mlx arm for the LFM2.5 litert cell.
         ModelInfo(
@@ -140,7 +140,7 @@ public enum ModelCatalog {
             onDiskSizeMB: 600,
             hfRepoId: "mlx-community/MiniCPM5-1B-4bit"
         ),
-        // MiniCPM5-2B comparators (2026-09-11; the LiteRT team asked how their 2B
+        // MiniCPM5-2B comparators (2026-09-11: how the 2B
         // files compare with MLX and llama.cpp). Two rungs, matched by bit-width to
         // the litert-community files: the 8-bit build (group 64, affine) beside the
         // litert int8 file, and OpenBMB's own 4-bit MLX build (group 64, affine — the
@@ -569,7 +569,7 @@ public enum ModelCatalog {
             hfFilePatterns: ["gemma-4-E2B-it.litertlm"],
             primaryFile: "gemma-4-E2B-it.litertlm"
         ),
-        // Qwen3-0.6B — the model Lu's team is optimising; the 4-bit `.litertlm`
+        // Qwen3-0.6B — the 4-bit `.litertlm`
         // lines up with the existing Qwen3-0.6B rows on MLX / CoreML / Core AI.
         // Fallback if it won't load on GPU: the standard dynamic-INT8
         // `Qwen3-0.6B.litertlm` (614 MB) in the same repo.
@@ -640,11 +640,11 @@ public enum ModelCatalog {
             primaryFile: "Qwen3-0.6B_dynamic_wi4b32_afp32.r0805meta018.litertlm"
         ),
         // Qwen3 0.6B / 4B — OUR exports from litert-torch main (6d4c622, 2026-09-08; needs
-        // litert-lm-builder 0.17.0) with the flag set the LiteRT team asked us to benchmark on
+        // litert-lm-builder 0.17.0) with the flag set benchmarked on
         // 2026-09-10: quantization_recipe=dynamic_wi4b32_afp32, enable_gpu_dynamic_prefill
         // (prefill_lengths=1024 -> signature prefill_1031), enable_gpu_dynamic_cache
         // (cache_length=32768 -> 32771), apply_gpu_composites, fuse_gate_up, fuse_qkv,
-        // use_swiglu_composite, use_bool_mask, bundle_litert_lm. Two of the eleven requested
+        // use_swiglu_composite, use_bool_mask, bundle_litert_lm. Two of the eleven
         // flags — use_sdpa_composite and use_qkv_norm_rope_composite — emit kernels
         // (odml.sdpa_transposed, odml.qkv_norm_rope) that do not compile on the OSS macOS GPU
         // path (WebGPU delegate on Metal; litert-lm 0.17.0 PyPI, bisected one flag at a time),
@@ -816,7 +816,7 @@ public enum ModelCatalog {
             hfFilePatterns: ["granite-4.2-3b_int4.litertlm"],
             primaryFile: "granite-4.2-3b_int4.litertlm"
         ),
-        // Lu's focus models (Liquid/LFM2 + MiniCPM) — NOT on litert-community, so these are
+        // Liquid/LFM2 and MiniCPM — NOT on litert-community, so these are
         // OUR own .litertlm conversions, side-loaded (no HF download; hfRepoId is a local marker).
         // See MODEL_AVAILABILITY.md / MODEL_MATRIX.md.
         ModelInfo(
@@ -844,7 +844,7 @@ public enum ModelCatalog {
             primaryFile: "minicpm_wi4b32_wi8_afp32_gpu_opt.litertlm"
         ),
         // MiniCPM5-2B — the two litert-community files (our conversion, litertlm-convert
-        // minicpm52b_work/FINDINGS.md; copied into the org repo by the LiteRT team on
+        // minicpm52b_work/FINDINGS.md; copied into the org repo on
         // 2026-09-09). The same repo also holds OpenBMB's two weight-only files, which
         // the card marks CPU-only; they are not catalogued. One repo, two ids —
         // `primaryFile` picks the file; the labels are the manifest's own recipe text
@@ -925,7 +925,7 @@ public enum ModelCatalog {
             primaryFile: "model.litertlm"
         ),
         // int4 companions for the two remaining int8-shipped litert-community models
-        // (Shuangfeng's all-int4 apple-to-apple ask, 2026-07-14). Same BOCTAV4 recipe as DeepSeek.
+        // (all-int4 apple-to-apple comparison, 2026-07-14). Same BOCTAV4 recipe as DeepSeek.
         ModelInfo(
             id: "own/TinySwallow-1.5B-int4-BOCTAV4",
             displayName: "TinySwallow-1.5B (.litertlm, own int4 BOCTAV4)",

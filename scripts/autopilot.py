@@ -6,7 +6,7 @@
   ./bench autopilot --ddp akita-35 --dry-run --project <p> --bucket gs://<b>
 
 Design: docs/dashboard-autopilot-v1.md section 10 (stage 5 of the autopilot). For a host with no phone
-and no adb (a gLinux or gMac workstation): what the bench host's nightly job does for a lab unit, by the
+and no adb (a Linux or macOS workstation): what the bench host's nightly job does for a lab unit, by the
 job's own functions, then what follows a sitting there, in this order:
 
   1 sitting   scripts/dashboard_job.py ddp_slot: the doctor's DDP checks, the plan of `bench matrix
@@ -20,7 +20,7 @@ job's own functions, then what follows a sitting there, in this order:
               bisect requests; push and publish only as the switch says (committed: push_bench
               and push_page on, publish off)
   3 table     scripts/render_dashboard.py -> DASHBOARD.md and .dashboard/ (local, gitignored)
-  4 red       scripts/regression_watch.py --json --markdown: the team page's red points over the summary
+  4 red       scripts/regression_watch.py --json --markdown: the dashboard page's red points over the summary
   5 requests  logs/dashboard-job/retakes.json and bisect-requests.json: the pending ones, and each bisect
               request's scripts/engine_bisect.py command or why it has none
   then one screen: the sitting's verdict and campaign, the check, the commit, the summary's lines, the
@@ -37,7 +37,7 @@ matrices/ddp-first-run.cells. --runs N runs a copy of the cells file with runs=N
 
 Where this differs from the nightly job (each a wrapper here; scripts/dashboard_job.py is unchanged):
   - the switch's ddp_weekly is not read: it turns the bench host's nightly lab-unit slot on and off
-    (false once a Googler runs the DDP set on their side); a run by hand is its own go, under the same
+    (false once another host runs the DDP set); a run by hand is its own go, under the same
     ddp_max_sessions cap
   - --project / --bucket reach `bench matrix --ddp` as BENCH_DDP_PROJECT / BENCH_DDP_BUCKET (the job's
     plan and run pass neither)

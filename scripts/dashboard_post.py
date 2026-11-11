@@ -139,7 +139,7 @@ ACTION = {
     "text-fail": "read the stored text of the failing runs before the numbers enter the record (fairness-rules §12)",
     "engine-stamp": "the records stamp an engine off the pin registry: a pin bump (a person decides) or a stale registry",
     "pin-drift": "an older LiteRT-LM release than another platform's pin that day: bump this platform's pin (a person decides) and re-measure; never allow-listed",
-    "protocol-off": "a LiteRT-LM headline cell off the agreed protocol (context 2048; the protocol cell 1024 / 256): re-measure it at the protocol; never allow-listed",
+    "protocol-off": "a LiteRT-LM headline cell off the protocol (context 2048; the protocol cell 1024 / 256): re-measure it at the protocol; never allow-listed",
     "prompt-tokens": "the prompt did not reach the engine whole: read the run's log (Prefill Turn 1) and the bundle's chat template",
     "prompt-newtag": "first sitting on this build, prompt count far from other builds': read the log before the numbers count",
     "reply-empty": "read the replies (session_check.py --markdown lists one per cell)",

@@ -574,7 +574,7 @@ class ExecuTorchArm(unittest.TestCase):
 
 class ProtocolRegime(unittest.TestCase):
     """A protocol cell (native-benchmark-*: one launch of an engine's own benchmark entry, its first
-    call cold, the rest warm) headlines the agreed protocol's regime on every platform and for
+    call cold, the rest warm) headlines the protocol's regime on every platform and for
     every arm: the warm median where its session has warm runs, the cold median only where it has
     none (render_dashboard.headline_regime); a warm protocol cell carries its cold first-call median
     beside it (cold_tps). A text-task cell keeps its platform's regime."""

@@ -17,7 +17,7 @@
 - Read: the records in `results/raw/<date>-ddp-akita-35-android/app-path-android/*.json`; in `results/summary/device-runs.csv` their device is `Pixel 8a (DDP akita-35)`.
 - More: "Run the Android cells on a Developer Device Platform phone" below (the dry run, the cost, what this route does not carry).
 
-## Step by step (fresh gLinux / gMac, no adb)
+## Step by step (fresh Linux or macOS host, no adb)
 
 The Android LiteRT-LM cells also run on a lab phone of Google's Developer
 Device Platform (DDP): the host uploads the pinned engine files, the model and
@@ -141,7 +141,7 @@ XCTest: [`ios/ddp/README.md`](../ios/ddp/README.md).
 follows them on the bench host every night: the checks and the plan, the billed
 run, the check of the records, one local commit of the campaign dir and
 `results/summary` when every rule passes (`REVIEW.md` in the dir when one does
-not), the local `DASHBOARD.md`, the red points of the team page's regression
+not), the local `DASHBOARD.md`, the red points of the dashboard page's regression
 rule and the pending retake and bisect requests; its last screen says what to
 do next.
 
@@ -153,7 +153,7 @@ The dry run calls no network and bills nothing; without `--dry-run` it is the
 billed run, `--no-commit` stops after the check, `--cells` replaces
 `matrices/ddp-first-run.cells` (one job, two runs; `m1q-36` takes its weekly
 file). The commit is made with git's `user.name` and `user.email`. Left out on
-your host: the private team page, any push (the commit stays local), retakes
+your host: the private dashboard page, any push (the commit stays local), retakes
 (they run on the bench host's attached phones) and the bisect itself
 (`scripts/engine_bisect.py` comes after PR #4). Design:
 [`docs/dashboard-autopilot-v1.md`](dashboard-autopilot-v1.md), section 10.

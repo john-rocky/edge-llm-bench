@@ -214,10 +214,10 @@ cache files): init 6494–6810 ms against 2097–2272 ms cached, prefill 3479 an
 against the cached median). A process at 4096 started with the caches written at 1280 initialized as if uncached
 (6454 ms). Details: `s26-cycle-drop/round4-maxtokens/table-maxtokens.md`.
 
-## Gemma 4 E2B at the team's allocation: `--max-num-tokens 4096`, one cycle, gpu and cpu (iter-check/table-aligned.md, 2026-10-08 02:37–02:58 JST)
+## Gemma 4 E2B at `--max-num-tokens 4096`, one cycle, gpu and cpu (iter-check/table-aligned.md, 2026-10-08 02:37–02:58 JST)
 
-Two billed sessions on pa3q-35 with `--num-iterations 1 --warmup-runs 0 --max-num-tokens 4096` (the team's Kotlin
-test sets no limit and so gets the engine default, 4096 when the bundle carries none; this binary picks 1280 on its
+Two billed sessions on pa3q-35 with `--num-iterations 1 --warmup-runs 0 --max-num-tokens 4096` (an app that sets
+no limit gets the engine default, 4096 when the bundle carries none; this binary picks 1280 on its
 own without the flag, round 4). gpu (session-e60522b0, S938U1UEU2AYD9): first process (cold) 2710.0 tok/s prefill /
 45.11 decode / TTFT 0.400 s / init 5720 ms / 746.6 MB; measured process (caches present) 2996.2 / 44.70 / 0.364 s /
 2263 ms / 725.3 MB. cpu (session-c3c1094e, S938U1UEU1AYB3, 4 threads): first 339.1 / 35.36 / 3.05 s / 2413 ms / 2606 MB;

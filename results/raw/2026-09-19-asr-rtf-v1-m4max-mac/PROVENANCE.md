@@ -23,7 +23,7 @@ phone measurement over adb) during this session.
 
 ## Instrument
 
-LiteRT-LM `main` at `1dadd00c2a2363f275e713cfebab5fa9b96c6226` (Fengwu Yao, 2026-09-17
+LiteRT-LM `main` at `1dadd00c2a2363f275e713cfebab5fa9b96c6226` (2026-09-17
 15:50 -0700, "Update dependencies of litert_lm") — the commit whose prebuilt Metal
 accelerator the 2026-09-18 Qwen3 session identified; worktree
 `~/code/litert-lm-1dadd00c-wt` (detached, LFS skipped except the macOS Metal dylib).

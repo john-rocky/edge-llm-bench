@@ -395,7 +395,7 @@ prefill within 2.5 % of each other and give bit-identical logits. Records:
 ## Status (2026-10-08)
 
 Wired on the Mac, Android and the iPhone: cells, the drivers and the app adapter, the
-records' shape, the summary, the bench table and the team page. The first iPhone 18 Pro
+records' shape, the summary, the bench table and the dashboard page. The first iPhone 18 Pro
 dashboard sitting is in (`results/raw/2026-10-08-dashboard-ortgenai-v1-iphone18pro-*-ios/`): the
 six Qwen3 cells measured, the three 1K cells carrying the gate's flag after the runner's one retry
 (0.6B SPREAD; 1.7B and 4B HOT, thermal state fair / serious). The first Galaxy S26 dashboard

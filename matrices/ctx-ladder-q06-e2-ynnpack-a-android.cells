@@ -2,9 +2,9 @@
 # ctx-ladder, round r1), Android, sitting A of two per device: the Android session anchor, then max_num_tokens
 # 2,048 / 4,096 / 8,192, each with the XNNPACK row and the YNNPACK row of one binary. Sitting B =
 # matrices/ctx-ladder-q06-e2-ynnpack-b-android.cells (2,048 again, 16,384 and 32,768).
-# The question (Jingjiang Li, the LiteRT gTech Support thread, 2026-10-23 02:2x JST: "measure the result under 2k 4k 8k
-# 16k and 32k context length ... perhaps that can be added in Daisuke's dashboard?") and the answer the dashboard
-# promised: XNNPACK and YNNPACK at context lengths 2K, 4K, 8K, 16K and 32K (max_num_tokens) on the Galaxy S26, the
+# The question: how XNNPACK and YNNPACK compare as the context grows.
+# Measured: both, on the CPU,
+# at context lengths 2K, 4K, 8K, 16K and 32K (max_num_tokens) on the Galaxy S26, the
 # Pixel 8a and the Mac Studio M4 Max, all on the Qwen3 0.6B export with the composite ops and the HEAD build of the
 # YNNPACK rows already on the dashboard; the prompt stays at 1,024 tokens with 256 decode tokens, so only the context
 # length changes; a size a phone cannot run shows its reason instead of a number.

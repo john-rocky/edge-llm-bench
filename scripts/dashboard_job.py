@@ -77,7 +77,7 @@ its exit code never changes the sitting's. A dry run prints that command only, a
 the printed command after it).
 
 Before a device's weekly set, its pending retakes (logs/dashboard-job/retakes.json: a red point of
-the team page's rule that the post step found in a sitting, scripts/regression_watch.py) run as
+the dashboard page's rule that the post step found in a sitting, scripts/regression_watch.py) run as
 one sitting of their own (docs/dashboard-autopilot-v1.md §8): the platform's rows of the anchors
 file and each retake's row byte for byte in logs/dashboard-job/retake-<date>-<device>.cells,
 campaign suffix retake-<slug>, the same preflight, hold, admission and close, its own ledger line
@@ -2126,7 +2126,7 @@ def retake_sitting(schedule, key, dev, args, weekly_follows=False):
 # ---------------------------------------------------------------- DDP lab units (docs/dashboard-autopilot-v1.md §9)
 
 # the autopilot's switch: ddp_weekly turns the lab-unit slot on (user 2026-10-16: no per-session GO;
-# off when a Googler runs the weekly DDP set on their side), ddp_max_sessions caps the Device Run
+# off when another host runs the weekly DDP set), ddp_max_sessions caps the Device Run
 # sessions one sitting may start (the plan's count, read before any is billed)
 SWITCH = os.path.join(ROOT, "ops", "autopilot", "switch.json")
 DDP_REASON = "ddp lab unit: no session anchor; each run carries its cap marks and the text check"
@@ -2300,8 +2300,8 @@ def ddp_due(key, dev, now, sessions, switch_on, tried):
     if dev.get("auto") is False:
         return False, "auto: false, by hand only"
     if not switch_on:
-        return False, ("off: ops/autopilot/switch.json ddp_weekly is not true (a Googler runs the DDP set "
-                       f"on their side); by hand: dashboard_job.py {key}")
+        return False, ("off: ops/autopilot/switch.json ddp_weekly is not true (another host runs the DDP set"
+                       f"); by hand: dashboard_job.py {key}")
     if last and last[0] >= start:
         return False, f"done: admitted {last[0]:%F %H:%M} {last[1]}, within {days:g} days"
     if tried:

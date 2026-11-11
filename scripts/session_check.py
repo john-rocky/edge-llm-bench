@@ -23,7 +23,7 @@ docs/session-check-v1.md. Verdicts:
         in a dir the job made, an unscrubbed or execution-level DDP logcat, model weights, a
         trace or an engine binary, a credential, a payload whose anchor phase is gone, a LiteRT-LM
         cell of an older release than the newest one a platform's pin names on the sitting's day
-        (pin-drift), a LiteRT-LM headline cell off the agreed protocol (protocol-off: context 2048,
+        (pin-drift), a LiteRT-LM headline cell off the protocol (protocol-off: context 2048,
         or N for a declared context ladder, a model id ending in _ctx<N>; the protocol cell also
         prefill 1024 and decode 256). These two take no allow-list line. An Android LiteRT-LM GPU
         cell whose runs did not all load Google's prebuilt GPU accelerator at run time
@@ -118,7 +118,7 @@ SCREEN_ABOUT = ("scripts/session_check.py's text screen of this dir's Mac / iPho
                 "runner text check: the reply proxies per run (run_rules, by record id; [] = passed), "
                 "read by scripts/build_summary.py into results/summary text_check (docs/session-check-v1.md)")
 PROTOCOL_TASK_PREFIX = "native-benchmark-"
-# the agreed protocol (methodology/agreed-protocol-gemma4.md "The spec"): LiteRT-LM's benchmark() at
+# the protocol (methodology/agreed-protocol-gemma4.md "The spec"): LiteRT-LM's benchmark() at
 # exactly 1024 prefill and 256 decode tokens with the context forced to 2048, and the page's overview
 # workload, the cross-arm 1K task, at the same forced context (protocol-off)
 PROTOCOL_CELL = "native-benchmark-1024x256"
@@ -154,7 +154,7 @@ PREFILL_DROP_ARM_PREFIX = "litert-lm"
 FAIL_RULES = {"session-missing", "not-admitted", "stopped-sitting", "logcat-unscrubbed",
               "big-file", "secret", "pair-broken", "pin-drift", "protocol-off",
               "gpu-accelerator-static"}
-# the team's rules take no allow-list line: the fix is the pin bump and a re-measurement
+# these rules take no allow-list line: the fix is the pin bump and a re-measurement
 NO_ALLOW_RULES = ("pin-drift", "protocol-off")
 # platform blocks of environment.lock.json registered after the fact: the newest registry's block,
 # with the date it became true (`since`), covers a sitting on or after that date that the registry
@@ -1437,7 +1437,7 @@ class Check:
                                       f"release's cell is no number of the page")
 
     def check_cell_protocol(self, cell, items, rt, task):
-        """protocol-off: a LiteRT-LM headline cell off the agreed protocol (methodology/agreed-
+        """protocol-off: a LiteRT-LM headline cell off the protocol (methodology/agreed-
         protocol-gemma4.md "The spec"): every run's context 2048 (the summary's context_tokens:
         build_summary.context_tokens_of), and the protocol cell's runs 1024 prompt and 256 generated
         tokens. One finding per cell; a run without a context is off. Other arms (MLX sizes its KV
@@ -1475,7 +1475,7 @@ class Check:
             spec = ", ".join(f"{axis} {value}" for axis, value in want.items())
             found = "; ".join(f"{axis} " + ", ".join(f"{v} x{n}" for v, n in sorted(off[axis].items()))
                               for axis in want if axis in off)
-            self.add("protocol-off", f"{cell}: {runs_off} of {len(items)} runs off the agreed protocol "
+            self.add("protocol-off", f"{cell}: {runs_off} of {len(items)} runs off the protocol "
                                      f"({spec}): {found}")
 
     def history_index(self):

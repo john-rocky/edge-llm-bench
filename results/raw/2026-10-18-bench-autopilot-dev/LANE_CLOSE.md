@@ -3,7 +3,7 @@
 
 # bench-autopilot lane close — the night job's follow-up made automatic, stages 0-5 (round r7, Opus 5.5, 2026-10-19)
 
-Rounds r1-r6 (2026-10-18 19:31 - 2026-10-19 00:0x) on branches `bench-autopilot` (this worktree; stages 0-5 are on main at eee9dfdb, local), `bench-autopilot-bisect` (stage 3b, e3295a15, on PR #4's `build-from-ref`) and `bench-autopilot-googler` (stage 5, rebased onto main). This round measured nothing, ran no device, no session and no selftest, and changed no code, docs, skill or cells. K = this directory, K2 = `~/code/edge-llm-bench-wt-autopilot-bisect/results/raw/2026-10-18-bench-autopilot-bisect-dev/`, K3 = `results/raw/2026-10-18-bench-autopilot-googler-dev/`. Round notes: `ROUND7.md`. The lane's findings (168 lines: 訂正 61, 罠と袋小路 52, op と delegate の観察 24, 提案 31) are in the handoff `~/code/standup/handoffs/2026-10-19-bench-autopilot.md` §6, not repeated here.
+Rounds r1-r6 (2026-10-18 19:31 - 2026-10-19 00:0x) on branches `bench-autopilot` (this worktree; stages 0-5 are on main at eee9dfdb, local), `bench-autopilot-bisect` (stage 3b, e3295a15, on PR #4's `build-from-ref`) and `bench-autopilot-googler` (stage 5, rebased onto main). This round measured nothing, ran no device, no session and no selftest, and changed no code, docs, skill or cells. K = this directory, K2 = `~/code/edge-llm-bench-wt-autopilot-bisect/results/raw/2026-10-18-bench-autopilot-bisect-dev/`, K3 = `results/raw/2026-10-18-bench-autopilot-linux-dev/`. Round notes: `ROUND7.md`. The lane's findings (168 lines: corrections 61, traps and dead ends 52, op and delegate observations 24, proposals 31) are in the handoff `~/code/standup/handoffs/2026-10-19-bench-autopilot.md` §6, not repeated here.
 
 ## public 反映
 
@@ -21,7 +21,7 @@ Done by the rounds (all on main, local, waiting for the push GO):
 
 Left (wording below; commit / push / PR are the supervisor's after the user's GO):
 
-1. litert-samples `skills/benchmark-on-ddp/SKILL.md` (worktree `~/code/litert-samples-ddp-skill-wt`, branch `skills-benchmark-on-ddp-lab-notes` at edfe9307, not pushed): **none now.** Its routes run `litert benchmark --ddp` with the CLI's fixed benchmark flags (no prompt file, no chat template, no `--max_output_tokens`), so this lane's template / revision and budget findings do not reach its reader; the lab-unit facts this lane met (a session's jobs on separate units, capped CPU ceilings, arguments split at spaces, logcat identifiers, LiteRT-LM real prompts through edge-llm-bench) are already its Watch for lines (lines 80-89 at edfe9307). After PR #4 and stage 3b reach main, one clause could extend the edge-llm-bench bullet (lines 88-89): "… runs those with its own LiteRT-LM build, and its `scripts/engine_bisect.py` finds the LiteRT-LM commit at which one such row changes, one Device Run session per probe." Route: /litert-team, the same Draft PR as the lab notes.
+1. litert-samples `skills/benchmark-on-ddp/SKILL.md` (worktree `~/code/litert-samples-ddp-skill-wt`, branch `skills-benchmark-on-ddp-lab-notes` at edfe9307, not pushed): **none now.** Its routes run `litert benchmark --ddp` with the CLI's fixed benchmark flags (no prompt file, no chat template, no `--max_output_tokens`), so this lane's template / revision and budget findings do not reach its reader; the lab-unit facts this lane met (a session's jobs on separate units, capped CPU ceilings, arguments split at spaces, logcat identifiers, LiteRT-LM real prompts through edge-llm-bench) are already its Watch for lines (lines 80-89 at edfe9307). After PR #4 and stage 3b reach main, one clause could extend the edge-llm-bench bullet (lines 88-89): "… runs those with its own LiteRT-LM build, and its `scripts/engine_bisect.py` finds the LiteRT-LM commit at which one such row changes, one Device Run session per probe." Route: the same Draft PR as the lab notes.
 2. This repo's `skills/run-edge-llm-bench/SKILL.md`, after PR #4 and stage 3b merge: one paragraph in "Lab phones without adb": "**Find the LiteRT-LM commit behind a change.** `python3 scripts/engine_bisect.py --good <ref> --bad <ref> --cells <file> --row <n> --verdict 'text:contains=<words>' --route ddp:<id> --dry-run` prints the range and the first probes; without `--dry-run` each probe is one billed session. Pin the row's model with `--row-option revision=<Hub commit>` when the range is older than the Hub file (`docs/engine-bisect-v1.md`)." Assets cell: `edge-llm-bench-autopilot` skill (hold).
 
 ## diff 一覧
@@ -40,7 +40,7 @@ Left (wording below; commit / push / PR are the supervisor's after the user's GO
 
 ### handoff
 
-- `~/code/standup/handoffs/2026-10-19-bench-autopilot.md` (new, 65 KB): §0 事実 / §1 設計 / §2 数字 / §3 GO log / §4 訂正(→ §6) / §5 返信の材料(Googler 向け EN 6 行、Kimish / Tenghui の事実 9 行)/ §6 知見(訂正 61、罠と袋小路 52、op と delegate の観察 24、提案 31; 行頭 = 出所 round、末尾 = 証拠 path)/ §7 残り(16 項目)。
+- `~/code/standup/handoffs/2026-10-19-bench-autopilot.md` (new, 65 KB): the lane's facts, design, numbers, GO log, findings (168 lines) and open items (16).
 
 ### litert-compat
 
@@ -48,7 +48,7 @@ Left (wording below; commit / push / PR are the supervisor's after the user's GO
 
 ### deleted intermediates (= `K/bench_autopilot_deleted_paths.txt`)
 
-- 34 paths, 494,684 files, 17,278,038,561 bytes (≈ 17.3 GB): the bisect clone `~/.cache/apple-silicon-llm-bench/litert-lm-bisect` (2.21 GB) and its bazel output base `/private/var/tmp/_bazel_USER/b8acf263…` (6.73 GB; DO_NOT_BUILD_HERE named the clone, the md5 of the clone's path is the dir name, `server/` held no pid or socket; 222 read-only entries made writable first), the 11 `android/bin/main-*` build dirs of the bisect worktree (1.66 GB, gitignored, real dirs), six round scratchpads (r1 3.8 MB, r2 0.2 MB, r3 0.90 GB, r4 0.61 GB, r5 2.18 GB, r6 38 MB), the container `elb-autopilot-googler` (≈ 2.94 GB writable layer, docker's rounded figure), 12 test files in this worktree's `logs/dashboard-job/` (51 KB: four dry-run logs, four locks, the fake retake's cells and two empty state files, the autopilot ledger after its rows were copied below), the temp branch `autopilot-post-test` (c258edd8ad5adb635dad2fca7b77da3ed3793a33), and this round's own scratch files (1.5 MB, deleted last).
+- 34 paths, 494,684 files, 17,278,038,561 bytes (≈ 17.3 GB): the bisect clone `~/.cache/apple-silicon-llm-bench/litert-lm-bisect` (2.21 GB) and its bazel output base `/private/var/tmp/_bazel_USER/b8acf263…` (6.73 GB; DO_NOT_BUILD_HERE named the clone, the md5 of the clone's path is the dir name, `server/` held no pid or socket; 222 read-only entries made writable first), the 11 `android/bin/main-*` build dirs of the bisect worktree (1.66 GB, gitignored, real dirs), six round scratchpads (r1 3.8 MB, r2 0.2 MB, r3 0.90 GB, r4 0.61 GB, r5 2.18 GB, r6 38 MB), the container `elb-autopilot-linux` (≈ 2.94 GB writable layer, docker's rounded figure), 12 test files in this worktree's `logs/dashboard-job/` (51 KB: four dry-run logs, four locks, the fake retake's cells and two empty state files, the autopilot ledger after its rows were copied below), the temp branch `autopilot-post-test` (c258edd8ad5adb635dad2fca7b77da3ed3793a33), and this round's own scratch files (1.5 MB, deleted last).
 
 ### kept, with the reason
 
@@ -59,14 +59,14 @@ Left (wording below; commit / push / PR are the supervisor's after the user's GO
 - The committed campaign dirs and the records in K / K2 / K3.
 - Other lanes' and the pins' clones under `~/.cache/apple-silicon-llm-bench/` (litert-lm-v0.16.0, -v0.17.0, -v0.18.0, -main-20261016), the other five bazel output bases, bazel's install base and cache: not this lane's.
 - The docker image `ubuntu:24.04` (534baea6a22c, D3's pull of 2026-10-16) and colima (running; the supervisor stops it).
-- `FETCH_HEAD` of the googler worktree (9e310521, the bundle's objects in the shared store, unreferenced): git's own; the bundle in K3 holds the commits.
+- `FETCH_HEAD` of the no-phone host worktree (9e310521, the bundle's objects in the shared store, unreferenced): git's own; the bundle in K3 holds the commits.
 - Python `__pycache__/`, `DASHBOARD.md`, `.dashboard/`, `LEADERBOARD.md` in the worktrees (ignored, regenerated by every selftest and render; they go with the worktrees).
 - Bucket objects and the Device Run sessions' outputs (remote; the drivers delete nothing).
 
 ### git
 
-- Before this round's commit: this worktree had `K/LANE.md`, `K/GO_REQUEST.draft.md`, `K/launch-r3/r4/r6/r7*.draft.md` (the supervisor's), `K/LANE_CLOSE.md`, `K/ROUND7.md`, `K/bench_autopilot_deleted_paths.txt` (this round's) and the four K3 files untracked; nothing modified, nothing staged. The googler worktree: empty after the move. The bisect worktree: `K2/LANE.md` only.
-- The four K3 files (`LANE.md`, `autopilot-commit-r2.bundle`, `container-campaign-r1.tar`, `linux/run_steps.done`) were in the googler worktree's K3, not this one's; moved here (the tar rebuilt, above) so they commit on `bench-autopilot`. The bundle verifies (`git bundle verify`: requires 7edc798d, head 9e310521).
+- Before this round's commit: this worktree had `K/LANE.md`, `K/GO_REQUEST.draft.md`, `K/launch-r3/r4/r6/r7*.draft.md` (the supervisor's), `K/LANE_CLOSE.md`, `K/ROUND7.md`, `K/bench_autopilot_deleted_paths.txt` (this round's) and the four K3 files untracked; nothing modified, nothing staged. The no-phone host worktree: empty after the move. The bisect worktree: `K2/LANE.md` only.
+- The four K3 files (`LANE.md`, `autopilot-commit-r2.bundle`, `container-campaign-r1.tar`, `linux/run_steps.done`) were in the no-phone host worktree's K3, not this one's; moved here (the tar rebuilt, above) so they commit on `bench-autopilot`. The bundle verifies (`git bundle verify`: requires 7edc798d, head 9e310521).
 - `launch-r7-lane-close.draft.md`: the account name in the memory dir's slug replaced by USER (the only occurrence in the committed files).
 - Commits: `bench-autopilot-bisect` 53f0f226 (`K2/LANE.md`, explicit path); `bench-autopilot` = this round's one commit on eee9dfdb (the K and K3 files above, explicit paths; its hash is in the report). No attribution line, no push. main = eee9dfdb, origin/main d9762f2c (`git ls-remote`, 00:1x), 24 commits ahead before this commit.
 

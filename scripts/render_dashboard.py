@@ -51,7 +51,7 @@ What this adds over LEADERBOARD.md:
 
 Every output is LOCAL and gitignored: the rendered table is cross-runtime
 standings, which this repo does not publish (CLAUDE.md, owner decision
-2026-08-27). Paste it into the team channel or read it here.
+2026-08-27). Paste it where it is needed or read it here.
 """
 import argparse
 import csv
@@ -68,7 +68,7 @@ from bench_common import (DEVICE_DISPLAY, atomic_write, bandwidth_ceiling,  # no
 # REGIME, PROTOCOL_TASK_PREFIX and headline_regime live in render_leaderboard since 2026-11-06
 # (D-719: arm_row reads prefill and TTFT by the same rule); imported here under the same names,
 # so `from render_dashboard import headline_regime` / `REGIME` (dashboard_job.py,
-# regression_watch.py, the team page's build.py) reads the one rule as before
+# regression_watch.py, the dashboard page's build.py) reads the one rule as before
 from render_leaderboard import (CPU_CAP_EXEMPT_ARMS, CPU_CAP_MAX_DROP_PCT,  # noqa: E402,F401
                                 PROTOCOL_TASK_PREFIX, REGIME, SPREAD_FLAG, arm_row,
                                 headline_regime)
@@ -247,7 +247,7 @@ def device_keys(schedule):
 def exclusion(c, keys):
     """Why cell `c` is not a measurement on the device with these schedule keys,
     or None: its exclude= (every device), else the exclude-on= reason of one of
-    the keys. The one rule for this table and the team page (litert-bench-dashboard)."""
+    the keys. The one rule for this table and the dashboard page (litert-bench-dashboard)."""
     if c.get("exclude"):
         return c["exclude"]
     on = c.get("exclude_on") or {}
@@ -525,7 +525,7 @@ def render_md(out_cells, cells_path, stale_days, today, include_cpu_capped=False
              "whatever the fall (the CPUs carry the engine's host side there; owner decision "
              "2026-10-08); D = the largest fall among them. "
              "Protocol cells (`native-benchmark-*`, each engine's own benchmark entry: a "
-             "launch's first call cold, the rest warm) read the agreed protocol's regime, the "
+             "launch's first call cold, the rest warm) read the protocol's regime, the "
              "warm median, wherever the session has warm runs, on every platform, and the cold "
              "median only where it has none (one call per launch); a cell that reads another "
              "regime than its device's header says `(cold)` / `(warm)`, and the detail table "

@@ -2,7 +2,7 @@
 
 Status: written 2026-10-18 (stage 2 of the bench-autopilot lane; stage 3a, the regression
 response, the same day: §8; stage 4, the Developer Device Platform weekly slot, the same day: §9;
-the team-protocol rules in the checker and the message guard, 2026-10-19: §11; the text screen for
+the protocol rules in the checker and the message guard, 2026-10-19: §11; the text screen for
 the Mac and iPhone, the same day: §12; the fast-forward of `main` before the commit, 2026-11-07: §2);
 `push_bench` is on since 2026-10-19 and `push_page` since 2026-11-06, `publish` is off (§3). Code:
 `scripts/dashboard_post.py`, `scripts/regression_watch.py`; selftests
@@ -177,7 +177,7 @@ the ledger's `would …` lines are what each key would have done on the nights b
 is on since 2026-10-19 (the owner's GO, b70e4f6f) and `push_page` since 2026-11-06 (D-722,
 b94541d3); `publish` is off. `ddp_weekly`
 is on since 2026-10-18 on the user's word of 2026-10-16 (DDP sessions need no GO each); it goes
-off when a Googler runs the weekly DDP set on their side (§9).
+off when another host runs the weekly DDP set (§9).
 
 ## 4. The ledger
 
@@ -237,7 +237,7 @@ message, as before, or stays uncommitted.
 
 ## 8. Stage 3a: the regression response
 
-A red point is the team page's (litert-bench-dashboard `build.py` `build_regression`), computed in
+A red point is the dashboard page's (litert-bench-dashboard `build.py` `build_regression`), computed in
 the bench by `scripts/regression_watch.py` with the same rule, so the night that makes it can act on
 it without the page.
 
@@ -373,7 +373,7 @@ firing's attached sitting, so the slot recurs every six to seven days. `--no-ddp
 the same day takes `--suffix`).
 
 **The switch.** `ddp_weekly` true turns the slot on (the user's word of 2026-10-16: the DDP sessions
-need no GO each). When a Googler runs the weekly DDP set on their side (stage 5's one command), set
+need no GO each). When another host runs the weekly DDP set (stage 5's one command), set
 it false: the slot stops, by `auto` and by hand. `ddp_max_sessions` (16) caps the sitting: the plan
 of `bench matrix --ddp --dry-run` (no gcloud, no network) counts the Device Run sessions before
 anything is billed, and a plan over the cap starts nothing (exit 2).
@@ -441,7 +441,7 @@ post leaves the page uncommitted (the bench commit stands; the ledger says `FAIL
 
 ## 10. Stage 5: the one command on a host with no phone
 
-A Googler's workstation (gLinux or gMac: no adb, no phone, a Cloud project of their own) runs a
+A workstation with no phone (Linux or macOS: no adb, a Cloud project of its own) runs a
 Developer Device Platform lab unit's sitting and what follows it as the bench host's nightly job
 does, with one command (§9, the job's weekly lab-unit slot, is stage 4; this command calls its code).
 
@@ -476,7 +476,7 @@ autopilot.py main()
 functions (`job_overrides`); `scripts/dashboard_job.py` is unchanged.
 
 - The switch's `ddp_weekly` is not read: it turns the bench host's nightly lab-unit slot on and off
-  and goes false once a Googler runs the DDP set on their side, the day this command is the route; a
+  and goes false once another host runs the DDP set, the day this command is the route; a
   run by hand is its own go. `ddp_max_sessions` still caps the plan before anything is billed.
 - `--project` / `--bucket` reach `bench matrix --ddp` as `BENCH_DDP_PROJECT` / `BENCH_DDP_BUCKET`:
   the job's plan and run pass neither flag, and `bench matrix --ddp` reads the variables when its
@@ -498,7 +498,7 @@ the post's commit is made with.
 
 **Left out on a host of its own.**
 
-- The private team page: the post builds it only where the switch's `page_repo` holds a `build.py`;
+- The private dashboard page: the post builds it only where the switch's `page_repo` holds a `build.py`;
   elsewhere its line reads `skipped: no build.py in <dir>`.
 - Publish: off in the switch as committed. Its `push_bench` and `push_page` are on (§3): the
   post pushes the bench commit to that clone's `origin` under §2's rules (the fast-forward first)
@@ -513,7 +513,7 @@ the post's commit is made with.
   the page's devices), so the red points are the page's, from the attached phones' sittings.
 
 **From a clean Ubuntu 24.04 container** (2026-10-18, colima's `ubuntu:24.04`, aarch64; record
-`results/raw/2026-10-18-bench-autopilot-googler-dev/ROUND6.md`): README steps 1 and 2 (the gcloud CLI by Google's apt
+`results/raw/2026-10-18-bench-autopilot-linux-dev/ROUND6.md`): README steps 1 and 2 (the gcloud CLI by Google's apt
 route, the venv, the release asset), this branch cloned from a bundle of a checkout (GitHub does not hold the
 branch), git's identity set (without it `git commit-tree` stops: "unable to auto-detect email address"), the model's
 Hugging Face cache entry copied in (huggingface_hub 2.2.0 read the 1.8.0 layout and downloaded nothing);
@@ -523,9 +523,9 @@ allow-list line (63ec5615) and its `.gitignore` line for an execution's own `log
 clone: the first's job FAILED on its unit before its second run (held FAIL, nothing committed; why the run stopped is
 not known from the pulled files), the second PASSED, was committed in the clone and came out as a bundle.
 
-## 11. Team-protocol rules (2026-10-19)
+## 11. Protocol rules (2026-10-19)
 
-Two of the checker's rules (`docs/session-check-v1.md`, "Rules") carry the team's measurement rules.
+Two of the checker's rules (`docs/session-check-v1.md`, "Rules") carry the measurement rules.
 Either finding makes the dir FAIL: the post commits nothing of the sitting (§2), so none of its cells
 reaches the page through this step.
 
@@ -537,7 +537,7 @@ reaches the page through this step.
   speed while it is the older release's: the lock's `arms.litert-lm.android.note` records the Galaxy
   S26 Gemma 4 E2B GPU protocol cell at 25.9 tok/s decode on v0.16.0 and 44–47 on 0.18-era builds,
   same phone and file.
-- **`protocol-off`**: a LiteRT-LM headline cell off the agreed protocol
+- **`protocol-off`**: a LiteRT-LM headline cell off the protocol
   (`methodology/agreed-protocol-gemma4.md`, "The spec"): the protocol cell
   `native-benchmark-1024x256` with a context other than 2048, a prompt other than 1024 or a decode
   other than 256 tokens, or the overview workload `long-context-1024-gen256` with a context other
@@ -576,7 +576,7 @@ the backlog on the main checkout, the selftests).
 page as a plain decode number. The 2026-10-12 Mac sitting had two such cells (the llama.cpp Gemma 4
 E4B GGUF 1K-task replies were the prompt's own numbered skeleton, the MLX Gemma 4 E4B OptiQ ones
 refused the lorem blocks, 4 of 4 runs each); their records were set aside by hand (8ac9b8bb), which
-left the page with those cells' older numbers. The team's review the same day: a number that
+left the page with those cells' older numbers. The rule from the same day: a number that
 disappears from the page instead of being marked leaves the page's comparisons one-sided without saying
 why. A broken run is to be marked, not dropped.
 

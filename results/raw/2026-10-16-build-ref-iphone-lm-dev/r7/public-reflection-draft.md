@@ -1,6 +1,6 @@
 # Public reflection — draft lines (lane D2D1, round 7)
 
-Two proposals. Nothing here is committed in either skill; the supervisor commits, pushes or opens a PR after the user's GO (the litert-samples one through /litert-team). Every fact carries its source; the commands were run in this lane (sessions named per line).
+Two proposals. Nothing here is committed in either skill; the supervisor commits, pushes or opens a PR after the user's GO. Every fact carries its source; the commands were run in this lane (sessions named per line).
 
 ## 1. Own skill: `skills/run-edge-llm-bench/SKILL.md` (this repo)
 
@@ -62,7 +62,7 @@ Sources: the records' `conditions.ddp.sessionId` in `results/raw/2026-10-16-ddp-
 
 ## 2. litert-samples `skills/benchmark-on-ddp/SKILL.md`: one Watch for bullet
 
-Where: the worktree `~/code/litert-samples-ddp-skill-wt`, branch `skills-benchmark-on-ddp-lab-notes` (edfe9307, the five lab notes, not pushed), after the bullet "Some lab units start with lowered CPU clock ceilings." (lines 82-83). The XCTest of `benchmark/ios` there has no thermal wait (`grep -ci thermal benchmark/ios/Tests/*.mm` = 0). Route: /litert-team, the same Draft PR as the five notes, after the GO.
+Where: the worktree `~/code/litert-samples-ddp-skill-wt`, branch `skills-benchmark-on-ddp-lab-notes` (edfe9307, the five lab notes, not pushed), after the bullet "Some lab units start with lowered CPU clock ceilings." (lines 82-83). The XCTest of `benchmark/ios` there has no thermal wait (`grep -ci thermal benchmark/ios/Tests/*.mm` = 0). Route: the same Draft PR as the five notes, after the GO.
 
 > - **An iPhone lab unit starts in the thermal state it is in.** Four `iphone16pro-18-3` sessions of 2026-10-16
 >   (one unit each; LiteRT-LM v0.18.0 through XCTest) started runs at fair or serious, two of them from

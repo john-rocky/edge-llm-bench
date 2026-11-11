@@ -14,7 +14,7 @@ Commands and observed output: `standup/drafts/2026-09-17-litert-lm-on-ddp.run-lo
 ## What ran
 
 - Job action `androidNativeBinary` = `litert_lm_harness.sh` (this directory; the shape of litert-samples
-  `benchmark/multi_benchmark_harness.sh`, the DDP team's example: one binary invocation per entry in `--runs`, stdout
+  `benchmark/multi_benchmark_harness.sh`: one binary invocation per entry in `--runs`, stdout
   kept per run), args
   `--runs=cpu,gpu,cpu,gpu --dir=/data/local/tmp --model=gemma3-270m-it-q8.litertlm --output_dir=/data/local/tmp/output
   --prefill_tokens=128 --decode_tokens=256 --max_num_tokens=1024 --cooldown=30`, `executionTimeout` 1200 s.

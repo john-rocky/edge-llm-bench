@@ -1,10 +1,10 @@
-# Round r8 — team rules in the session checker (pin-drift, protocol-off) + the post's commit-message guard — worker `edge-llm-bench-wt-autopilot-a4 [43e38b]` (Opus 5.5), started 2026-10-19 02:40 JST
+# Round r8 — two rules in the session checker (pin-drift, protocol-off) + the post's commit-message guard — worker `edge-llm-bench-wt-autopilot-a4 [43e38b]` (Opus 5.5), started 2026-10-19 02:40 JST
 
 Supervisor: `edge-llm-bench-55 [4f120b]`. cwd ~/code/edge-llm-bench-wt-autopilot, branch bench-autopilot, HEAD 9ab1556e at start. Mac only: no adb, no devicectl, no gcloud, no docker, no build; the night job measured this Mac the whole round (02:00 firing, `logs/dashboard-job/2026-10-19-m4max.log` of the main tree).
 
 ## 結果 (要約)
 
-- CHECK に FAIL の規則 2 本: `pin-drift` (LiteRT-LM の cell が、その sitting の日にどこかの platform の pin が指す最新の release より古い) と `protocol-off` (LiteRT-LM の headline cell が合意 protocol から外れる: context 2048、protocol cell はさらに prompt 1024 / generated 256)。allow-list でこの 2 本を許す行は読み込み時に exit 2。POST: 生成 message に `%` か順位の語があれば commit せず ledger 行 + exit 1 (REVIEW.md なし)、通れば `message guard: … OK` の行。
+- CHECK gets 2 FAIL rules: `pin-drift` (a LiteRT-LM cell older than the latest release any platform's pin points at on the day of that sitting) and `protocol-off` (a LiteRT-LM headline cell off the protocol: context 2048; a protocol cell also prompt 1024 / generated 256). An allow-list line excusing either of these exits 2 at load. POST: a generated message with `%` or a ranking word is not committed, ledger line + exit 1 (no REVIEW.md); otherwise a `message guard: … OK` line.
 - (a) selftest 5 本 exit 0: session_check 39 → 49 (+10)、dashboard_post 48 → 51 (+3)、dashboard_job 89、regression_watch 50、autopilot 58。
 - (b) commit 済み 116 dir: PASS 87 / HOLD 28 / FAIL 1、変更前の checker と全 dir・全 finding が同一 (新規則の finding 0)。launch の「FAIL になるべき」11 dir (名指し 8 + 「+ anchor」の 3) は 1 つも commit されていない (全部 main tree の backlog) → (c) で突き合わせ。
 - (c) backlog 69 dir: PASS 22 / HOLD 22 / FAIL 25、pin-drift 14 dir = launch の集合 11 dir と一致 + anchor 3 dir (過、理由つき)、不足 0。「FAIL になってはいけない物」に新規則の finding 0。protocol-off は (b) (c) とも 0。
