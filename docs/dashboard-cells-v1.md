@@ -1,12 +1,12 @@
 # Dashboard cells v1 — the text-only model set (prepared 2026-09-05)
 
 The initial cell set for the competitive dashboard kick-off on 2026-09-07:
-the five text-only models the LiteRT team named on 2026-09-04, across the
+five text-only models, across the
 three engines that publish an artifact for every one of them, on Android,
 iPhone and Mac. One command per platform re-measures it. This page is the
 cell table, the bundle inventory (what exists, what is missing), the
 competitor-arm status including a first look at Mirai, and the open
-questions for the LiteRT team.
+questions.
 
 Cells file: `matrices/dashboard-text-v1.cells` (v1: 45 cells, 5 models × 3
 arms × 3 platforms; v2 since 2026-09-08 adds the Core AI arm on iPhone and
@@ -28,12 +28,12 @@ see "Core AI arm (v2)" below; validated by `scripts/validate_cells.py`).
 | Qwen3 0.6B | yes | the anchor model; measured on every arm that had rows |
 | Qwen3 1.7B | yes | litert-community has shipped an INT8 `.litertlm` since 2026-06-25 and the dynamic INT4 wi4b32 GPU build since 2026-08-05; the catalog carried only our own conversion until today's entry |
 | Qwen3 4B | yes | LiteRT measured on iPhone (2026-08-19, thermally noisy); everything else new |
-| Qwen3.5 | placeholder, disabled | held by the LiteRT team ("not all changes landed/validated"); litert-community repos refreshed 2026-09-04 (0.8B/2B int8, 4B int8 + mixed_int4) |
-| LFM2.5 | placeholder, disabled | same hold; litert-community LFM2.5-1.2B-Instruct ships int4 / int4_gpu / int8 |
+| Qwen3.5 | placeholder, disabled | not in v1; litert-community repos refreshed 2026-09-04 (0.8B/2B int8, 4B int8 + mixed_int4) |
+| LFM2.5 | placeholder, disabled | not in v1; litert-community LFM2.5-1.2B-Instruct ships int4 / int4_gpu / int8 |
 
 Task: `short-chat`, the cross-arm standard cell (same prompt and token budget
-on every arm). The 1024-prefill / 256-decode / ctx-2048 column the LiteRT
-team benchmarks with (`long-context-1024-gen256`, methodology
+on every arm). The 1024-prefill / 256-decode / ctx-2048 column
+(`long-context-1024-gen256`, methodology
 `agreed-protocol-gemma4.md`) is the natural second task and is not in v1 —
 open question 3 below.
 
@@ -459,7 +459,7 @@ Core AI uses; iPhone through the Swift package), and a check of what `bench`
 actually measures before any of its numbers sit next to ours. Apple-only, so
 no Android column. Row status: investigate.
 
-## Open questions for the LiteRT team
+## Open questions
 
 1. Qwen3 LiteRT artifacts per backend. 0.6B rows use `qwen3_0_6b_mixed_int4`
    (continuity with the existing rows and anchors); the repo now also ships
@@ -471,7 +471,7 @@ no Android column. Row status: investigate.
 3. Second task: add the 1024/256/ctx-2048 column for every arm?
 4. Devices: the cells file is device-agnostic; which lab devices map to the
    Android and iPhone rows?
-5. Go signal for Qwen3.5 / LFM2.5 — the placeholder rows are ready to
+5. Qwen3.5 / LFM2.5 — the placeholder rows are ready to
    uncomment (Apple-side LiteRT catalog entries for Qwen3.5 still to add).
 6. iPhone MLX E4B: the QAT OptiQ build (6.5 GB) is killed at load on the
    iPhone 17 Pro; use the 5.1 GB PTQ 4-bit build for that one row (a different

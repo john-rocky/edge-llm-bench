@@ -29,7 +29,7 @@ What this adds over LEADERBOARD.md:
 
 Every output is LOCAL and gitignored: the rendered table is cross-runtime
 standings, which this repo does not publish (CLAUDE.md, owner decision
-2026-08-27). Paste it into the team channel or read it here.
+2026-08-27). Paste it where it is needed or read it here.
 """
 import argparse
 import csv
