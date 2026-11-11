@@ -6,7 +6,7 @@ as the 09-17 prebuilt did (same speed within 0.4 %, zero shape mismatches), and 
 `--use_sdpa_composite_for_prefill=True` (litert-torch main `731ef0a`) raises prefill at 31,744 tokens from 1,407 to 2,043 tok/s on
 Qwen3-0.6B (+45 %) and from 478 to 644 on Qwen3-4B (+35 %), with zero shape mismatches, correct output, and decode unchanged
 (within 1 %). At 1,024 tokens the prefill gain is +19 % / +7 %. The same new exports on the 09-17 dylib (one LiteRT commit before the
-kernel) produce garbage text with no shape mismatch and no error — consistent with the GQA query-packing mismatch Fengwu described, though the mechanism is not
+kernel) produce garbage text with no shape mismatch and no error — consistent with a GQA query-packing mismatch, though the mechanism is not
 established from this side — so the new files need the new prebuilt, and that failure is the closest thing to a positive control that
 the new kernel is what runs the prefill composite.
 Provenance (host, binary, the three dylibs, ancestry of the pin, exporter commits, models, flags): `PROVENANCE.md`. The decision rule
@@ -57,8 +57,6 @@ Reading, against the rule pre-registered in `PREREG.md`:
   (ctl_4b_11 472.7 vs 479.2; ctl_4b_9 463.8 vs 479.8) and up to 5 % in decode (ctl_4b_9 42.9 vs 45.2), while the 12-flag arm's B process
   equals its A (643.9 / 643.9). `logs/runlog.txt` samples 1-min load, GPU utilization and any process above 20 % CPU before every leg:
   `other=[none]` on every leg. The arm-vs-control deltas are 10–30× that spread.
-- Fengwu's own numbers ("+40–50 %" for the fused prefill at long context; the 09-17 note's M4 Pro references 0.6B 1,061 / 4B 329 at 31,744)
-  are a different chip (273 GB/s vs 546); the rows above are this Mac's numbers, not a comparison with his.
 
 ## Correctness on the new dylib
 
@@ -77,10 +75,10 @@ Reading, against the rule pre-registered in `PREREG.md`:
   prefill composite on Metal (Tokyo → 东京, the same city in Chinese script) cannot be separated from that margin by a one-process greedy run
   — the fused prefill kernel's numerics (fp16 activations on the GPU path) are the only thing that differs between the two Metal rows.
   It is reported as 6/8 vs 7/8, not hidden behind the regex. No run logs a mismatch or an error. Per `PREREG.md` §3 the 6/8 vs 7/8 is stated in
-  the reply as such, with what the control runs showed.
+  the write-up as such, with what the control runs showed.
 - **The 12-flag exports on the 09-17 dylib** (`4453b286`, LiteRT `1901301f` = one commit before `89116780`; `logs/ctl_*_12_run.log`,
   `logs/ctl_*_12_answer.txt`): exit 0, 0 shape mismatches, 0 errors, and garbage text — 0.6B "ittめめるمق�most中文中文中文…", 4B "ations to
-  9000000000…" — where the same files answer the passage on `1dadd00c`. This is consistent with the GQA query-packing mismatch Fengwu named as the reason the 09-17 prebuilt stopped one commit short of
+  9000000000…" — where the same files answer the passage on `1dadd00c`. This is consistent with a GQA query-packing mismatch: the 09-17 prebuilt stops one commit short of
   the fused kernel (an exporter with the packing skip meeting a dylib without the fused prefill kernel — that dylib's `strings` carry no
   prefill SDPA kernel name at all), but the mechanism is not established from this side: the failure is silent and nothing in the log names
   a kernel. It is the operational fact that matters — the new files need the new prebuilt — and the closest thing to positive evidence
@@ -91,7 +89,7 @@ Reading, against the rule pre-registered in `PREREG.md`:
 
 ## The export: what the flag changes in the graph, and what the exporter drift adds
 
-`--use_sdpa_composite_for_prefill=True` (litert-torch `9f8a33f`, Fengwu Yao, 2026-08-31) is read from `extra_kwargs` in the prefill
+`--use_sdpa_composite_for_prefill=True` (litert-torch `9f8a33f`, 2026-08-31) is read from `extra_kwargs` in the prefill
 exportable module and turns on `use_sdpa_composite` for the prefill signature; the fused-prefill kernel needs the query heads un-packed,
 which `75370b9` (2026-09-15, "Skip query head packing when using SDPA composite.") does. Neither commit is in `6d4c622` (2026-09-08), the
 exporter behind the published files, so the published files were re-exported from `main` at `731ef0a` (2026-09-17) with the lane's pinned
@@ -106,9 +104,9 @@ deps (`PROVENANCE.md`). Op inventories (`logs/ops_*.txt`, `scripts/inventory_gat
 
 The extra SUB / SLICE / CONCATENATION come from litert-torch `3773402` (2026-09-15, "Internal changes only": the param_tensor
 update-length is computed in-graph) — exporter drift shared by the 12-flag files and the control, absent from the published files, and
-worth nothing in speed (row (c) above). Two side facts for the record, not for the reply: at `731ef0a` the prefill module also honors
+worth nothing in speed (row (c) above). Two side facts for the record: at `731ef0a` the prefill module also honors
 plain `--use_sdpa_composite` (the 2026-09-17 commit "Fix cache update in sliding window ring buffer attention"), so the 11-flag command
-alone now emits the prefill composite at head — the explicit flag Fengwu named is what this run passes; and the PyPI nightly
+alone now emits the prefill composite at head — the explicit flag is what this run passes; and the PyPI nightly
 `litert-torch-nightly 0.10.0.dev20260917` (files match `main` at `1e2d37f`) carries the flag and `75370b9`, so the export is
 pip-installable without a source checkout (not used here).
 

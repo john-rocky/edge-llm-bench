@@ -18,7 +18,7 @@ length?" — on the Mac, yes).
   stamped `runtime: litert-lm-cpu` as on Android), `llama.cpp` = the b8999 xcframework (Metal). Engine pins unchanged
   (`engineVersion` v0.16.0 / b8999 on every record).
 - Allocation ladder per (arm, model): `context-tokens=` 2304 (= prompt + output, the minimal one, the ynnpack A/B's
-  "P2048 / max_tokens 2304"), 4096 (the analogue of the LiteRT team's ctx-2048 column for p=1024/g=256), 8192. On LiteRT-LM
+  "P2048 / max_tokens 2304"), 4096 (the analogue of the ctx-2048 column for p=1024/g=256), 8192. On LiteRT-LM
   it is `maxNumTokens` (KV pre-allocation); on llama.cpp `n_ctx` (KV allocated at n_ctx, attention over the filled length).
 - Shape: `ROUNDS=8 RUNS=2 BASE_COOLDOWN=10` on the Mac runner's new round mode — every cell once per round, one process of
   2 runs per launch (run 1 cold, run 2 warm), order reversed on even rounds, 10 s between launches; 8 rounds 05:15–09:01.
