@@ -47,7 +47,7 @@
 #   HOLD_ALSO (the entry's hold_also_check, space-separated; [$HOLD.s26 $HOLD.$SERIAL]): the phone's other
 #     hold files, read before any adb call of a window
 #   CAMPAIGN (<date of the first call>-dashboard-executorch-v1-<the entry's key; [s26]>-android, kept in
-#   <state_dir>/CAMPAIGN; the team dashboard reads only campaigns named with "dashboard")
+#   <state_dir>/CAMPAIGN; the dashboard page reads only campaigns named with "dashboard")
 #   CELLS (<repo>/matrices/dashboard-executorch-v1-android.cells)
 #   ET_MODEL_DIR (~/code/edge-llm-bench/models/executorch)  BENCH_ANDROID_BIN_DIR (~/code/edge-llm-bench/android/bin)
 #   QUEUE_PREFIX (et-r5-s26)  SUPERVISOR (edge-llm-bench-24)

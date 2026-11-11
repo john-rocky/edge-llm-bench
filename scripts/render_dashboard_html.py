@@ -27,7 +27,7 @@ Android NPU or GPU arm (counted, marked ◇).
 
 Every output is LOCAL and gitignored (/.dashboard/): the rendered page is
 cross-runtime standings, which this repo does not publish (CLAUDE.md, owner
-decision 2026-08-27). Hand the file to the team directly.
+decision 2026-08-27). Hand the file over directly.
 """
 import argparse
 import csv

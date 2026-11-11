@@ -1,6 +1,6 @@
 #!/bin/bash
 # sess-aligned.sh <gpu|cpu>: one billed DDP session on pa3q-35, Gemma 4 E2B, --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096
-# (the LiteRT team's Kotlin test allocates the engine default, 4096 when the bundle carries no limit; the benchmark
+# (an app that sets no limit allocates the engine default, 4096 when the bundle carries no limit; the benchmark
 # binary picks 1280 on its own when the flag is absent, so 4096 is passed explicitly). Other flags at the CLI defaults.
 S=/private/tmp/claude-501/-Users-USER-code-edge-llm-bench/d21f53ca-5923-4da1-b5fc-7e34ecbf7034/scratchpad/r5
 V=/private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly

@@ -1,5 +1,5 @@
 # Qwen3 0.6B / 4B on the Mac Studio M4 Max: LiteRT-LM recipes x engine builds beside
-# MLX, for the LiteRT team's GPU-flag export request of 2026-09-10 (export lane and
+# MLX, for a GPU-flag export of 2026-09-10 (export lane and
 # flag evidence: litertlm-convert qwen3_gpuopt_work/FINDINGS.md). Mac only.
 #
 # Run once per engine build so every campaign carries its own session anchor:
@@ -12,15 +12,15 @@
 # of 2026-09-10. Rows stamp the observed engine; no number crosses sessions except
 # through the anchor.)
 #
-# Tasks: short-chat (the standard cell), long-context-1024-gen256 (the protocol agreed
-# with the LiteRT team: p=1024 / g=256) and long-context (~2K prompt / 128 gen). The
+# Tasks: short-chat (the standard cell), long-context-1024-gen256 (the
+# protocol: p=1024 / g=256) and long-context (~2K prompt / 128 gen). The
 # public mixed-INT4 files carry a 2048-token cache, so the ~2K cell is expected to fail
 # on them and stays in the table as the datum (failed-runs-stay).
 #
 # LiteRT tiers per model (recipe in each catalog entry's quantization label,
 # quant-per-arm-rule / quant-label-rule): the public mixed_int4 file (the dashboard
 # row), the public dynamic wi4b32 GPU build (0.6B only — litert-community/Qwen3-4B has
-# none), our litert-torch-main export with 9 of the 11 requested flags (the two
+# none), our litert-torch-main export with 9 of the 11 flags (the two
 # composites whose kernels do not compile on the OSS macOS GPU path are off), the
 # 0.6B variant with use_rope_composite added, and ONE trial of the all-11-flag 0.6B
 # bundle to record how the Swift package's GPU path treats those kernels.

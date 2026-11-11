@@ -51,7 +51,7 @@ What this adds over LEADERBOARD.md:
 
 Every output is LOCAL and gitignored: the rendered table is cross-runtime
 standings, which this repo does not publish (CLAUDE.md, owner decision
-2026-08-27). Paste it into the team channel or read it here.
+2026-08-27). Paste it where it is needed or read it here.
 """
 import argparse
 import csv
@@ -86,12 +86,12 @@ PROTOCOL_TASK_PREFIX = "native-benchmark-"
 def headline_regime(plat, task, a):
     """The regime cell `task` on `plat` headlines from arm_row result `a` (cold-warm-split: one
     regime per number, never mixed). A text-task cell reads its platform's (REGIME). A protocol
-    cell reads the agreed protocol's regime, warm (methodology/agreed-protocol-gemma4.md: warm
+    cell reads the protocol's regime, warm (methodology/agreed-protocol-gemma4.md: warm
     for the side-by-side, cold reported separately as first use), wherever its session has warm
     runs, on every platform and for every arm alike — LiteRT-LM benchmark() calls 2..N of a
     launch, Core AI trials 1..N (the trials llm-benchmark averages), llama-bench's in-process
     repeats — and its cold median only where the session has none (one call per launch, as the
-    sittings before 2026-10-08 ran). The one rule for this table and the team page
+    sittings before 2026-10-08 ran). The one rule for this table and the dashboard page
     (litert-bench-dashboard make_cell)."""
     if task.startswith(PROTOCOL_TASK_PREFIX):
         return "warm" if a["warm_n"] else "cold"
@@ -240,7 +240,7 @@ def device_keys(schedule):
 def exclusion(c, keys):
     """Why cell `c` is not a measurement on the device with these schedule keys,
     or None: its exclude= (every device), else the exclude-on= reason of one of
-    the keys. The one rule for this table and the team page (litert-bench-dashboard)."""
+    the keys. The one rule for this table and the dashboard page (litert-bench-dashboard)."""
     if c.get("exclude"):
         return c["exclude"]
     on = c.get("exclude_on") or {}
@@ -483,7 +483,7 @@ def render_md(out_cells, cells_path, stale_days, today):
              "whatever the fall (the CPUs carry the engine's host side there; owner decision "
              "2026-10-08); D = the largest fall among them. "
              "Protocol cells (`native-benchmark-*`, each engine's own benchmark entry: a "
-             "launch's first call cold, the rest warm) read the agreed protocol's regime, the "
+             "launch's first call cold, the rest warm) read the protocol's regime, the "
              "warm median, wherever the session has warm runs, on every platform, and the cold "
              "median only where it has none (one call per launch); a cell that reads another "
              "regime than its device's header says `(cold)` / `(warm)`, and the detail table "

@@ -17,7 +17,7 @@ used in preparation.
 | The diff touches 7 files, all in the NPU executor: `runtime/executor/llm_litert_npu_compiled_model_executor.{cc,h}`, `runtime/executor/npu/llm_litert_npu_{dynamism,kv_cache,mask}.*`. **No CPU or GPU executor file changes.** | `gh api repos/google-ai-edge/LiteRT-LM/commits/5e3bd6377` |
 | Growth applies only when `NpuDynamismHelper::HasDynamicKVCache()` is true: a `kv_cache_k` / `kv_cache_v` / `kv_cache_c` signature input with a `-1` dimension. A static NPU bundle keeps its export-time cache length. | `runtime/executor/npu/llm_litert_npu_dynamism.cc` L48–72 |
 | `HasDynamicKVCache()` is a stub returning `false` unless `LITERT_ENABLE_FABRIC_INTEGRATION` is defined. No BUILD file in the public tree defines it; LiteRT's `config_setting` for it is referenced only inside a google-only commented block (`litert/runtime/BUILD` L584–623). The `#if` branch itself needs only OSS LiteRT cc APIs (`CompiledModel::ResizeInputTensor` exists in `litert/cc/litert_compiled_model.h`). | `llm_litert_npu_dynamism.cc` L204–208; LiteRT `litert/runtime/BUILD` L39–42 |
-| Defaults keep today's behaviour: initial size 0 = allocate the full `max_num_tokens` up front. `LITERT_LM_NPU_DYNAMIC_KV_CACHE_INITIAL_SIZE` and `LITERT_LM_NPU_DYNAMIC_KV_CACHE_GROWTH_STEP` (default 512) are environment variables, "for now" (TODO b/565760564). | the diff, `GetDynamicKvCacheInitialSize` |
+| Defaults keep today's behaviour: initial size 0 = allocate the full `max_num_tokens` up front. `LITERT_LM_NPU_DYNAMIC_KV_CACHE_INITIAL_SIZE` and `LITERT_LM_NPU_DYNAMIC_KV_CACHE_GROWTH_STEP` (default 512) are environment variables, "for now". | the diff, `GetDynamicKvCacheInitialSize` |
 | Over-max requests on the dynamic path are refused: `InvalidArgumentError("Required tokens (N) exceeds max_num_tokens (M).")`. | the diff, `GrowDynamicKVCache` |
 | The public `npu_export` (litert-torch main 775c418, 2026-10-02) has no dynamic-KV option — the only dynamic-cache flag is `enable_gpu_dynamic_cache` (GPU). Its bundles fix `cache_length` in the graph shapes. | `litert_torch/generative/export_hf/{export.py,core/exportable_module_config.py}` |
 
@@ -171,7 +171,7 @@ is moot either way: its mask operand is 2 copies, 0.56 MiB at 1024 (own #3508 co
 
 ## ③ Follow-up comments (drafts, GO after the day's numbers)
 
-Drafted by an Opus 5.5 subagent, checked here (litert-tone + litert-team §1.5/§2;
+Drafted by an Opus 5.5 subagent, checked here (the writing rules;
 ledger `~/code/standup/state/opus-draft-ledger.md`):
 `~/code/standup/drafts/2026-10-02-npu-dynamic-kv-day0/comments.{opus,post,facts}.md`
 — A = LiteRT-LM #2568 (re-run table + the S26 CPU baseline, never posted there), B =

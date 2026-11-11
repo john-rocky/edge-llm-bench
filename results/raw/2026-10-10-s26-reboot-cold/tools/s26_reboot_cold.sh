@@ -1,6 +1,6 @@
 #!/bin/bash
 # s26_reboot_cold.sh (2026-10-10): on the Galaxy S26 (SM-S942Q), under the shared hold, run the DDP sessions' benchmark
-# binary (gs://litert/binaries/latest, sha256 adac974b...) at the LiteRT team's test arguments (prefill 1024 / decode 256,
+# binary (gs://litert/binaries/latest, sha256 adac974b...) with the arguments (prefill 1024 / decode 256,
 # --max_num_tokens=4096, one cycle per process) to see what a FIRST pass on a freshly booted phone reads, against a first
 # pass on the running phone with the model file just written (the shape of the DDP "first process"):
 #   R0  gpu  gemma-4-E2B-it   caches cleared, phone up for days, bundle just copied on the phone   (today's push-hot baseline)

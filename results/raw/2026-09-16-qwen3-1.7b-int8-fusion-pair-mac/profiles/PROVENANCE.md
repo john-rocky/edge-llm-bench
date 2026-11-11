@@ -1,6 +1,6 @@
 # 2026-09-16 Qwen3-1.7B int8, published unfused file vs fused GPU-graph export — Mac Metal per-op decode profile, LiteRT-LM v0.17.0
 
-- Question: Kimish (group DM, 2026-09-16 07:53 JST): "on mobile fusion hurts due to additional split ops needed, whereas on macs it actually helps". This pair puts the two int8 files already measured on the Pixel 8a / Galaxy S26 (2026-09-13 / 2026-09-14 sittings) on the Mac's Metal path.
+- Question: does fusion help on a Mac while it hurts on mobile? This pair puts the two int8 files already measured on the Pixel 8a / Galaxy S26 (2026-09-13 / 2026-09-14 sittings) on the Mac's Metal path.
 - Host: Mac Studio M4 Max, macOS 27.0; load average 1.96 at launch (uptime lines in runlog.txt); machine in use (other sessions), no quiet gate — the control tok/s are the only speed reading of these files on Metal and have no prior reading to compare with.
 - Binary and dylibs: byte-identical to the 2026-09-16 MiniCPM5-2B Metal profile (`../2026-09-16-minicpm5-2b-profile-mac/profiles/PROVENANCE.md`): `litert_lm_advanced_main` built from the LiteRT-LM v0.17.0 tag, sha256 56137e57…; run dir holds ONLY the tag's release `prebuilt/macos_arm64` Metal dylibs (8f89bc92… / ac988ae2… / a60e9a6e…), so the registry logs `name=GPU Metal` + `Created a Metal device` (the "Failed to create OpenCL context" line is the OpenCL probe, expected on macOS). sha256.txt has the full digests.
 - Files (APFS-cloned into a fresh scratchpad dir, no mldrift caches at start; warmup builds them):

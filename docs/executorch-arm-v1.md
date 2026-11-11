@@ -227,7 +227,7 @@ token). The stored log keeps it after `===ENGINE_STDERR===`.
   the prompt token count is the host tokenizer's, and the times are the adapter's wall clock.
 - The weekly job runs the Mac rows since 2026-10-08 (section "Weekly job"); the Android and
   iPhone rows are by-hand sittings.
-- Name an ExecuTorch sitting `<date>-dashboard-executorch-…`: the team dashboard
+- Name an ExecuTorch sitting `<date>-dashboard-executorch-…`: the dashboard page
   (litert-bench-dashboard) reads only campaigns whose name contains `dashboard`.
 
 ## iPhone

@@ -1,12 +1,12 @@
 #!/bin/zsh
-# 2026-09-18: Fengwu (Chat "HF Model GPU optimization", 07:5x JST): "There is a new prebuilt checked in, feel free to use it,
-# we shall have new prefill performance, and we need use_sdpa_composite_for_prefill flag when doing the export."
-# Re-export the two published 11-flag recipes (FINDINGS §13: his 09-11 command = the 11 flags minus
+# 2026-09-18: a new prebuilt, and the use_sdpa_composite_for_prefill flag for the export.
+#
+# Re-export the two published 11-flag recipes (FINDINGS §13: the 09-11 command = the 11 flags minus
 # --enable_gpu_dynamic_prefill, plus the LlmMetadata override) with --use_sdpa_composite_for_prefill=True appended.
 # Exporter: litert-torch main 731ef0a (2026-09-17) = worktree ~/code/litert-torch-0918-wt, venv ~/venvs/ltmain0918
 # (the lane's lt094dev pins in venv_requirements.txt + `pip install --no-deps -e ~/code/litert-torch-0918-wt`, so the only
-# component that moves against the p1024 files is litert-torch: 6d4c622 -> 731ef0a). The flag itself is Fengwu's 9f8a33f
-# (2026-08-31, "Optimize sdpa op."); the exporter CL the fused FA2 prefill kernel needs is 75370b9 (2026-09-15, "Skip query
+# component that moves against the p1024 files is litert-torch: 6d4c622 -> 731ef0a). The flag itself is 9f8a33f
+# (2026-08-31, "Optimize sdpa op."); the exporter change the fused FA2 prefill kernel needs is 75370b9 (2026-09-15, "Skip query
 # head packing when using SDPA composite."), neither of which the 09-08 checkout behind the p1024 files had.
 # Usage: (nohup ./chain_p1024_12flags.sh > logs/chain_p1024_12flags_driver.txt 2>&1 &)
 #   completion = the "=== DONE" line + out/p1024_{06b,4b}_12flags/model.litertlm + logs/ops_p1024_*_12flags.txt
