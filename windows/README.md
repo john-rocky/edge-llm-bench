@@ -323,11 +323,10 @@ job that took one every 5 s while a GPU row's engine ran (none for a run of abou
 - **CPU threads.** The rows pass no thread flag, as on the Mac (Android's llama.cpp rows pass `-t 4` to fit their core
   mask), so each engine runs its default: LiteRT-LM's is 4, which the CPU row's record states (`conditions.threads`; the GPU
   and NPU rows' logs print no count, so theirs read `engine default`); llama-cli's was 16 on this 16-core CPU, where
-  the Vulkan row's log prints it. On this hybrid CPU (4 P cores, 12 others) LiteRT-LM's decode rate is best at
-  2 to 3 threads and falls at every count from there up to 16, while its second-conversation prefill rate peaks at 6.
-  Placement is part of it: the same 4 threads under a process affinity on the P cores gained about 15 % on decode and on
-  that prefill, and nothing on the first prefill. A Windows process (`WorkloadsSessionHost`) held about 0.9 core through
-  these runs, and the cause of the fall is not established. More threads are not a faster row here: measure a count
+  the Vulkan row's log prints it. On this hybrid CPU (4 P cores, 12 others), with the job's High QoS on, none of the
+  other LiteRT-LM thread counts tried (1, 2, 3 and 6) was as much as 3 % faster for decode than its default of 4, and
+  prefill was highest at 6, the largest count tried ([NOTES-v0.19.0.md](NOTES-v0.19.0.md), item 4, which also lists the
+  counts above 6 and a process affinity on the P cores, measured only before the job set High QoS). Measure a count
   before passing one.
 - **YNNPACK.** `--enable_ynnpack=true` is refused by the tag's Windows build (`the YNNPACK accelerator is not registered
   or linked`), and `--define=litert_enable_ynnpack=true` does not build with MSVC: its dependency slinky stops at
