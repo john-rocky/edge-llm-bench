@@ -1,8 +1,8 @@
-# MiniCPM5-2B across LiteRT-LM / MLX / llama.cpp — Shuangfeng's ask of 2026-09-11
-# (Chat, 13:05 JST: "interested to see how fast for our recent MiniCPM5-2B
-# implementations, comparing others like MLX or llama.cpp"). The standings stay
-# local (owner decision 2026-08-27): the numbers go to the LiteRT team in the
-# thread; the repo keeps the single-arm records.
+# MiniCPM5-2B across LiteRT-LM / MLX / llama.cpp (2026-09-11).
+# How fast the MiniCPM5-2B files run
+# beside MLX and llama.cpp. The standings stay
+# local (owner decision 2026-08-27): the repo keeps
+# the single-arm records.
 #
 # Two rungs, matched by bit-width; the recipes differ per arm and travel in the
 # row (quant-per-arm-rule):
@@ -12,7 +12,7 @@
 #         / OpenBMB MLX 4-bit g64 affine / OpenBMB GGUF Q4_K_M
 # Arms interleaved per rung (fairness rule 11); anchors first (session protocol).
 # Mac: the LiteRT-LM v0.17.0 yardstick (.build/dd-mac-0170, engine-pins-v0170.json),
-# the release the card's Mac row and the team's minicpm5 README check used.
+# the release the card's Mac row and the minicpm5 README check used.
 #
 #   DD_MAC=.build/dd-mac-0170 BENCH_ENGINE_PINS_FILE=ios/BenchmarkApp/Vendored/engine-pins-v0170.json \
 #     ./bench matrix matrices/minicpm5-2b-crossarm.cells --platform mac --campaign 2026-09-11-minicpm5-2b-crossarm-v0170

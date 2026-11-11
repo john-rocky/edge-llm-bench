@@ -1,4 +1,4 @@
-# 2026-09-13 — the DDP team's HTTP example with `--use_gpu=true`: `benchmark_model` on `pa3q-35`, GPU
+# 2026-09-13 — the DDP HTTP example with `--use_gpu=true`: `benchmark_model` on `pa3q-35`, GPU
 
 Session `session-233c4731`, project `litert-edge-portal`, location `global`, created by the same
 `POST …/sessions` as the CPU session (`../2026-09-13-ddp-http-pa3q-35/`), with `request.json` as the
