@@ -1,8 +1,8 @@
-# Gemma 4 E2B on DDP Galaxy S25 Ultra (pa3q-35) at the LiteRT team's allocation: `--max-num-tokens 4096`, one cycle, three sessions per backend — 2026-10-08 02:37–03:53 JST
+# Gemma 4 E2B on DDP Galaxy S25 Ultra (pa3q-35) at `--max-num-tokens 4096`, one cycle, three sessions per backend — 2026-10-08 02:37–03:53 JST
 
-Why: the team's Kotlin `DeviceBenchmarkTest` runs this bundle with prefill 1024 / decode 256 and sets no max token count,
-so the engine takes its default (the bundle's metadata limit if it carries one, else 4096); its first number is one cold
-run (no cache files), its second a run after a warm-up and a 10 s pause in the same process. This repo's DDP rows
+Why: an app that runs this bundle with prefill 1024 / decode 256 and sets no max token count
+gets the engine's default (the bundle's metadata limit if it carries one, else 4096).
+This repo's DDP rows
 (`table.md`, `table-iter.md`) are at the CLI default `--max_num_tokens=1280`, and the benchmark binary picks 1280 on
 its own when the flag is absent (round 4, `../s26-cycle-drop/round4-maxtokens/`), so 4096 is passed explicitly here.
 Six billed sessions, three per backend (round 5: one each, 02:37–02:58; round 6: two more each in the order gpu, cpu,
@@ -12,8 +12,8 @@ gpu, cpu, 03:19–03:53), `--num-iterations 1 --warmup-runs 0 --max-num-tokens 4
 the CLI's printed medians leave out and is not among the binary's arguments.
 
 Two processes per session, as always with this CLI: the first starts without cache files, runs one cycle and writes the
-caches (the shape of the team's first, cold number); the measured process starts with those caches and runs its one
-cycle (near the team's second number, without the 10 s pause and without a warm-up cycle in the same process). Values
+caches; the measured process starts with those caches and runs its one
+cycle. Values
 from `metrics.pb.txt` (measured process) and the process log (first process). Every session passed at the first try.
 
 ## Every session (`tools/mktable_aligned_n.py`)
@@ -49,7 +49,7 @@ from `metrics.pb.txt` (measured process) and the process log (first process). Ev
 | cpu | session-20550b6d | warm-up 0, measured 0 | 4096 / 4096 | 0 | 4 |
 | cpu | session-ca7670c5 | warm-up 0, measured 0 | 4096 / 4096 | 0 | 4 |
 
-## Reading (the numbers only; the team's numbers are not written here, the brief lines them up)
+## Reading (the numbers only)
 
 - gpu, cold (first process, no caches), three sessions: prefill 2710.0, 2937.3, 2798.6 tok/s, median 2798.6, spread
   8.4 %; decode 44.70–45.57 (median 45.11, spread 1.9 %); TTFT 0.37–0.40 s; init 5711–5746 ms; peak memory 746.6–747.7 MB.

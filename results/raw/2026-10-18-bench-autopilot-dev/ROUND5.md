@@ -234,8 +234,8 @@ the summary), **79d9526c** (the 6-day window, docs 5), and this file's commit (i
 
 ## 提案
 
-1. **Stage 5 — the Googler's one command.** `./bench autopilot --ddp <id> --project <p> --bucket gs://<b> [--cells <file>]`
-   = this round's lab-unit sitting with their project and bucket (`ddp_sitting` passes neither today: `bench matrix
+1. **Stage 5 — the one command on a host with no phone.** `./bench autopilot --ddp <id> --project <p> --bucket gs://<b> [--cells <file>]`
+   = this round's lab-unit sitting with that host's project and bucket (`ddp_sitting` passes neither today: `bench matrix
    --ddp` takes `--project` / `--bucket`, the job would read them from the entry or flags) + `session_check.py` on
    the dir (`--json` / `--markdown` into the output dir) + the page data from the bench's own
    `scripts/render_dashboard.py` (its cells, not P) + `regression_watch.py` without `--compare`, over a series of
@@ -243,7 +243,7 @@ the summary), **79d9526c** (the 6-day window, docs 5), and this file's commit (i
    --state-dir <their dir>`. No commit (the post's commit and page steps are this repo's owner's), one output dir:
    the campaign dir, SESSION.json, the check, the cells, the red list. From a clean clone it needs gcloud signed
    in, python >= 3.10 with huggingface_hub, and the engine files (README DDP section, step 2); the Linux container
-   route of `results/raw/2026-10-16-googler-first-run-dev/LANE_CLOSE.md` is the rehearsal. When they run it weekly,
+   route of `results/raw/2026-10-16-linux-first-run-dev/LANE_CLOSE.md` is the rehearsal. When another host runs it weekly,
    `ddp_weekly` here goes false.
 2. **The whole `bench doctor` touches phones.** Every platform's checks run (WARN when not required): `adb
    devices`, `xcrun devicectl list devices`, and with exactly one Android phone attached `adb -s <serial> shell

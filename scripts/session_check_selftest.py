@@ -7,7 +7,7 @@ history csv handed in with --history and no job logs, and pins the verdicts: a c
 anchor + payload pair PASS; one HOLD per rule it exercises (partial, TIMEOUT, FAILURES,
 LEVEL, text check, prompt tokens, an Android lab unit's off-task reply, engine stamp, account
 name); one FAIL per rule (refused at admission, no SESSION.json, stopped sitting, weights, engine
-binary, credential, execution-level DDP logcat); the team rules: pin-drift (an iPhone LiteRT-LM
+binary, credential, execution-level DDP logcat); the rules: pin-drift (an iPhone LiteRT-LM
 cell older than the newest release a platform's pin names, FAIL; the day before those pins' since
 days, none; a stamp that is no release tag, a note) and protocol-off (a protocol cell at context
 1056, prompt 1023 or decode 128 and a 1K text cell at context 672, FAIL; MLX's 2523, llama-bench
@@ -17,7 +17,7 @@ looping or empty replies: text_screen.json per run by record id, a note and PASS
 alone when nothing changed; --no-text-screen writes nothing and judges alike; a cell with one run
 off; a dir it cannot write and a failed run without an id keep the HOLD; an allow-list line for
 the screened rule finds nothing; build_summary reads the file into text_check); an allow-list
-line turning a HOLD into a PASS, and a malformed one or a line for either team rule exiting 2; the
+line turning a HOLD into a PASS, and a malformed one or a line for pin-drift or protocol-off exiting 2; the
 payload / anchor pair with one half missing; the exit codes; llama.cpp's pin per platform since the
 2026-10-19 bump (registry_pin with the Mac and iPhone blocks, the since day and the previous tag;
 a Mac sitting on either side of the Mac block's day, an iPhone sitting on the iPhones' block).
@@ -941,7 +941,7 @@ def main():
     else:
         print("  skip  the committed lock has no llama.cpp since day with a previous tag apart from the pin")
 
-    print(f"--- protocol-off: a LiteRT-LM headline cell off the agreed protocol FAILs; other arms and tasks are "
+    print(f"--- protocol-off: a LiteRT-LM headline cell off the protocol FAILs; other arms and tasks are "
           f"not read (the LiteRT-LM cells on LEADER, {LEADER_PLATFORM})")
     if LEADER_PLATFORM:
         native = [headline(leader_record(i, GEMMA, task="native-benchmark-1024x256", prompt=prompt), ctx, gen)
@@ -1001,7 +1001,7 @@ def main():
     else:
         print("  skip  no LEADER")
 
-    print("--- the team rules take no allow-list line")
+    print("--- the rules take no allow-list line")
     for rule in ("pin-drift", "protocol-off"):
         with open(allow, "w") as fh:
             fh.write(f"{rule}\t2099-*\t*\t0123abcd\tthe older release is fine here\n")

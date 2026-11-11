@@ -291,7 +291,7 @@ Device Run sessions of at most 8 jobs on that catalog id; a session is billed
 to the Cloud project it runs in.
 
 Prerequisites (the host never talks to a phone, so no adb and no gtimeout;
-a Linux host such as a Cloudtop or gLinux machine has what the route calls;
+a Linux host has what the route calls;
 the first session from a Linux host, an Ubuntu 24.04 container with no adb,
 ran on 2026-10-16: `results/raw/2026-10-16-ddp-linux-first-run-akita-35-android/`):
 

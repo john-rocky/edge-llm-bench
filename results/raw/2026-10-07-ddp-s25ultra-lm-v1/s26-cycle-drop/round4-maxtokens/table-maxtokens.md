@@ -1,7 +1,6 @@
 # Gemma 4 E2B gpu: how prefill moves with `--max_num_tokens`, and cold against cached — Galaxy S26, 2026-10-08 02:00–02:08 JST (round 4)
 
-Why: the Kotlin `DeviceBenchmarkTest` of the LiteRT team's table reports 1980 (first, cold) and 2890 (second, after a
-warm-up) tok/s prefill for this bundle on the pool's Galaxy S25 Ultra, and does not set a max token count; the DDP row
+Why: an app that does not set a max token count gets the engine's default, not the CLI's; the DDP row
 of this repo (`table.md`, session-0d1cde8d) reports 3689 in its measured process's first cycle at the CLI default
 `--max_num_tokens=1280`. This round measures, on the Galaxy S26 (SM-S942Q, SoC SM8850, Android 16), how the same
 binary's prefill moves with the allocated context and with the cache files, so that the difference can be read.
@@ -69,11 +68,6 @@ Every process: `--backend=gpu --benchmark=true --benchmark_prefill_tokens=1024 -
   6454 ms (as if uncached); C2, C3 and the A and B processes after it initialized in 2097–2272 ms. The cache file
   names carry the bundle's mtime and size, not the token limit (`gemma-4-E2B-it.litertlm_<mtime>_2588147712_mldrift_
   program_cache.bin`, `…_weight_cache.bin`); the file count stayed 2. What the files held after C1 was not read.
-- **Reading against the team's two numbers (a hypothesis; the pool's S25 Ultra is a different SoC from this S26, so
-  the percentages transfer, not the values):** their second run 2890 against the DDP row's 3689 is −22 %, the size
-  of the 1280 → 4096 step measured here (−20 %); their first run 1980 is −46 % against 3689, more than a cold start
-  gives here (0–13 %) and more than the 4096 step, so the cold number is not explained by these two factors alone.
-  Nothing here says what their harness allocates; that is the question to ask.
 - No error line in any process, all exit 0, decode 44.8–47.0 throughout (no later-cycle drop: one cycle per process).
 
 ## Files

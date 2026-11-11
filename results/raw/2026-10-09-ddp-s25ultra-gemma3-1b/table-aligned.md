@@ -1,4 +1,4 @@
-# Gemma 3 1B IT int4 on DDP Galaxy S25 Ultra (pa3q-35), gpu and cpu, three sessions each, lined up with the LiteRT team's test arguments — 2026-10-09
+# Gemma 3 1B IT int4 on DDP Galaxy S25 Ultra (pa3q-35), gpu and cpu, three sessions each at prefill 1024 / decode 256, max tokens 4096 — 2026-10-09
 
 Bundle: litert-community/Gemma3-1B-IT `gemma3-1b-it-int4.litertlm`, current version (Hub commit 42d538a9, 2025-08-15;
 sha256 `1325ae366d31950f137c9c357b9fa89448b176d76998180c08ceaca78bba98be`, 584,417,280 bytes; the same bytes are

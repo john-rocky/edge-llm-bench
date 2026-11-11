@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Build libLiteRtMetalAccelerator.dylib at LiteRT 761d99cb (Fengwu 2026-09-16 instruction), CI-style configure first.
+# Build libLiteRtMetalAccelerator.dylib at LiteRT 761d99cb, CI-style configure first.
 set -x
 LOG=$HOME/code/litertlm-convert/qwen3_gpuopt_work/logs/dylib_761d99cb
 cd $HOME/code/LiteRT-761d99cb || exit 9

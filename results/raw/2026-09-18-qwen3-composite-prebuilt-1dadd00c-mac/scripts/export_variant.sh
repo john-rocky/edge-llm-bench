@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Bisect helper: export Qwen3 with the requested 11-flag set MINUS the flags named in DROP,
+# Bisect helper: export Qwen3 with the 11-flag set MINUS the flags named in DROP,
 # to find which composite produces the WGSL shader failures on the OSS 0.17.0 WebGPU path.
 #
 # Usage: DROP="use_sdpa_composite" ./export_variant.sh Qwen/Qwen3-0.6B out/v_nosdpa

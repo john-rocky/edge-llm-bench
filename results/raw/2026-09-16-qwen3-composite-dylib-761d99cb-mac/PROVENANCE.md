@@ -1,9 +1,9 @@
 # 2026-09-16 Qwen3 GPU-composite bundles vs the Metal accelerator dylib — Mac, LiteRT-LM v0.17.0
 
-Context: Fengwu Yao (LiteRT, Chat DM "HF Model GPU optimization", 2026-09-16 09:45 JST) confirmed that the two composite
+Context: the two composite
 load failures of 09-11 (0.6B `flash_decode_sdpa` shape mismatch ×28, 4B `qkv_norm_rope` ×72 + `flash_decode_sdpa` ×36)
 are the LiteRT commit v0.17.0 vendors (`9fe5be45`, 08-27) predating the kernel commits `428d2792` (09-01) and
-`e7135510` (09-03), and asked for a rebuild of `prebuilt/macos_arm64/libLiteRtMetalAccelerator.dylib` at LiteRT
+`e7135510` (09-03). The next step is a rebuild of `prebuilt/macos_arm64/libLiteRtMetalAccelerator.dylib` at LiteRT
 `761d99cb` (09-05) plus two benchmark configs. This directory records (1) why that dylib cannot be built from the OSS
 LiteRT tree, and (2) the two configs measured on what the public runtime has today.
 
@@ -38,7 +38,7 @@ LiteRT tree, and (2) the two configs measured on what the public runtime has tod
   provided` for `@ml_drift//ml_drift/common/task:tensor_desc` (0.1 s). Same block at LiteRT origin/main `4ff1d3f57`;
   `github.com/google-ai-edge/ml-drift` 404. The OSS accelerator targets are excluded from LiteRT's own macOS CI
   (`.github/workflows/macos-arm64.yml`: `-//litert/runtime/accelerators/gpu/...`).
-- Flags (Fengwu's two configs verbatim minus `--use_metal`; `leg.sh`): `b1k` = `--backend=gpu --disable_cache=true
+- Flags (the two configs minus `--use_metal`; `leg.sh`): `b1k` = `--backend=gpu --disable_cache=true
   --benchmark=true --num_iterations=3 --max_num_tokens=1280 --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256`;
   `b31k` = same with `--max_num_tokens=32768 --benchmark_prefill_tokens=31744` (the runtime rewrites the bundle's
   32771 cache axis to 32768: `magic_number_utils.cc:120 … target_number=32768`); `run` = `--input_prompt=<996-token

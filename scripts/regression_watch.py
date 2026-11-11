@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""regression_watch — the team page's red points, computed in the bench, and what follows one.
+"""regression_watch — the dashboard page's red points, computed in the bench, and what follows one.
 
   python3 scripts/regression_watch.py [--root DIR] [--summary CSV] [--definitions JSON]
                                       [--compare regression.json] [--json OUT] [--markdown OUT]
@@ -8,7 +8,7 @@
   python3 scripts/regression_watch.py --root <tree> --respond <campaign dir>... --state-dir logs/dashboard-job
 
 Design: docs/dashboard-autopilot-v1.md section 8 (stage 3a of the autopilot). The rule is the
-private team page's Regression section (litert-bench-dashboard build.py build_regression), run on
+private dashboard page's Regression section (litert-bench-dashboard build.py build_regression), run on
 the bench's own data: the constants are copied in ops/autopilot/regression-watch.json with their
 build.py lines, the aggregation, the regime, the exclusions and the threshold are the bench's own
 functions that build.py imports, and what build.py computes itself is restated below with its

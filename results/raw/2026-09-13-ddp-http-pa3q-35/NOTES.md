@@ -1,4 +1,4 @@
-# 2026-09-13 — the DDP team's HTTP example, run as written: `benchmark_model` on `pa3q-35`
+# 2026-09-13 — the DDP HTTP example, run as written: `benchmark_model` on `pa3q-35`
 
 Session `session-e1d64576`, project `litert-edge-portal`, location `global`, created by a plain
 `POST https://devicerun.googleapis.com/v1alpha/projects/litert-edge-portal/locations/global/sessions`

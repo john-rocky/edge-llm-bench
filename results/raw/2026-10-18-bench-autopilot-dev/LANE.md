@@ -1,11 +1,11 @@
 # bench-autopilot — supervisor's lane record (Fable 5.1, edge-llm-bench-55 [4f120b], started 2026-10-18 19:14 JST)
 
 Goal (user 2026-10-18, via code-2d): nobody does anything by hand, and when LiteRT-LM gets slower on one of the bench
-devices the team page carries the point next morning with a re-measurement, the candidate cause (LiteRT-LM commit range,
-per-op profile where a device gives one) and an issue draft; a Googler runs the same flow on DDP with one command.
+devices the dashboard page carries the point next morning with a re-measurement, the candidate cause (LiteRT-LM commit range,
+per-op profile where a device gives one) and an issue draft; another host runs the same flow on DDP with one command.
 
 Stages: 0 iPhone 17 Pro out of auto (done) / 1 session checker / 2 job -> checker -> commit -> summary -> page, switch OFF /
-3 regression response (re-measure, bisect via PR #4 build-from-ref, profile, issue draft) / 4 D6 DDP weekly slot / 5 Googler one command.
+3 regression response (re-measure, bisect via PR #4 build-from-ref, profile, issue draft) / 4 D6 DDP weekly slot / 5 one command on a host with no phone.
 
 Worktree: ~/code/edge-llm-bench-wt-autopilot, branch bench-autopilot (from main). K = this directory. Main tree is the night
 job's; merges into main only after a dry run passes; stage explicit paths only.
@@ -18,8 +18,6 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   words): committed on main as d4f6794c so the file is clean to merge.
 - backlog: `git status --porcelain results/raw` = 100 lines = 77 dirs; 68 carry -dashboard-v1-; 10 of those (10-16 DDP
   s3..s16) are committed with execution-level logcat.txt leftovers, so 58 dashboard dirs are wholly uncommitted.
-- Kimish 09-28 row ("continuous runs + re-run-with-profiling") not found in state/knowledge by grep: unverified. Found
-  instead Kimish 09-14 23:01 "exactly the kind of automated profiling diagnosis we should aim to have" (knowledge l.1199).
 
 ## Stage 0 (supervisor, no Opus round: a one-commit config change)
 - 7c0edbc2 on main (ff from bench-autopilot): iphone17pro `auto: false` (state by-hand), udid = devicectl UDID, selftest
@@ -63,10 +61,10 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   a night hold; none on DDP), issue draft EN + JA local (post = GO). Acceptance = r2's reproduction.
 - Stage 4 (D6 DDP weekly slot): schedule.json gains a DDP device entry (platform ddp, unit m1q-36, weekly, no hold, no
   anchor: DDP has no anchor; admission rule = cpu-cap marks + text check), the job's `auto` may take it any firing (no
-  device needed); "a Googler runs it -> our slot stops" as a switch in the entry.
-- Stage 5 (Googler's one command): `./bench autopilot --ddp <id> --project --bucket` = the DDP sitting + checker + the
+  device needed); "another host runs it -> our slot stops" as a switch in the entry.
+- Stage 5 (one command on a host with no phone): `./bench autopilot --ddp <id> --project --bucket` = the DDP sitting + checker + the
   page data (cells.csv / regression.json of the bench's own render_dashboard, not P) in one run from a clean clone; test
-  from the Linux container route of results/raw/2026-10-16-googler-first-run-dev/LANE_CLOSE.md.
+  from the Linux container route of results/raw/2026-10-16-linux-first-run-dev/LANE_CLOSE.md.
 - 20:2x r1 closed: f132add5 (checker, 30 rules, allow-list 25 lines, selftest 34 checks, CI step, docs) + 79b6448b (ROUND1).
   Supervisor's recomputation (own run of the checker): committed 88 dirs PASS 77 / HOLD 11 / FAIL 0; backlog 77 PASS 27 /
   HOLD 28 / FAIL 22 in 13.4 s; gen-budget HOLD opened (2026-09-08 m4max Qwen3 1.7B: 579 generated tokens, budget 128,
@@ -99,9 +97,9 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
 - 22:03 r2 closed: e3295a15 on bench-autopilot-bisect (engine_bisect.py + selftest 83, BUILD LITERTLM_LOCAL_CHECKOUT, run_ddp.py revision=, docs/engine-bisect-v1.md, two campaigns incl. the stopped first try, pins main-* 10 entries, summary from the index 4566 -> 4578). Supervisor's checks: lint PASS, no forbidden words in the commit or the issue drafts, selftest 83/83, no binary in the commit; the android/ddp selftest needs BENCH_ANDROID_BIN_DIR here (worktree has no android/bin/v0.18.0). Residue kept for now: bisect clone 2.1 G, bazel output base 7.0 G, android/bin/main-* 1.5 G (ignored; pins reference them) — lane close decides. r2 tab closed (workspace:360). The branch waits for PR #4 (GO) before any merge into main.
 - 22:07 registry finding: environment.lock.json arms.litert-lm.default_tag v0.16.0 is stale for the Mac (yardstick stamps v0.18.0 since 10-12; vendored Package.swift = v0.18.0 both targets) while the iPhone 18 Pro's pinned app stamps v0.16.0; the checker reads default_tag for mac and ios -> a false engine-stamp HOLD on tonight's Mac sitting. Sent to r5 (editing the checker): lock mac block + registry_pin per platform + re-verification table.
 - 22:44 r5 Mac 側 PASS read (dad937b1 + f36512ae; dry run 16 jobs / 2 sessions / 4 skips; selftests job 86 / checker 37 / post 45 / watch 50; lock mac block done, re-verification: only the 5 Mac engine-stamp findings changed). go sent: real DDP sitting (~200 device-min, est. 1-3.5 h), gen-budget allow-list line for the DDP route approved (litert_lm_main ignores --max_output_tokens, b6ddcb2c), DDP pending rule -> 'no admitted DDP sitting in the last 6 days' to avoid a repeat at Monday 02:00.
-- 22:47 r6 launched in a third worktree ~/code/edge-llm-bench-wt-autopilot-googler (branch bench-autopilot-googler from f36512ae; workspace:364): ./bench autopilot one command, container rehearsal (colima), one billed akita-35 run after go. Rebase onto bench-autopilot after r5 closes.
+- 22:47 r6 launched in a third worktree ~/code/edge-llm-bench-wt-autopilot-linux (branch bench-autopilot-googler from f36512ae; workspace:364): ./bench autopilot one command, container rehearsal (colima), one billed akita-35 run after go. Rebase onto bench-autopilot after r5 closes.
 - 23:31 r5 real DDP sitting OK (2 sessions, 16/16 jobs PASSED, 193.0 device-min, 22:46-23:29, all v0.18.0, cpu-capped, 1K text check PASS, prompt tokens as 10-16); post HOLD: checker FAIL logcat-unscrubbed x16 = the execution-level logcat.txt (5-12 MB, untracked; humans kept them out by hand on 10-16) + big-file-size x10 on the same files. Approved: .gitignore results/raw/*/ddp/*/*/execution-*/logcat.txt (rule = the by-hand practice), selftest case, rerun the post (no new billing), then the 6-day rule + docs.
-- 23:35 r6 Mac 側 PASS read (b910eb2f + 704a7c4d: scripts/autopilot.py + selftest 58 (needs BENCH_ANDROID_BIN_DIR like android/ddp/selftest.py; CI sets it), host and container dry runs equal, no network calls, README/skill/docs §10). go sent: one billed akita-35 run from the container with 63ec5615 cherry-picked into the container clone (option 2); the autopilot does not read ddp_weekly (the Googler's command is not gated by the host's switch) — accepted.
+- 23:35 r6 Mac-side PASS read (b910eb2f + 704a7c4d: scripts/autopilot.py + selftest 58 (needs BENCH_ANDROID_BIN_DIR like android/ddp/selftest.py; CI sets it), host and container dry runs equal, no network calls, README/skill/docs §10). go sent: one billed akita-35 run from the container with 63ec5615 cherry-picked into the container clone (option 2); the autopilot does not read ddp_weekly (that command is not gated by the host's switch) — accepted.
 - 23:43 r5 closed (dad937b1 f36512ae 63ec5615 6e3d5908 0c82ff22 79d9526c 4b8bceaf): the DDP weekly slot ran for real (2 sessions, 16/16 jobs, 193 device-min, 42.9 min) and the post step committed it by itself (0c82ff22: 503 files, summary 4739 -> 4811, message names DDP / 16 units / cap split) after the .gitignore rule for execution-level logcat.txt; P checks 3/4 PASS, check_regression FAIL (2): the S26 Gemma 4 E2B GPU cells' newest sitting is the lab-unit stand-in while the Regression series follow the phone's own sittings (check_regression.py l.369 expects a point of the cell's campaign) = a P check fix for the GO letter; lock arms.litert-lm.mac + registry_pin per platform (88 committed dirs unchanged, 5 Mac dirs lose engine-stamp); DDP pending = no admitted DDP sitting in 6 days. Supervisor: lint PASS, 4 selftests OK, commit 0c82ff22 carries no execution-level logcat. Merged into main (ff); r5 tab closed (workspace:363).
 - 23:5x main ff to 4b8bceaf (stages 0-4). The first ff attempt aborted: the main tree's results/summary/{README.md,device-runs.csv}
   carried another lane's disk rebuild (+2059 rows = the uncommitted backlog dirs; the index is the truth, CLAUDE.md) and
@@ -123,13 +121,13 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   the post step on nights when the lab unit's sitting is the S26 Gemma 4 E2B GPU cells' newest.
 - 00:5x correction: the r6 commits on main are 7bcf856c..eee9dfdb (the rebase of b910eb2f..a8d6c810); 14cdba05 written at 00:0x was a mid-rebase hash, not a main ancestor. Lane close r7 = cca803b4 (K + K3) and 53f0f226 (K2/LANE.md on bench-autopilot-bisect); handoff ~/code/standup/handoffs/2026-10-19-bench-autopilot.md; 34 intermediate paths (17.3 GB) deleted per K/bench_autopilot_deleted_paths.txt; the three worktrees stay (their ignored ddp-raw / execution logcats are moved into the main tree before any worktree remove).
 
-## 2026-10-19 02:2x–02:4x — round r8 (team rules into the checker), after the lane close
-- Trigger: code-2d (02:2x) relayed three team-side facts for the checker and the push/publish conditions, not a GO:
+## 2026-10-19 02:2x–02:4x — round r8 (two rules into the checker), after the lane close
+- Trigger: code-2d (02:2x) relayed three facts for the checker and the push/publish conditions, not a GO:
   (1) 10-14 reading of an S26 cell on the 0.16.0 pin against the card's number while the Mac was on 0.18.0
   (environment.lock.json arms.litert-lm.android.note: 25.9 vs 44-47 on the same phone); the checker is to FAIL a cell whose
-  LiteRT-LM release differs from the other platforms' and a headline cell off the agreed protocol (methodology/agreed-protocol-gemma4.md:
+  LiteRT-LM release differs from the other platforms' and a headline cell off the protocol (methodology/agreed-protocol-gemma4.md:
   forced prefill 1024 / decode 256 / ctx 2048). (2) The public repo carries raw records only; the generated commit message
-  names no DDP-vs-phone difference. (3) When the switch goes ON, the next mail to the team carries one sentence
+  names no DDP-vs-phone difference. (3) When the switch goes ON, the next note carries one sentence
   ("a run that passes the checks goes onto the page automatically"), never a mail of its own; EN / JA in GO (a).
 - Facts read before the launch (02:2x-02:3x): the weekly set is text tasks only (short-chat + long-context-1024-gen256, ctx 2048 on
   the 1K rows); the protocol cells live in the protocol1024 cells files (10-06/07 campaigns, the 10-15 S26 0180 splits). The committed
@@ -184,11 +182,11 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   v0.18.0 sitting, allow-listed as a known exception); the Hub's current revision reads 20 on the Mac. A bundle refresh + re-measure on
   the S26 and Pixel 8a is the same "current release" rule applied to the model files.
 
-## 2026-10-19 03:3x–03:4x — code-2d's three follow-ups (the team's purpose: the current version's correct numbers), facts first
+## 2026-10-19 03:3x–03:4x — three follow-ups (the current version's correct numbers), facts first
 - Qwen3 0.6B: the same bytes everywhere (qwen3_0_6b_mixed_int4.litertlm, sha 7900eb4e, the Hub's current main). The engine's own line on
   Android and iOS at v0.18.0: "Prefill Turn 1: Processed 9 tokens" with the whole prompt in input_prompt = the user turn is dropped by the
   bundle's pre-0.18 template. Registered already: hazard `pre-018-template-drops-user-turn` (standup knowledge/runtime-hazards.md line 25),
-  LiteRT-LM #3688, the re-export asked of the team 2026-10-13 (code-2d 03:4x). The Hub updated a different file for 0.18.0 on 10-12 / 10-13
+  LiteRT-LM #3688. The Hub updated a different file for 0.18.0 on 10-12 / 10-13
   (Qwen3-0.6B.litertlm: dynamic INT8 weights per the card; the dynamic INT4 block-32 file 03e7da1e is from 09-21). Decision path: probe
   both candidates on the S26 after the protocol8 sitting (one GPU short-chat launch each, read Prefill Turn 1), then move the 0.6B text
   cells to the candidate that reads the prompt whole, label per the card, the from -> to line citing #3688; iOS / Mac need a catalog
@@ -263,7 +261,7 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   weights, FP32 act; the same family as the 1.7B GPU cell's file) on every platform: Android cells files + the DDP cells, the Apple catalog
   (compiled into the Mac yardstick and the iPhone app: lands before r9's rebuilds). The anchor rows stay on mixed_int4 (a stability probe,
   not a page number; a file change would reset the admission reference). The protocol cells move too (one recipe per model and arm). When
-  the team's re-export of the mixed_int4 bundle lands, the choice is re-read. = round r11 (worktree wt-autopilot-q06, branch qwen06-bundle).
+  a re-export of the mixed_int4 bundle lands, the choice is re-read. = round r11 (worktree wt-autopilot-q06, branch qwen06-bundle).
   Re-measure: S26 today after r9's smoke (6 cells, job route), Pixel 8a after its weekly, Mac in today's by-hand weekly on the rebuilt
   yardstick, iPhone after its sitting with the rebuilt app.
 - 05:14 the 10-12 Mac pair restored through the text screen (ROUND10's procedure): the two .set-aside files are records again, text_screen.json
@@ -349,7 +347,7 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
 - 06:2x r9 closed (worker edge-llm-bench-wt-llama-07, tab workspace:369 closed): b23ba14a + 2d9b89d7 (ROUND9, lock notes) merged into main.
   Left for me from ROUND9 「iPhone app の build と install の 1 行」after the 18 Pro's sitting: the devicectl install of the 06:06 app, the
   devicectl copy of Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm (blob 03e7da1e) into Documents/models/litert-lm/litert-community__Qwen3-0.6B/,
-  then arms.llama.cpp.ios -> b11721 since that day. r9's open items (for the letter / handoff): the snapdragon side build to b11721, the
+  then arms.llama.cpp.ios -> b11721 since that day. r9's open items (for the handoff): the snapdragon side build to b11721, the
   Mac Metal teardown abort (still on b11721), the E4B 1K list skeleton (same on both builds = not the engine), the LiteRT-LM flat witness
   reading tools only, stamps that follow the pins file instead of the binary, core-ai / mlx-swift-lm DRIFT in release-watch.
 
@@ -458,7 +456,7 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
 - 10:2x code-2d's fairness ask (Hub API read by code-2d): the page's MLX Gemma 4 rows run the qat-OptiQ-4bit builds (5.22 / 7.48 GB
   safetensors, 956 / 2,475 downloads in 30 days) while mlx-community's used builds are gemma-4-e2b/e4b-it-4bit (3.55 / 5.15 GB; 24,394 /
   31,114) and gemma-4-E2B/E4B-it-qat-mobile (2.40 / 3.46 GB; 19,670 / 15,219); if the page's MLX Gemma 4 rows read the way they do
-  because of the file choice, the team reads a wrong-looking-right. Measure, do not infer from downloads or bytes. Round
+  because of the file choice, a reader sees a wrong-looking-right. Measure, do not infer from downloads or bytes. Round
   r14 launched (worktree wt-autopilot-q06, branch mlx-gemma4-file, tab workspace:380): the three files per model in one Mac sitting (1K task,
   anchor, runs 4, text screen), the rule "same quantization class, passes the text check, fastest; within 5 % the most downloaded", the
   cells and docs; the measurement waits for my go (after r13's build and smoke, in two ≤45-min slots). r13 adds the four catalog entries
@@ -482,7 +480,7 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   Qwen3 short-chat cells fail at load — the side-tree app build (stock Core AI 1.0.0) resolves `qwen3_*_gpu` under Documents/CoreAIModels,
   which the phone's container never held (its folders are the 10-06 / 10-08 g4stock_* and stock_*_ctx2048 ones); the two MLX E4B OptiQ
   cells are the standing load-time SIGKILL skip, same as 10-15 / 10-17) and `prompt-newtag` (the 0.6B mixed_int4 cells on v0.18.0:
-  9 prompt tokens, #3688, text-fail in the sidecar). The team page's Core AI rows are the stock-ctx2048 cells (dashboard-coreai-v1-ios;
+  9 prompt tokens, #3688, text-fail in the sidecar). The dashboard page's Core AI rows are the stock-ctx2048 cells (dashboard-coreai-v1-ios;
   P dist/cells.json carries only those ids), so the three cells are leaderboard-local; how the weekly's Core AI short-chat rows follow the
   stock engine (ids, backend) is an open item for the letter, not a silent cells edit. Route: hand commit by allow-list lines (partial,
   prompt-newtag) with the reason in this commit, then the post; the 0.6B dynamic file copied into the app's model folder (328.7 MB,
@@ -507,8 +505,8 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   provided is placeholder Lorem ipsum text … I cannot use it"; E2B 1K 1106 tokens, 256 generated, the same opening; E4B short-chat
   20 tokens, a plain answer. So with its own template Gemma 4 through llama.cpp declines the lorem passage the way MLX OptiQ does
   (text-fail under the current screen), where the bare prompt had produced 1098-token runs that passed as rates: the llama.cpp Gemma 4
-  1K page cells will likely turn text-fail after the retakes — the honest outcome under the agreed protocol; the lorem-padding /
-  -noref protocol question stays the team's decision (letter). FAILURES.txt of the probe = the known Metal teardown abort after the
+  1K page cells will likely turn text-fail after the retakes — the honest outcome under the protocol; the lorem-padding /
+  -noref protocol question stays open. FAILURES.txt of the probe = the known Metal teardown abort after the
   record (crash reports, ggml_abort in ggml_metal_rsets), not a failed run.
 - 11:2x–11:35 r13 and r14 closed (both lints PASS; r14's warm medians recomputed from the records: E2B OptiQ 151.02, E2B 4bit 178.68,
   E4B 4bit 111.97, E4B OptiQ 91.96 text-fail). Merged into main (llama-chat-template, then mlx-gemma4-file; conflicts in
@@ -530,7 +528,7 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   step, nice'd, no HF cache; android/bench selftest 101 s; all [0]), the one cross-runtime sentence in this file scrubbed (e7e3f25e),
   authorship checked (99 commits, author = committer = rockyshikoku@gmail.com, no attribution words), no standings file in the diff;
   ops/autopilot/switch.json push_bench on (b70e4f6f) and main pushed d9762f2c..b70e4f6f (100 commits; ahead 0, behind 0; GitHub run
-  39191235833 in progress). push_page / publish stay off (stage 2 after a week of the ledger; the Lu / Kimish sentence waits for it).
+  39191235833 in progress). push_page / publish stay off (stage 2 after a week of the ledger; the note waits for it).
   code-2d's three decisions received at 11:4x: (1) the page carries the PTQ 4bit MLX Gemma 4 rows beside the QAT OptiQ rows, named by
   class (a round after r15: cells, labels, docs; the Mac values exist in r14's sitting, the 18 Pro's sitting today); (2) the 1K
   cross-arm task's lorem padding becomes an explicit padding tail (the 2K ladder's -noref form) on every arm from the next weekly,
@@ -703,7 +701,7 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   sha256 e6bf25c0…, and the card lines). When #14 merges, the iPhone's 0.6B rows move to the iOS file (ModelCatalog, the iOS cells'
   `file=`, the page by file name); until then nothing measures the refs/pr file. 21:56 r15's last sitting (the S26 flat E4B,
   thinking off) was committed and pushed by the post (7a25bc9e).
-- 10-20 00:01 #4055's first comment (not from the team) points at LiteRT-LM PR #3962 ("Fix SwiGLU post-op fusion variable linking …
+- 10-20 00:01 #4055's first comment points at LiteRT-LM PR #3962 ("Fix SwiGLU post-op fusion variable linking …
   in MLDrift", open; its LiteRT-LM diff is KV-cache state only). Not answered. The re-test is tied to every new LiteRT-LM release:
   one short GPU chat with the current file (a3c5d805) on the 18 Pro, engine creation only. 03:18 the issue was assigned and
   labelled `type :bug`.

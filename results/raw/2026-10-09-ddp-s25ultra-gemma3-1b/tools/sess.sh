@@ -1,7 +1,7 @@
 #!/bin/bash
 # sess.sh <gpu|cpu>: one billed DDP session on pa3q-35, Gemma 3 1B IT int4 (litert-community gemma3-1b-it-int4.litertlm),
 # --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096. The bundle's LlmMetadata carries no max_num_tokens
-# (peek/gemma3-1b-litertlm-peek-2026-10-09.txt), so the LiteRT team's Kotlin test gets the engine default, 4096 for a
+# (peek/gemma3-1b-litertlm-peek-2026-10-09.txt), so an app that sets no limit gets the engine default, 4096 for a
 # 1024-token prompt; the benchmark binary picks 1280 on its own when the flag is absent, so 4096 is passed explicitly.
 # Other flags at the CLI defaults (prefill 1024 / decode 256).
 C="$HOME/code/edge-llm-bench/results/raw/2026-10-09-ddp-s25ultra-gemma3-1b"

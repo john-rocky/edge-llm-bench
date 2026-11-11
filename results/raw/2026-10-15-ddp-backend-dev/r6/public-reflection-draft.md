@@ -38,7 +38,7 @@ Facts behind it: `docs/OPERATIONS.md` (runbook), `docs/ddp-integration.md` "Rout
 `ROUND4.md` (engineCache, scrub). The assets row's `skill` cell (hold) could point here once it lands and has
 had its blind run.
 
-## B. litert-samples — `skills/benchmark-on-ddp/SKILL.md` (google-ai-edge/litert-samples, Draft PR through /litert-team after the user's GO)
+## B. litert-samples — `skills/benchmark-on-ddp/SKILL.md` (google-ai-edge/litert-samples, Draft PR after the user's GO)
 
 This skill is the one about DDP; the launch's candidate `skills/on-device-verification` is about CompiledModel
 parity of converted models (section C). Where: "## Watch for", four bullets after "DDP device names come from

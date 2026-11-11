@@ -1,8 +1,7 @@
 # 2026-09-18 Qwen3 GPU-composite bundles + the prefill-SDPA export on the prebuilt Metal accelerator dylib from LiteRT-LM main 1dadd00c — Mac, LiteRT-LM v0.17.0 CLI
 
-Context: Fengwu Yao (LiteRT, Chat DM "HF Model GPU optimization", 2026-09-18 07:54 JST): "There is a new prebuilt checked in,
-feel free to use it, we shall have new prefill performance, and we need `use_sdpa_composite_for_prefill` flag when doing the
-export." This directory records that dylib's identity, the two re-exports made with that flag, and the same two benchmark
+Context: a new prebuilt in LiteRT-LM `main`, and the `use_sdpa_composite_for_prefill` flag for the export.
+This directory records that dylib's identity, the two re-exports made with that flag, and the same two benchmark
 configs as `2026-09-17-qwen3-composite-dylib-4453b286-mac/`, on the new dylib and on the 09-17 dylib (control), on the same
 binary, the same host.
 
@@ -19,7 +18,7 @@ binary, the same host.
   `RegisterAccelerator … name=GPU Metal`, `Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered`,
   `delegate_metal.mm:89 Created a Metal device`, `cache_dir: :nocache`.
 - Accelerator dylibs (`sha256.txt`):
-  `run-1dadd00c/libLiteRtMetalAccelerator.dylib` = the LFS object LiteRT-LM `main` carries since `1dadd00c` (Fengwu Yao,
+  `run-1dadd00c/libLiteRtMetalAccelerator.dylib` = the LFS object LiteRT-LM `main` carries since `1dadd00c` (committed
   2026-09-17 15:50 -0700, "Update dependencies of litert_lm"; `WORKSPACE` `LITERT_REF = 0da36b31`, UPDATED 2026-09-17), pulled
   with `GIT_LFS_SKIP_SMUDGE=1 git worktree add --detach ~/code/litert-lm-1dadd00c-wt 1dadd00c` then
   `git lfs pull origin --include="prebuilt/macos_arm64/libLiteRtMetalAccelerator.dylib"` (origin =
@@ -38,13 +37,13 @@ binary, the same host.
   2026-09-15 15:19 -0700) are all ancestors — 35 commits from `1901301f` to `0da36b31`, among them `1b7a2c23` (short_conv_step
   fusion), `c4acb188` (GPU accelerator Maven target), `876bb8d5` (Metal xcframework fix).
 - Exporter and the flag (`~/code/litert-torch-main`, `git fetch upstream main`, upstream = google-ai-edge/litert-torch):
-  `use_sdpa_composite_for_prefill` was introduced by `9f8a33f` (Fengwu Yao, 2026-08-31, "Optimize sdpa op."); it is read from
+  `use_sdpa_composite_for_prefill` was introduced by `9f8a33f` (2026-08-31, "Optimize sdpa op."); it is read from
   `extra_kwargs` in `LiteRTExportableModuleForDecoderOnlyLMPrefill.forward` (`core/exportable_module.py`) and sets
   `use_sdpa_composite=True` for the prefill signature, so `odml.sdpa_transposed` composites are emitted there too (the published
   09-11 files have the composite only in `decode`: prefill_1024 574 ops / 0 sdpa composites, decode 372 ops / 28 for 0.6B; 734 / 0
-  and 476 / 36 for 4B). The exporter change the FA2 kernel needs is `75370b9` (Fengwu Yao, 2026-09-15, "Skip query head
+  and 476 / 36 for 4B). The exporter change the FA2 kernel needs is `75370b9` (2026-09-15, "Skip query head
   packing when using SDPA composite.", `experimental/composites/sdpa.py`). Neither is in `6d4c622` (2026-09-08), the checkout that
-  produced the published files. Export today = upstream `main` at `731ef0a` (Weiyi Wang, 2026-09-17 14:31 -0700, "Fix cache update
+  produced the published files. Export today = upstream `main` at `731ef0a` (2026-09-17 14:31 -0700, "Fix cache update
   in sliding window ring buffer attention"; also the commit that lets plain `use_sdpa_composite` reach the prefill signature),
   detached worktree `~/code/litert-torch-0918-wt`, venv `~/venvs/ltmain0918` = python 3.14.6 + the lane's pinned requirements
   (`qwen3_gpuopt_work/venv_requirements.txt`: ai-edge-quantizer 0.9.0, litert-converter 0.4.0, litert-lm-builder 0.16.1, torch
@@ -70,7 +69,7 @@ binary, the same host.
   `scripts/orchestrate.sh` runs the exports, the inventory gate and the driver in one go. Pre-registered decision rule:
   `PREREG.md`. Every command with its timestamp, GPU-utilization samples, load and any other >20 % process: `logs/runlog.txt`;
   per-leg summaries: `logs/driver.log`.
-- iOS (not measured here; for Fengwu's 08:32 follow-up "it would be nice to have the iOS numbers from oss as well"): the same commit's
+- iOS (not measured here): the same commit's
   `prebuilt/ios_arm64/libLiteRtMetalAccelerator.dylib` (LFS pull from the 1dadd00c worktree: sha256
   `2cbff000e8ea5dce3ae7fdd2465558508834e6e4debd8f0568c2f4120fd5f6a6`, 12,655,904 B, Mach-O arm64) carries the same kernel/composite
   names as the macOS dylib including `flash_prefill_sdpa` (with the class name `FusedFlashAttentionPrefillOp`); the OSS Swift package (`Package.swift` at 1dadd00c) pulls the binary
@@ -79,7 +78,7 @@ binary, the same host.
   export is FLOAT32[1, 8, 32771, 128] ×2 ×28 layers = 7.52 GB at the 32k cache length (the runtime resizes it to `--max_num_tokens`,
   so the 1,024 config needs 0.29 GB); the 4B file's single TFLite section is 2,268,553,328 B (loads on an iPhone 17 Pro only with the
   increased-memory-limit entitlement — a 4.24 GB section loaded that way on 2026-09-07).
-- iOS, checked further before answering Fengwu's 08:32 follow-up (no device run): the v0.17.1 release's `CLiteRTLM.xcframework.zip`
+- iOS, checked further (no device run): the v0.17.1 release's `CLiteRTLM.xcframework.zip`
   (sha256 `c94fc12aa0403cb47208e419cc3bfe258214ea17035f7a63c16de536869f2186`, 121,798,772 B; the OSS Swift package at 1dadd00c pins it)
   unpacks to an `ios-arm64/CLiteRTLM.framework/CLiteRTLM` binary of 60,466,448 B that carries the Metal accelerator inside (strings:
   `Created a Metal device.`, `GPU Metal`, `Statically linked GPU accelerator registered.`, and also the dlopen strings `Attempting to

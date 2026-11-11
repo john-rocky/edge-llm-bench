@@ -27,8 +27,6 @@
 - `tools/check_regression.py` は「Regression の系列には cell の campaign の点がある」事を要求するが、S26 の Gemma 4 E2B GPU の 2 cell は今夜から lab 個体の stand-in が最新 = Regression の系列(phone 自身の sitting だけ)に点が無い → check FAIL(2)= post は bench を commit し、page の commit を止める(ledger に理由)。直し方は 2 つ: (a) check で stand-in の cell は phone 自身の最新点と照合する(check の修正だけ、page の見え方は不変)/ (b) Regression 対象の 2 model では stand-in を使わない(page の規則の変更)。推奨 (a)。どちらも P の変更 = 次の publish の GO に含める。
 
 ## GO (c) 1 件ずつ
-- issue の投稿: bisect の ISSUE.en.md / ISSUE.ja.md は道具の汎用形(境界と再現 command)。09-17 の結論は group thread に投稿済みで、GitHub issue は内部アクセス後の起票で合意済み → 今は投稿しない(推奨)。
-- PR #4 を Ready for review: 段 3b の道具は PR #4 の branch 上 = main に入れるには PR #4 が先。Kimish / SF の返事待ちのまま(10-17)。
 - 新しい事実(報告先は your call): Hub の `litert-community/Qwen3-1.7B` の 10-11 の版(chat template の差し替え)は、0.18 より前の engine(8 月の build と v0.17.0 の binary)で user の文を落とす(Prefill 8 token = 空の user turn; v0.18.0 では 19 token)。card の注記か upstream への報告の候補。
 
 ## 通知(GO 不要の事実)

@@ -1,6 +1,6 @@
 # 2026-09-17 Qwen3 GPU-composite bundles on the new prebuilt Metal accelerator dylib (LiteRT-LM main 4453b286) — Mac, LiteRT-LM v0.17.0 CLI
 
-Context: Fengwu Yao (LiteRT, Chat DM "HF Model GPU optimization", 2026-09-17 02:29 JST) pointed at the prebuilt
+Context: the prebuilt
 `prebuilt/macos_arm64/libLiteRtMetalAccelerator.dylib` merged into LiteRT-LM `main` by PR #3605 (commit `4453b286`,
 "Update dependencies of litert_lm", 2026-09-15 19:01 -0700; `WORKSPACE` `LITERT_REF = 1901301f`, UPDATED 2026-09-15), to be
 pulled with `git lfs pull --include=...` and dropped beside `litert_lm_advanced_main`. This directory records that dylib's
@@ -30,7 +30,7 @@ same four bundles, the same binary, the same host.
 - LiteRT ancestry of the pin (`~/code/LiteRT`, `git fetch origin main`, `git merge-base --is-ancestor`): `1901301f` =
   2026-09-15 14:17 -0700 "Internal changes only."; `428d2792` (09-01, sdpa), `e7135510` (09-03, QkvNormRope dynamic head
   attributes) and `761d99cb` (09-05) are ancestors; `89116780` (fused FlashAttention-2 prefill kernel, 09-15 15:19 -0700) is
-  the next commit after `1901301f` on main and is NOT an ancestor — as Fengwu's note says.
+  the next commit after `1901301f` on main and is NOT an ancestor.
 - Models: APFS clones of `litertlm-convert/qwen3_gpuopt_work/out/p1024_*` (the files published 2026-09-11 to
   mlboydaisuke/Qwen3-{0.6B,4B}-LiteRT-gpu-composites; sha256 identical to the 09-16 run, see `sha256.txt`); "11 flags" =
   with `--use_sdpa_composite` and `--use_qkv_norm_rope_composite`, "9 flags" = the same export without those two. Fresh

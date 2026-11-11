@@ -1,12 +1,12 @@
 # Dashboard cells v1 — the text-only model set (prepared 2026-09-05)
 
 The initial cell set for the competitive dashboard kick-off on 2026-09-07:
-the five text-only models the LiteRT team named on 2026-09-04, across the
+five text-only models, across the
 three engines that publish an artifact for every one of them, on Android,
 iPhone and Mac. One command per platform re-measures it. This page is the
 cell table, the bundle inventory (what exists, what is missing), the
 competitor-arm status including a first look at Mirai, and the open
-questions for the LiteRT team.
+questions.
 
 Cells file: `matrices/dashboard-text-v1.cells` (v1: 45 cells, 5 models × 3
 arms × 3 platforms; v2 since 2026-09-08 adds the Core AI arm on iPhone and
@@ -28,12 +28,12 @@ see "Core AI arm (v2)" below; validated by `scripts/validate_cells.py`).
 | Qwen3 0.6B | yes | the anchor model; measured on every arm that had rows |
 | Qwen3 1.7B | yes | litert-community has shipped an INT8 `.litertlm` since 2026-06-25 and the dynamic INT4 wi4b32 GPU build since 2026-08-05; the catalog carried only our own conversion until today's entry |
 | Qwen3 4B | yes | LiteRT measured on iPhone (2026-08-19, thermally noisy); everything else new |
-| Qwen3.5 | placeholder, disabled | held by the LiteRT team ("not all changes landed/validated"); litert-community repos refreshed 2026-09-04 (0.8B/2B int8, 4B int8 + mixed_int4) |
-| LFM2.5 | placeholder, disabled | same hold; litert-community LFM2.5-1.2B-Instruct ships int4 / int4_gpu / int8 |
+| Qwen3.5 | placeholder, disabled | not in v1; litert-community repos refreshed 2026-09-04 (0.8B/2B int8, 4B int8 + mixed_int4) |
+| LFM2.5 | placeholder, disabled | not in v1; litert-community LFM2.5-1.2B-Instruct ships int4 / int4_gpu / int8 |
 
 Task: `short-chat`, the cross-arm standard cell (same prompt and token budget
-on every arm). The 1024-prefill / 256-decode / ctx-2048 column the LiteRT
-team benchmarks with (`long-context-1024-gen256`, methodology
+on every arm). The 1024-prefill / 256-decode / ctx-2048 column
+(`long-context-1024-gen256`, methodology
 `agreed-protocol-gemma4.md`) is the natural second task and was not in v1 —
 open question 3 below; the Mac leg of a deeper column (p≈2K / g=256, three
 KV allocations) was measured 2026-09-18, section "Long-context column".
@@ -597,7 +597,7 @@ The same text goes to every arm. Since 2026-10-19 the tail is the 2K ladder's
 `-noref` sentence, under the same id and budget: "1K task tail (2026-10-19)"
 below.
 
-`context-tokens=2048` on every LiteRT-LM and llama.cpp row: the agreed
+`context-tokens=2048` on every LiteRT-LM and llama.cpp row: the
 protocol's context (`methodology/agreed-protocol-gemma4.md`: prefill 1024,
 decode 256, context forced to 2048 for Gemma 4; the set uses the same
 allocation for the Qwen3 rows, so one column is one allocation) —
@@ -692,7 +692,7 @@ it out only on the devices it names by their `ops/dashboard-v1/schedule.json`
 key: the Android runner skips it on the phone whose serial that key carries
 (`SKIPPED.txt`: `CELL_SKIP <cell> exclude-on=<key> reason=<reason>`) and runs
 it everywhere else, and both dashboards (`scripts/render_dashboard.py` and the
-team page, through `render_dashboard.exclusion`) show the reason in that
+dashboard page, through `render_dashboard.exclusion`) show the reason in that
 device's cell; `exclude=` stays the every-device form, and `validate_cells.py`
 fails a key the schedule does not have, a key of another platform, a
 non-Android row (the Mac and iPhone runners do not read the option), an anchor
@@ -992,7 +992,7 @@ Since 2026-10-09 (owner GO) the Galaxy S26's weekly sitting ends with the short-
 `matrices/dashboard-npu-v1-android-s26.cells`: `matrices/dashboard-npu-v1-android-s26-short.cells`
 holds the session anchor and those ten rows (five models × `llama.cpp-npu` / `llama.cpp-gpu`, the
 side build `b11469-snapdragon`), byte-identical to the plan file, which stays the file the rows
-come from and the team page reads. It runs through `devices.s26.extra_cells` in
+come from and the dashboard page reads. It runs through `devices.s26.extra_cells` in
 `ops/dashboard-v1/schedule.json` as its own session (`-npu`) after the ONNX Runtime one, and only
 while the side build is on the phone (`/data/local/tmp/llmbench/engines/b11469-snapdragon`,
 `android/README.md` "Side builds"); without it the job skips the session and runs the rest of the
@@ -1052,17 +1052,17 @@ under the same bundle id, so they are by-hand sittings only.
 A `native-benchmark-<P>x<D>` cell is one launch of an engine's own benchmark entry: its first
 call cold, the calls after it warm (LiteRT-LM `benchmark()` calls 2..N of a `--runs N` launch;
 the Core AI stock arm's trials 1..N, the ones `llm-benchmark` averages; llama-bench's in-process
-repeats, all recorded warm). Since 2026-10-08 such a cell headlines the agreed protocol's regime
+repeats, all recorded warm). Since 2026-10-08 such a cell headlines the protocol's regime
 (`methodology/agreed-protocol-gemma4.md`: warm for the side-by-side, cold reported separately as
 first use) on every platform and for every arm: the warm median wherever the session has warm
 runs, with the session's cold first-call median beside it (`cold_tps`), and the cold median only
 where the session has none — the LiteRT-LM protocol sittings before 2026-10-08 made one call per
 launch. The text tasks keep their platform's regime (warm on the Apple lanes, cold on Android).
-One rule for this repo's dashboard table and the team page: `scripts/render_dashboard.py`
+One rule for this repo's dashboard table and the dashboard page: `scripts/render_dashboard.py`
 `headline_regime` (its detail table gives the cold value; a grid cell that reads another regime
-than its device's header says `(cold)` / `(warm)`), followed by the team page's `make_cell`.
+than its device's header says `(cold)` / `(warm)`), followed by the dashboard page's `make_cell`.
 Before this, the bench table read protocol cells by the platform's regime (an Apple cell with
-cold runs only showed no number, an Android llama-bench cell likewise) and the team page by
+cold runs only showed no number, an Android llama-bench cell likewise) and the dashboard page by
 "cold where the cold pool has runs".
 
 ## Artificial Analysis set on the iPhone 17 Pro (2026-10-15)
@@ -1132,7 +1132,7 @@ The rows took the wi4b32 file: it keeps them at INT4 and is the family of the Qw
   `dashboard-protocol1024-v1-android.cells` and `dashboard-ddp-v1-android-s26.cells`.
 - The Android LiteRT-LM session anchor moved with them (`anchors.cells` and the `anchor=1` rows of the
   1K and protocol files). A page cell and its series select rows by device, arm, model id, task and
-  context, not by file (`scripts/render_dashboard.py` `build`, the team page's `build.py`), so an anchor
+  context, not by file (`scripts/render_dashboard.py` `build`, the dashboard page's `build.py`), so an anchor
   on the old file would put that file's number into the GPU short-chat page cell whenever an anchors
   phase is newer than that cell's payload, and the series would alternate between two files. The
   LiteRT-LM anchor does not gate admission: `dashboard_job.anchor_cells` sorts the non-litert arm first
@@ -1190,7 +1190,7 @@ shows; the recipe label says INT8), and the weekly set gains a `backend=cpu` pai
 other's class: the quantization travels in the row (quant-per-arm-rule). The Mac and Android rows keep the INT4 bundle.
 First values: `matrices/dashboard-q06-int8-ios.cells`, one sitting on 2026-10-19. Revert = the ios rows back to
 `dynamic_wi4b32_afp32`, the cpu pair out. Owner's items: whether the iPhone page should carry the INT8 row at all while
-the other arms are 4-bit, and the issue to the LiteRT-LM team.
+the other arms are 4-bit, and the upstream issue.
 
 ## Qwen3 0.6B candidate (2026-10-19)
 
@@ -1240,7 +1240,7 @@ files, under their own model id.
 
 ## Qwen3 0.6B on LiteRT-LM main@b7c40ea81: a GPU-composite export, and YNNPACK on the CPU (2026-10-20)
 
-Two asks of the LiteRT team for the Qwen3 0.6B rows, measured as side-build rows on the Galaxy S26 and the Pixel 8a,
+Two additions for the Qwen3 0.6B rows, measured as side-build rows on the Galaxy S26 and the Pixel 8a,
 one CPU and one GPU sitting per phone; no page row moves.
 
 - The engine. PyPI litert-lm 0.18.1 (2026-10-19) ships one library per platform with the GPU accelerators linked in,
@@ -1250,7 +1250,7 @@ one CPU and one GPU sitting per phone; no page row moves.
   (2026-10-13). So the rows run main@b7c40ea81: `litert_lm_main` and `litert_lm_advanced_main` built at that commit
   with the commit's seven prebuilt android_arm64 libraries (the GPU accelerators among them; LFS oids checked): the
   side build `main-b7c40ea81` in `android/engine-pins.json`, the GPU rows; records stamp `engineVersion`
-  `main@b7c40ea81`. The CPU rows run the heads the LiteRT team asked for (2026-10-20): the side build
+  `main@b7c40ea81`. The CPU rows run the heads of 2026-10-20: the side build
   `head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly`, the two tools built at LiteRT-LM main 2ef6baeb with LiteRT main
   d469ea48, XNNPACK 878f1d8c and slinky 9b2ee975 (LiteRT d469ea48's own pins) by `--override_repository`,
   `--define=litert_enable_ynnpack=true`, and `--@litert//litert/build_common:build_include=cpu_only` (LiteRT d469ea48's
@@ -1290,7 +1290,7 @@ one CPU and one GPU sitting per phone; no page row moves.
   file: a protocol capture is named by arm, model id and task only, so a second build of one cell in one sitting needs
   its own id), the INT8 rows `litert-community/Qwen3-0.6B/dynamic_int8` (the iOS and Mac catalog id of that file; its
   quant label is the catalog's string). Reading: YNNPACK on against off only within one build and file in that sitting.
-- The context ladder (2026-10-23, the LiteRT team's question of that day: XNNPACK and YNNPACK at 2K, 4K, 8K, 16K and
+- The context ladder (2026-10-23: XNNPACK and YNNPACK at 2K, 4K, 8K, 16K and
   32K context): E2 on the CPU rows' side build, the protocol (1,024 prefill and 256 decode tokens) at
   `context-tokens=` 2,048 / 4,096 / 8,192 / 16,384 / 32,768 (`--max_num_tokens`; E2's graph carries the export's
   32,771-entry placeholder, which the engine sizes to the flag at load: `magic_number=32771, target_number=<N>` in the
@@ -1365,7 +1365,7 @@ after the fix gives these cells their new value; until then they show the thinki
 
 The page's MLX Gemma 4 rows (the Mac and iPhone short-chat and `long-context-1024-gen256` rows of
 `matrices/dashboard-text-v1.cells` and the 1K rows of `dashboard-longctx1024-v1.cells`) run
-`mlx-community/gemma-4-{e2b,e4b}-it-qat-OptiQ-4bit`; the team pointed on 2026-10-19 to the mlx-community
+`mlx-community/gemma-4-{e2b,e4b}-it-qat-OptiQ-4bit`; mlx-community also has
 bundles with far more downloads, `gemma-4-{e2b,e4b}-it-4bit` and `gemma-4-{E2B,E4B}-it-qat-mobile`. The three
 families were measured on the Mac in one sitting and the file follows the rule below. Download counts and
 bytes are listed for the record; they are not read as speed.
@@ -1518,8 +1518,8 @@ Slots `matrices/dashboard-aa-v1-ios-i*.cells`, LiteRT-LM v0.18.0 on the Metal GP
 
 ## 1K task tail (2026-10-19)
 
-Decision (code-2d, 2026-10-19 11:4x, under the owner's rule that what the team's purpose decides is done
-without asking: the task is the team's own instrument): the cross-arm 1K task `long-context-1024-gen256` keeps its id, its 18 lorem blocks, its
+Decision (2026-10-19):
+the cross-arm 1K task `long-context-1024-gen256` keeps its id, its 18 lorem blocks, its
 budget (a prompt of about 1,024 tokens, decode 256, context 2048) and every cells row, and its tail
 becomes the 2K ladder's `-noref` sentence on every arm at once. The protocol cell
 (`native-benchmark-1024x256`: forced prefill, no prompt) does not change.
@@ -1549,7 +1549,7 @@ carries the version as `prompt_version` (after `task`; empty where the record na
 - the session checker keys the prompt-token history by it, beside `model_file`: the first sitting on the
   new text reads "prompt history: none … at prompt version noref-2026-10-19", a note, not a HOLD against
   the old text's counts;
-- `scripts/regression_watch.py` and the team page (`build.py`, `tools/check_regression.py`,
+- `scripts/regression_watch.py` and the dashboard page (`build.py`, `tools/check_regression.py`,
   `tools/render_check.py` in the page repo) compare a point only with points of its own version, as decode
   compares only within its regime: the first point on the new text is compared with nothing
   (`prompt_changed`, "prompt changed from the previous point (none → noref-2026-10-19): not compared", the
@@ -1599,7 +1599,7 @@ same text); the page marks the break back.
   runs on the GPU, 4 of 4 at nominal (1024 / 256 at context 2048: prefill 1,096-1,101 tok/s after the cold call's
   869, decode 34.4-34.5 tok/s); without a task record of the model the import leaves it NATIVE_IMPORT_PENDING.
 
-## Open questions for the LiteRT team
+## Open questions
 
 1. Qwen3 LiteRT artifacts per backend. 0.6B rows used `qwen3_0_6b_mixed_int4`
    (continuity with the existing rows and anchors) until 2026-10-19; since then
@@ -1614,7 +1614,7 @@ same text); the page marks the break back.
    "Second task in the weekly set".)
 4. Devices: the cells file is device-agnostic; which lab devices map to the
    Android and iPhone rows?
-5. Go signal for Qwen3.5 / LFM2.5 — the placeholder rows are ready to
+5. Qwen3.5 / LFM2.5 — the placeholder rows are ready to
    uncomment (Apple-side LiteRT catalog entries for Qwen3.5 still to add).
 6. iPhone MLX E4B: the QAT OptiQ build (6.5 GB) is killed at load on the
    iPhone 17 Pro; use the 5.1 GB PTQ 4-bit build for that one row (a different

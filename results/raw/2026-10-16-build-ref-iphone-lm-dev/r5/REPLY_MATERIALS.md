@@ -1,6 +1,6 @@
 # Reply materials — DDP build-ref (D2) and the LiteRT-LM rows on a DDP iPhone (D1)
 
-Fact lines for the reply in the thread; the reply text itself is written elsewhere. Every number is read from the record named beside it (paths under `results/raw/` of `john-rocky/edge-llm-bench`, branch `build-from-ref`; the tables: `K/MATRIX.md`, `K/MATRIX-IOS.md`, K = `results/raw/2026-10-16-build-ref-iphone-lm-dev/`). Decode = `metrics.decodeTokensPerSecond`, tok/s, runs in order. No difference is computed.
+Fact lines. Every number is read from the record named beside it (paths under `results/raw/` of `john-rocky/edge-llm-bench`, branch `build-from-ref`; the tables: `K/MATRIX.md`, `K/MATRIX-IOS.md`, K = `results/raw/2026-10-16-build-ref-iphone-lm-dev/`). Decode = `metrics.decodeTokensPerSecond`, tok/s, runs in order. No difference is computed.
 
 ## D2 — a LiteRT-LM Android build from a git ref, on DDP
 

@@ -171,14 +171,14 @@ differently (decode tokens ÷ decode turn against (tokens − 1) ÷ the time aft
 engine clock against the app's), and so does each against the text task: compare a protocol row
 with a protocol row, and read the definitions with the number.
 
-**Which regime a protocol cell headlines.** Both arms' protocol cells read the agreed protocol's
+**Which regime a protocol cell headlines.** Both arms' protocol cells read the protocol's
 regime (`methodology/agreed-protocol-gemma4.md`: warm for the side-by-side, cold reported
 separately as first use): the warm median — Core AI trials 1..N, LiteRT-LM `benchmark()` calls
-2..N — wherever the session has warm runs, with the cold first call's median beside it (the team
+2..N — wherever the session has warm runs, with the cold first call's median beside it (the dashboard
 page's tooltip and inspector, `cold_tps`; the detail table of `scripts/render_dashboard.py`); a
 session whose launches made one call each (the LiteRT-LM protocol sittings before 2026-10-08)
 headlines its cold median. One rule for both arms and every platform:
-`scripts/render_dashboard.py` `headline_regime`, which the team page's `make_cell` follows.
+`scripts/render_dashboard.py` `headline_regime`, which the dashboard page's `make_cell` follows.
 
 ## Inputs and staging
 
@@ -243,7 +243,7 @@ headlines its cold median. One rule for both arms and every platform:
   public repo, card or post.
 - The weekly job does not run these cells yet (an owner decision; the arm joins a weekly file
   only after its first sittings).
-- Name a sitting `<date>-dashboard-coreai-v1-<device>`: the team dashboard reads only campaigns
+- Name a sitting `<date>-dashboard-coreai-v1-<device>`: the dashboard page reads only campaigns
   whose name contains `dashboard`.
 
 ## Status (2026-10-08)

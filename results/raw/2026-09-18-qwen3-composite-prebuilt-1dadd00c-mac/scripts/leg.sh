@@ -2,7 +2,7 @@
 # leg.sh <run-dir> <bundle.litertlm> <label> <mode>   mode = run | b1k | b31k | runv (run + --min_log_severity=0) | runp (run + --enable_profiling=true)
 # One process on the Metal accelerator path: the run dir holds ONLY litert_lm_advanced_main (LiteRT-LM v0.17.0 tag build,
 # sha256 56137e57…) + libGemmaModelConstraintProvider + libLiteRtTopKMetalSampler + ONE libLiteRtMetalAccelerator.dylib
-# (v0.17.0 release, 4453b286 = 09-17 prebuilt, or 1dadd00c = 09-18 prebuilt), so the registry logs "name=GPU Metal". Flags = Fengwu's 2026-09-16 pair minus
+# (v0.17.0 release, 4453b286 = 09-17 prebuilt, or 1dadd00c = 09-18 prebuilt), so the registry logs "name=GPU Metal". Flags = the 2026-09-16 pair minus
 # --use_metal (not a flag of the OSS 0.17.0 CLI); "run" = the 996-token passage prompt + /no_think, max_num_tokens 4096.
 set -u
 RUN=$1; B=$2; L=$3; MODE=$4
