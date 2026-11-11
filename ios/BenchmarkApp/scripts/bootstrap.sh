@@ -181,22 +181,45 @@ if [ ! -d "${CACTUS_FRAMEWORK}" ]; then
     if command -v cmake >/dev/null 2>&1; then
         if [ ! -d "${CACTUS_DIR}" ]; then
             echo "Cloning cactus @ ${CACTUS_COMMIT} …"
-            git clone https://github.com/cactus-compute/cactus.git "${CACTUS_DIR}"
-            (cd "${CACTUS_DIR}" && git checkout --quiet "${CACTUS_COMMIT}")
+            # Clone beside the target and move it in only once it is at the pinned commit:
+            # a clone left on another commit would be built as the pin by the next run.
+            CACTUS_CLONE="${CACTUS_DIR}.clone-$$"
+            if git clone https://github.com/cactus-compute/cactus.git "${CACTUS_CLONE}" &&
+                (cd "${CACTUS_CLONE}" && git checkout --quiet "${CACTUS_COMMIT}"); then
+                mv "${CACTUS_CLONE}" "${CACTUS_DIR}"
+            else
+                rm -rf "${CACTUS_CLONE}"
+            fi
         fi
-        echo "Building cactus-ios.xcframework (this compiles the engine twice: device + simulator) …"
-        if (cd "${CACTUS_DIR}" && bash apple/build.sh); then
-            cp -R "${CACTUS_DIR}/apple/cactus-ios.xcframework" "${CACTUS_FRAMEWORK}"
-            # Upstream bundles only cactus_engine.h, whose first include is the C++
-            # cactus_graph.h — absent from the framework, so `import cactus` cannot
-            # compile as shipped. The FFI declarations never use graph types; drop
-            # the include from the bundled header (our copy only).
-            for h in "${CACTUS_FRAMEWORK}"/*/cactus.framework/Headers/cactus_engine.h; do
-                sed -i '' '/#include "cactus_graph.h"/d' "$h"
-            done
-            echo "  -> ${CACTUS_FRAMEWORK}"
+        CACTUS_AT_PIN=0
+        if [ -d "${CACTUS_DIR}" ]; then
+            CACTUS_HEAD="$(git -C "${CACTUS_DIR}" rev-parse --verify --quiet HEAD 2>/dev/null || true)"
+            CACTUS_PIN="$(git -C "${CACTUS_DIR}" rev-parse --verify --quiet "${CACTUS_COMMIT}^{commit}" 2>/dev/null || true)"
+            if [ -n "${CACTUS_PIN}" ] && [ "${CACTUS_HEAD}" = "${CACTUS_PIN}" ]; then
+                CACTUS_AT_PIN=1
+            else
+                CACTUS_AT="${CACTUS_HEAD:0:8}"
+                echo "WARNING: ${CACTUS_DIR} is at ${CACTUS_AT:-no commit}, not ${CACTUS_COMMIT}; skipping the Cactus arm (CactusRuntime stubs out)."
+            fi
         else
-            echo "WARNING: cactus apple build failed; the Cactus arm will report unavailable."
+            # 1ace6d78 was gone from the upstream history on 2026-11-11 (GitHub: no commit for the SHA).
+            echo "WARNING: cactus @ ${CACTUS_COMMIT} could not be cloned and checked out (the upstream history may no longer have it); skipping the Cactus arm (CactusRuntime stubs out)."
+        fi
+        if [ "${CACTUS_AT_PIN}" = "1" ]; then
+            echo "Building cactus-ios.xcframework (this compiles the engine twice: device + simulator) …"
+            if (cd "${CACTUS_DIR}" && bash apple/build.sh); then
+                cp -R "${CACTUS_DIR}/apple/cactus-ios.xcframework" "${CACTUS_FRAMEWORK}"
+                # Upstream bundles only cactus_engine.h, whose first include is the C++
+                # cactus_graph.h — absent from the framework, so `import cactus` cannot
+                # compile as shipped. The FFI declarations never use graph types; drop
+                # the include from the bundled header (our copy only).
+                for h in "${CACTUS_FRAMEWORK}"/*/cactus.framework/Headers/cactus_engine.h; do
+                    sed -i '' '/#include "cactus_graph.h"/d' "$h"
+                done
+                echo "  -> ${CACTUS_FRAMEWORK}"
+            else
+                echo "WARNING: cactus apple build failed; the Cactus arm will report unavailable."
+            fi
         fi
     else
         echo "WARNING: cmake not found; skipping the Cactus arm (CactusRuntime stubs out)."
