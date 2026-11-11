@@ -24,7 +24,7 @@ CPU speed limit at any launch. A background download of this session's own (24 t
 
 ## Instrument
 
-LiteRT-LM `main` at `1dadd00c2a2363f275e713cfebab5fa9b96c6226` (Fengwu Yao, 2026-09-17
+LiteRT-LM `main` at `1dadd00c2a2363f275e713cfebab5fa9b96c6226` (2026-09-17
 15:50 -0700, "Update dependencies of litert_lm") — the same worktree as the asr-rtf-v1
 runner (`~/code/litert-lm-1dadd00c-wt`, detached). Build:
 `bazelisk build //runtime/engine:litert_lm_advanced_main`, bazel 7.6.1 (`.bazelversion`

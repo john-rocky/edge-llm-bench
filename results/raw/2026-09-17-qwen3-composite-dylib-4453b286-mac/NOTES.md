@@ -32,10 +32,9 @@ run 15 min later under lighter load (1-min load 3.7 vs 6.9–7.9 for the batch),
 spreads up to 7 %). Against the 09-16 rows on the release dylib
 (0.6B 1,364 / 1,379 · 68.1 / 67.7 at 31,744, 9,316 / 9,459 · 246.0 / 249.6 at 1,024; 4B 471 / 471 · 43.5 / 44.0, 1,645 / 1,638 ·
 105.8 / 108.0) today's release rows sit 1–6 % higher at 1,024 — host load differs between the two days (09-16 had an iPhone
-session running from this Mac), which is why every comparison here is same-session. Fengwu's M4 Pro reference for the composite
-bundles after the kernel fixes, 0.6B 1,061 and 4B 329 tok/s prefill at 31,744, is a different chip (273 GB/s vs 546); the rows above
-are this Mac's numbers, not a comparison with his. The prefill gains he describes for the fused FlashAttention-2 kernel
-(`89116780`, +40–50 %) are not in this dylib by design (it stops one commit before), so the 31,744 rows are this Mac's "before"
+session running from this Mac), which is why every comparison here is same-session. The rows above are this Mac's numbers.
+The prefill gains of the fused FlashAttention-2 kernel
+(`89116780`) are not in this dylib by design (it stops one commit before), so the 31,744 rows are this Mac's "before"
 for that.
 
 ## Correctness on the new dylib
@@ -61,8 +60,8 @@ for that.
 `--benchmark=true --input_prompt=<996-token passage> /no_think --max_num_tokens=4096` (decode over the generated answer, 85–101
 tokens; two processes): 0.6B composites on prefill 6,732 / 6,856, decode 297.6 / 323.1; 0.6B composites off 6,684 / 6,628, 217.0 /
 210.2 (release dylib 6,632 / 6,554, 195.7 / 207.2); 4B composites on 1,379 / 1,382, 115.2 / 115.0; 4B composites off 1,381 / 1,379,
-95.0 / 93.6 (release 1,384 / 1,380, 94.8 / 94.8). This is the form behind the 09-11 table
-Fengwu quoted. The "447" (0.6B) and "144" (4B) there were the earlier composite exports of 09-11 running with the mismatched
+95.0 / 93.6 (release 1,384 / 1,380, 94.8 / 94.8). This is the form behind the 09-11 table.
+The "447" (0.6B) and "144" (4B) there were the earlier composite exports of 09-11 running with the mismatched
 kernels (wrong output, void; FINDINGS §11–12), not today's `p1024_*` files — the published 0.6B composite file itself read 356
 in that state on 09-11, and the 09-11 readings of the published files without the composites (188–198 / 71–95) were voided
 because another lane held the GPU (FINDINGS §13). So today's rows are the first valid readings of the published files in this
@@ -72,6 +71,6 @@ difference recorded on 09-16.
 
 ## What would change the picture
 
-A prebuilt built past `89116780` once the litert-torch exporter change lands (Fengwu: he will update the prebuilts to head then).
+A prebuilt built past `89116780` once the litert-torch exporter change lands.
 The run dirs, the tag-built CLI, the bundles and `scripts/leg.sh` are unchanged; drop the next dylib into a third run dir and
 re-run `scripts/run_all.sh`.

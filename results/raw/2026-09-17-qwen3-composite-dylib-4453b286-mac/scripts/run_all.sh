@@ -1,6 +1,6 @@
 #!/bin/zsh
 # Driver, 2026-09-17: the prebuilt Metal dylib from LiteRT-LM main 4453b286 (PR #3605, LiteRT 1901301f) vs the v0.17.0
-# release dylib, same litert_lm_advanced_main (v0.17.0 tag build), same 4 bundles, Fengwu's two benchmark configs.
+# release dylib, same litert_lm_advanced_main (v0.17.0 tag build), same 4 bundles, the two benchmark configs.
 #   run-4453b286 = new dylib (sha256 dcd3c3ef…), run-release = v0.17.0 dylib (ac988ae2…). GPU-serial, one process at a time.
 set -u
 S=${S:?}
@@ -13,7 +13,7 @@ ps aux | grep -E "yardstick|litert_lm|llm-bench|gsm8k|litert-lm|mlx|python|bazel
 $LEG $NEW $M/p1024_06b_9flags/model.litertlm  new_06b_9  run
 $LEG $NEW $M/p1024_4b_11flags/model.litertlm  new_4b_11  run
 $LEG $NEW $M/p1024_4b_9flags/model.litertlm   new_4b_9   run
-# --- (2) Fengwu config 2 (1024/256): new dylib ×4 bundles, release ×2 9-flag bundles (today's control); A then B
+# --- (2) config 2 (1024/256): new dylib ×4 bundles, release ×2 9-flag bundles (today's control); A then B
 for P in A B; do
   $LEG $NEW $M/p1024_06b_11flags/model.litertlm new_06b_11_$P b1k
   $LEG $NEW $M/p1024_06b_9flags/model.litertlm  new_06b_9_$P  b1k
@@ -22,7 +22,7 @@ for P in A B; do
   $LEG $NEW $M/p1024_4b_9flags/model.litertlm   new_4b_9_$P   b1k
   $LEG $REL $M/p1024_4b_9flags/model.litertlm   rel_4b_9_$P   b1k
 done
-# --- (3) Fengwu config 1 (31744/256): new dylib ×4 bundles A/B, release ×2 9-flag bundles ×1 (control)
+# --- (3) config 1 (31744/256): new dylib ×4 bundles A/B, release ×2 9-flag bundles ×1 (control)
 $LEG $NEW $M/p1024_06b_11flags/model.litertlm new_06b_11_A b31k
 $LEG $NEW $M/p1024_06b_9flags/model.litertlm  new_06b_9_A  b31k
 $LEG $REL $M/p1024_06b_9flags/model.litertlm  rel_06b_9_A  b31k

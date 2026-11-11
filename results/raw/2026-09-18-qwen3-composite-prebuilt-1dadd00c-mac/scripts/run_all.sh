@@ -1,7 +1,7 @@
 #!/bin/zsh
 # Driver, 2026-09-18: the prebuilt Metal dylib from LiteRT-LM main 1dadd00c (LiteRT 0da36b31, which includes the fused
 # FlashAttention-2 prefill kernel 89116780) vs the 09-17 prebuilt from 4453b286 (LiteRT 1901301f, one commit before it),
-# same litert_lm_advanced_main (v0.17.0 tag build, sha256 56137e57…), Fengwu's two benchmark configs.
+# same litert_lm_advanced_main (v0.17.0 tag build, sha256 56137e57…), the two benchmark configs.
 # Bundles: the published p1024 files (11 flags / 9 flags, 2026-09-11) + today's 12-flag exports (the 11-flag command +
 # --use_sdpa_composite_for_prefill=True, litert-torch main 731ef0a; chain_p1024_12flags.sh) + the flag-only control "11n" (the
 # 11-flag command at litert-torch 1e2d37f = the same exporter drift without the prefill composite; chain_p1024_11flags_1e2d37f.sh).
@@ -39,7 +39,7 @@ leg $NEW $M/p1024_4b_9flags/model.litertlm   new_4b_9   run
 #          run (--enable_profiling=true), to look for a runtime line that names the prefill SDPA kernel (the default log has none)
 leg $NEW $M/p1024_06b_12flags/model.litertlm new_06b_12 runv
 leg $NEW $M/p1024_06b_12flags/model.litertlm new_06b_12 runp
-# --- (2) Fengwu config 2 (1024/256): new dylib × 6 bundles, 09-17 dylib × the 4 published bundles (same-session control); A then B
+# --- (2) config 2 (1024/256): new dylib × 6 bundles, 09-17 dylib × the 4 published bundles (same-session control); A then B
 for P in A B; do
   leg $NEW $M/p1024_06b_12flags/model.litertlm new_06b_12_$P b1k
   leg $NEW $M/p1024_06b_11flags/model.litertlm new_06b_11_$P b1k
@@ -54,7 +54,7 @@ for P in A B; do
   leg $NEW $M/p1024_4b_9flags/model.litertlm   new_4b_9_$P   b1k
   leg $CTL $M/p1024_4b_9flags/model.litertlm   ctl_4b_9_$P   b1k
 done
-# --- (3) Fengwu config 1 (31744/256, --max_num_tokens=32768): new dylib × 6 bundles A/B; 09-17 dylib × 11-flag and 9-flag A/B
+# --- (3) config 1 (31744/256, --max_num_tokens=32768): new dylib × 6 bundles A/B; 09-17 dylib × 11-flag and 9-flag A/B
 for P in A B; do
   leg $NEW $M/p1024_06b_12flags/model.litertlm new_06b_12_$P b31k
   leg $NEW $M/p1024_06b_11flags/model.litertlm new_06b_11_$P b31k
