@@ -1386,6 +1386,64 @@ class WindowsRunnerRows(unittest.TestCase):
         self.assertEqual(recs[2]["conditions"]["gpuCachePurge"], ["m.litertlm_1_10_mldrift_program_cache.bin"])
         self.assertNotIn("gpuCachePurge", recs[4]["conditions"])
 
+    def rows_records(self, tmp, lines, specs, head, metas):
+        """write_records over fake host logs of a plan of several rows (lines: the cells file's), one run per
+        metas[row id] entry (its fields over the defaults), every log the head and two iterations: (clean runs,
+        {row id: the row's records})."""
+        cells = self.cells(tmp, "".join(f"{line}\n" for line in lines))
+        plan = run_windows_matrix.plan_job([cells], "c", run_windows_matrix.load_pins(),
+                                           run_windows_matrix.parse_model_specs(specs))
+        camp = pathlib.Path(tmp) / "c"
+        logs = camp / "host-logs" / "inv"
+        logs.mkdir(parents=True)
+        (logs / "host.json").write_text(json.dumps({"model": "PC", "os": "Windows 11", "cpu": "x", "binaries": {}}))
+        for row in plan.rows:
+            for k, extra in enumerate(metas[row.row_id], 1):
+                (logs / f"{row.row_id}_run{k}.json").write_text(json.dumps({
+                    "exitCode": 0, "timedOut": False, "start": "2026-11-05T20:00:00.0000000+09:00",
+                    "elapsedSeconds": 10, "peakWorkingSetBytes": 1 << 30, "command": "tool", **extra}))
+                (logs / f"{row.row_id}_run{k}.log").write_text(head + self.ITERATION + self.ITERATION)
+        clean, _ = run_windows_matrix.write_records(plan, camp, "inv", litert_pins={}, harness="test")
+        recs = {}
+        for row in plan.rows:
+            with open(camp / f"{row.stem}.jsonl") as fh:
+                recs[row.row_id] = [json.loads(line) for line in fh]
+        return clean, recs
+
+    CPU_HEAD = "I0000 00:00:1.0 1 litert_lm_lib.cc:728] Choose backend: cpu\nnumber_of_threads: 4\nmax_tokens: 2048\n"
+
+    def test_a_row_after_a_clean_row_of_its_arm_file_and_context_is_not_first_ever(self):
+        # two rows of one arm, model file and context in one job (their tasks differ): the first row's clean run built
+        # the engine caches that the second row's runs read, so only the first row's run 1 is the cache build
+        row = "backend=cpu file=m.litertlm context-tokens=2048 runs=2"
+        lines = [f"windows litert-lm org/m {task} {row}" for task in ("short-chat", "long-context-1024-gen256")]
+        with tempfile.TemporaryDirectory(prefix="render-rules-winsamekey-") as tmp:
+            clean, recs = self.rows_records(tmp, lines, ["litert-lm:org/m=m.litertlm:10"], self.CPU_HEAD,
+                                            {"r00": ({}, {}), "r01": ({}, {})})
+        self.assertEqual(clean, 4)
+        self.assertEqual({(r["runtime"], r["model"]["file"], r["conditions"]["contextTokens"])
+                          for rows in recs.values() for r in rows}, {("litert-lm-cpu", "m.litertlm", 2048)})
+        self.assertEqual({k: [(r["metrics"].get("firstEver", False), r["conditions"]["iterationIndex"]) for r in rows]
+                          for k, rows in recs.items()},
+                         {"r00": [(True, 1), (False, 2), (False, 1), (False, 2)],
+                          "r01": [(False, 1), (False, 2), (False, 1), (False, 2)]})
+
+    def test_a_run_after_an_unclean_run_of_its_row_is_first_ever_whatever_ran_before(self):
+        # the second row's run 1 exited 1, so no clean run has built its file's caches yet: its run 2 is still the
+        # cache build, though the first row (another file) ran clean before it
+        lines = [f"windows litert-lm org/{m} short-chat backend=cpu file={m}.litertlm context-tokens=2048 runs={n}"
+                 for m, n in (("a", 1), ("b", 2))]
+        specs = [f"litert-lm:org/{m}={m}.litertlm:10" for m in ("a", "b")]
+        with tempfile.TemporaryDirectory(prefix="render-rules-winunclean-") as tmp:
+            clean, recs = self.rows_records(tmp, lines, specs, self.CPU_HEAD,
+                                            {"r00": ({},), "r01": ({"exitCode": 1}, {})})
+        self.assertEqual(clean, 2)
+        self.assertIn("engine-exit-1", recs["r01"][0]["conditions"]["protocolFlags"])
+        self.assertEqual({k: [(r["metrics"].get("firstEver", False), r["conditions"]["iterationIndex"]) for r in rows]
+                          for k, rows in recs.items()},
+                         {"r00": [(True, 1), (False, 2)],
+                          "r01": [(True, 1), (False, 2), (True, 1), (False, 2)]})
+
 
 class WindowsSshExecutor(unittest.TestCase):
     """scripts/windows_ssh_executor.py with its transport faked: the job goes up, its logs come down as records."""

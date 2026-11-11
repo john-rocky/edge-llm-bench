@@ -635,13 +635,13 @@ def write_records(plan: Plan, campaign_dir: pathlib.Path, invocation: str, *,
                         cond["hostBefore"] = meta["before"]
                     if meta.get("after"):
                         cond["hostAfter"] = meta["after"]
-                    for key in ("sshConnections", "hostCpu", "engineQos"):
+                    for field in ("sshConnections", "hostCpu", "engineQos"):
                         # two reads of the host around the whole engine process (run_job.ps1 since 2026-11-07) and
                         # what the job did about that process's power throttling (engineQos, from the job with
                         # -EngineQos), the same in each of its iterations: recorded as the job wrote them, never
                         # judged here
-                        if key in meta:
-                            cond[key] = meta[key]
+                        if field in meta:
+                            cond[field] = meta[field]
                     if prompt_ver:
                         cond["promptVersion"] = prompt_ver
                     if checking:
