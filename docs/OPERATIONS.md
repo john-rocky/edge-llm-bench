@@ -581,6 +581,17 @@ outputs under `automation/sessions/`).
   large artifacts headlessly with
   `xcrun devicectl device copy to --domain-type appDataContainer --domain-identifier <app> --source <file> --destination Documents/models/<runtime>/<org__repo>/<primaryFile>`
   (HFDownloader short-circuits on a non-empty model directory; about 22 MB/s).
+- **An iPhone reachable only over Wi-Fi passes the preflight, and a sitting
+  runs on it.** `devicectl` reaches a paired phone over the local network
+  (`Transport Type: localNetwork` in `xcrun devicectl device info details --device <udid>`);
+  `ioreg -p IOUSB` names every attached iPhone `iPhone`, so it does not tell
+  which phone is on the cable. On 2026-11-12 the iPhone 18 Pro ran part a
+  that way from 16:48. At about 18:49 it became unavailable to `devicectl`
+  (CoreDeviceError 4016); the third run of the cell then running had decoded
+  at 19.5 tok/s against 38.3 and 38.9 for the first two. The runner ended
+  the session after two refused launches (`DEVICE_LOST.txt`, verdict DEVICE)
+  with 16 of 26 cells recorded. Whether the phone was charging is not known.
+  Keep the bench iPhone on the Mac's USB.
 - **`mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit` does not load on the iPhone 17 Pro**: the
   7.5 GB repo downloads, then the app is SIGKILLed while loading its 6.5 GB of
   text weights (2026-09-06). The iOS row carries `exclude=app-killed-at-model-load-sigkill`.
