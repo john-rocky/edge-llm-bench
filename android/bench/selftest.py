@@ -2577,18 +2577,18 @@ def main():
     ok(binary == f"executorch-{rc_tag.EXECUTORCH_TAG}/llama_main",
        f"executorch without engine-build=: the pinned tag's runner (got {binary!r})")
 
-    # BENCH_EXTRA_PINS: another harness's registry adds build labels (a Google3 LiteRT-LM build
-    # stays out of this repo's file); it never overrides a label or touches android_pins
+    # BENCH_EXTRA_PINS: another harness's registry adds build labels (a LiteRT-LM source build
+    # this repo cannot rebuild stays out of this repo's file); it never overrides a label or touches android_pins
     import run_cell as rc_pins
     base_pins = rc_pins.load_pins()
     extra_path = os.path.join(tmp, "extra-pins.json")
     saved_extra = os.environ.get("BENCH_EXTRA_PINS")
     try:
         with open(extra_path, "w") as fh:
-            json.dump({"_doc": "x", "litert-lm": {"google3-test": {"litert_lm_main_sha256": "ab"}}}, fh)
+            json.dump({"_doc": "x", "litert-lm": {"extra-test": {"litert_lm_main_sha256": "ab"}}}, fh)
         os.environ["BENCH_EXTRA_PINS"] = extra_path
         merged = rc_pins.load_pins()
-        ok(merged["litert-lm"].get("google3-test") == {"litert_lm_main_sha256": "ab"}
+        ok(merged["litert-lm"].get("extra-test") == {"litert_lm_main_sha256": "ab"}
            and merged["android_pins"] == base_pins["android_pins"]
            and all(merged["litert-lm"][k] == v for k, v in base_pins["litert-lm"].items()),
            "BENCH_EXTRA_PINS adds a label beside the registry's, which stay as they are")

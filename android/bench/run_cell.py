@@ -275,8 +275,8 @@ def load_pins(serial=None):
     witnessed in the selftest without an entry in the real registry.
 
     BENCH_EXTRA_PINS names a second registry (same layout) whose entries are added to the
-    engine sections: builds another harness makes and registers itself (a Google3 build of
-    LiteRT-LM, which cannot be rebuilt outside Google, stays out of this repo's file). It may
+    engine sections: builds another harness makes and registers itself (a LiteRT-LM source build that
+    this repo cannot rebuild stays out of this repo's file). It may
     only add labels: one already in the registry, or an android_pins / top-level key, refuses."""
     p = os.environ.get("BENCH_TEST_PINS")
     if p and serial != "FAKESELF":

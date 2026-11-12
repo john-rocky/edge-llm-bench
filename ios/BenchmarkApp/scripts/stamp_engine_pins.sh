@@ -61,8 +61,8 @@ extract_binary_target() {  # extract_binary_target <zip-name> -> "name@tag sha25
     printf '%s' "${art}"
 }
 if [ -f "${V}/LiteRT-LM.source" ]; then
-    # A source build of the engine (e.g. CLiteRTLM.xcframework built in Google3 and assembled
-    # into a local package with no .git): its builder writes the sidecar, line 1 the version,
+    # A source build of the engine (e.g. a CLiteRTLM.xcframework built from source elsewhere and
+    # assembled into a local package with no .git): its builder writes the sidecar, line 1 the version,
     # line 2 the artifact.
     LITERT_VER="$(sed -n 1p "${V}/LiteRT-LM.source")"
     LITERT_ART="$(sed -n 2p "${V}/LiteRT-LM.source")"
