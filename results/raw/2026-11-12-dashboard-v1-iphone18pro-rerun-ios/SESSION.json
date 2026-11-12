@@ -1,0 +1,111 @@
+{
+ "campaign": "results/raw/2026-11-12-dashboard-v1-iphone18pro-rerun-ios",
+ "phase": "payload",
+ "cells": "logs/dashboard-job/rerun-2026-11-12-iphone18pro.cells",
+ "device_key": "iphone18pro",
+ "device_display": "iPhone 18 Pro",
+ "device_identifier": "iPhone19,2",
+ "platform": "iphone",
+ "attempt": 1,
+ "started": "2026-11-12 19:50:03",
+ "ended": "2026-11-12 20:45:29",
+ "admitted": true,
+ "verdict": "COMPLETED",
+ "reason": "anchor nominal, ratio 0.999 vs reference (60bd0d7880c82980f9481f8be78862e9b63c58a3)",
+ "anchor": {
+  "regime": "warm",
+  "anchors": [
+   {
+    "cell": "mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat",
+    "primary": true,
+    "median": 220.86794211395778,
+    "n": 2,
+    "thermal": [
+     "nominal"
+    ],
+    "engine_version": "60bd0d7880c82980f9481f8be78862e9b63c58a3",
+    "reference": {
+     "campaign": "results/raw/2026-11-12-dashboard-v1-iphone18pro-anchor-ios",
+     "median": 221.1064218431593,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "60bd0d7880c82980f9481f8be78862e9b63c58a3"
+    },
+    "reference_nominal": {
+     "campaign": "results/raw/2026-11-12-dashboard-v1-iphone18pro-anchor-ios",
+     "median": 221.1064218431593,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "60bd0d7880c82980f9481f8be78862e9b63c58a3"
+    },
+    "reference_any_version": {
+     "campaign": "results/raw/2026-11-12-dashboard-v1-iphone18pro-anchor-ios",
+     "median": 221.1064218431593,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "60bd0d7880c82980f9481f8be78862e9b63c58a3"
+    },
+    "ratio": 0.9989214255867671
+   },
+   {
+    "cell": "litert-lm litert-community/Qwen3-0.6B/dynamic_int8 short-chat",
+    "primary": false,
+    "median": null,
+    "n": 0,
+    "thermal": [],
+    "engine_version": null,
+    "reference": {
+     "campaign": "results/raw/2026-11-12-dashboard-v1-iphone18pro-anchor-ios",
+     "median": 45.65949315428759,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.19.0"
+    },
+    "reference_nominal": {
+     "campaign": "results/raw/2026-11-12-dashboard-v1-iphone18pro-anchor-ios",
+     "median": 45.65949315428759,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.19.0"
+    },
+    "reference_any_version": {
+     "campaign": "results/raw/2026-11-12-dashboard-v1-iphone18pro-anchor-ios",
+     "median": 45.65949315428759,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.19.0"
+    },
+    "ratio": null
+   }
+  ]
+ },
+ "anchor_phase": "results/raw/2026-11-12-dashboard-v1-iphone18pro-anchor-ios",
+ "runner_exit": 0,
+ "cells_expected": 4,
+ "cells_with_records": 4,
+ "carries": [
+  "ios litert-lm litert-community/Qwen3-0.6B/dynamic_int8 long-context-1024-gen256 context-tokens=2048",
+  "ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-1024-gen256 backend=cpu context-tokens=2048",
+  "ios litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat cooldown=300"
+ ],
+ "release_by": "2026-11-12 21:05",
+ "flagged": [
+  "GATE_FAIL litert-lm litert-community/Qwen3-0.6B/dynamic_int8 long-context-1024-gen256 retry='HOT nominal,nominal,nominal,fair' (retry kept; flagged capture in device-jsonl-flagged/)",
+  "GATE_FAIL litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-1024-gen256 retry='HOT nominal,nominal,fair,fair' (retry kept; flagged capture in device-jsonl-flagged/)",
+  "GATE_FAIL litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat retry='HOT nominal,nominal,nominal,fair' (retry kept; flagged capture in device-jsonl-flagged/)"
+ ],
+ "schema": "dashboard-job-session.v1",
+ "job": "dashboard-v1"
+}
