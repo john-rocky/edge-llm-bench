@@ -430,3 +430,121 @@ public struct Metrics: Codable, Sendable {
         self.batteryTickTimestamps = batteryTickTimestamps
     }
 }
+
+/// One `native-benchmark-<P>x<D>` call as a schema-v1 record (`schema/result.v1.json`), shared by
+/// the iOS app (`BenchmarkApp.swift`) and the Mac `yardstick` CLI (`Yardstick.swift`).
+public struct NativeBenchmarkRecord: Encodable, Sendable {
+    public struct Measured: Encodable, Sendable {
+        public let coldRun: Bool
+        public let promptTokenCount: Int
+        public let generatedTokenCount: Int
+        public let promptTokensPerSecond: Double
+        public let decodeTokensPerSecond: Double
+        public let firstTokenLatencyMS: Double
+        public let loadTimeSeconds: Double
+        public let memoryPeakDuringDecodeMB: Double
+        public let memoryPeakResidentMB: Double?
+        public let memoryMedianMB: Double?
+        public let memoryMedianResidentMB: Double?
+        public let memorySampleCount: Int
+        public let memoryPostTeardownFootprintMB: Double
+        public let contextTokensConfigured: Int
+        public let wallSeconds: Double
+        public let initialThermalState: String
+        public let finalThermalState: String
+        public let harnessStamp: String
+
+        public init(
+            coldRun: Bool,
+            promptTokenCount: Int,
+            generatedTokenCount: Int,
+            promptTokensPerSecond: Double,
+            decodeTokensPerSecond: Double,
+            firstTokenLatencyMS: Double,
+            loadTimeSeconds: Double,
+            memoryPeakDuringDecodeMB: Double,
+            memoryPeakResidentMB: Double? = nil,
+            memoryMedianMB: Double?,
+            memoryMedianResidentMB: Double?,
+            memorySampleCount: Int,
+            memoryPostTeardownFootprintMB: Double,
+            contextTokensConfigured: Int,
+            wallSeconds: Double,
+            initialThermalState: String,
+            finalThermalState: String,
+            harnessStamp: String
+        ) {
+            self.coldRun = coldRun
+            self.promptTokenCount = promptTokenCount
+            self.generatedTokenCount = generatedTokenCount
+            self.promptTokensPerSecond = promptTokensPerSecond
+            self.decodeTokensPerSecond = decodeTokensPerSecond
+            self.firstTokenLatencyMS = firstTokenLatencyMS
+            self.loadTimeSeconds = loadTimeSeconds
+            self.memoryPeakDuringDecodeMB = memoryPeakDuringDecodeMB
+            self.memoryPeakResidentMB = memoryPeakResidentMB
+            self.memoryMedianMB = memoryMedianMB
+            self.memoryMedianResidentMB = memoryMedianResidentMB
+            self.memorySampleCount = memorySampleCount
+            self.memoryPostTeardownFootprintMB = memoryPostTeardownFootprintMB
+            self.contextTokensConfigured = contextTokensConfigured
+            self.wallSeconds = wallSeconds
+            self.initialThermalState = initialThermalState
+            self.finalThermalState = finalThermalState
+            self.harnessStamp = harnessStamp
+        }
+    }
+
+    public struct Conditions: Encodable, Sendable {
+        public let instrument: String
+        public let run: Int
+        public let runs: Int
+
+        public init(instrument: String, run: Int, runs: Int) {
+            self.instrument = instrument
+            self.run = run
+            self.runs = runs
+        }
+    }
+
+    public var id: UUID
+    public var schemaVersion: Int
+    public let timestamp: Date
+    public let device: DeviceSnapshot
+    public let runtime: String
+    public let engineVersion: String?
+    public let engineArtifact: String?
+    public let model: ModelInfo
+    public let modelRevision: String?
+    public let task: String
+    public let metrics: Measured
+    public let conditions: Conditions
+
+    public init(
+        id: UUID = UUID(),
+        schemaVersion: Int = 1,
+        timestamp: Date,
+        device: DeviceSnapshot,
+        runtime: String,
+        engineVersion: String?,
+        engineArtifact: String?,
+        model: ModelInfo,
+        modelRevision: String?,
+        task: String,
+        metrics: Measured,
+        conditions: Conditions
+    ) {
+        self.id = id
+        self.schemaVersion = schemaVersion
+        self.timestamp = timestamp
+        self.device = device
+        self.runtime = runtime
+        self.engineVersion = engineVersion
+        self.engineArtifact = engineArtifact
+        self.model = model
+        self.modelRevision = modelRevision
+        self.task = task
+        self.metrics = metrics
+        self.conditions = conditions
+    }
+}

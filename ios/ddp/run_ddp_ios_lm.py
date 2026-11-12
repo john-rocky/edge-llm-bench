@@ -383,8 +383,8 @@ def plan(args) -> dict:
     if args.task.startswith(NATIVE_TASK_PREFIX):
         if not NATIVE_TASK.fullmatch(args.task):
             raise InputError(f"--task {args.task!r}: {NATIVE_TASK_PREFIX}<prefill>x<decode>, e.g. {NATIVE_TASK_PREFIX}1024x256")
-        if runtime != RUNTIME:
-            raise InputError(f"--task {args.task!r} is LiteRT-LM's own benchmark(): --runtime {RUNTIME}, not {runtime}")
+        if runtime not in (RUNTIME, "mlx-swift", "llama.cpp"):
+            raise InputError(f"--task {args.task!r} requires --runtime litert-lm, mlx-swift, or llama.cpp (got {runtime})")
     timeout = args.timeout or TIMEOUT[args.backend or "gpu"]
     minutes = timeout_minutes(timeout)
     if not 1 <= minutes <= 60:

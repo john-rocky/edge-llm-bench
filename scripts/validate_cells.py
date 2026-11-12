@@ -196,9 +196,11 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
             if rt not in RUNTIMES:
                 errors.append(f"{where}: unknown runtime {rt!r}")
             # cool-wait=<s>: the iPhone app's --native-cool-wait (a pause before every benchmark() call,
-            # longer while the phone is warm; scripts/bench_matrix_iphone.sh): ios litert-lm protocol rows only
-            if "cool-wait" in opts and not (plat == "ios" and rt == "litert-lm" and NATIVE_TASK.match(task)):
-                errors.append(f"{where}: cool-wait= is for ios litert-lm native-benchmark rows only")
+            # longer while the phone is warm; scripts/bench_matrix_iphone.sh): ios protocol rows only
+            if "cool-wait" in opts and not (
+                    plat == "ios" and rt in ("litert-lm", "mlx-swift", "llama.cpp") and NATIVE_TASK.match(task)):
+                errors.append(f"{where}: cool-wait= is for ios litert-lm / mlx-swift / llama.cpp "
+                              "native-benchmark rows only")
             elif "cool-wait" in opts and int(opts["cool-wait"]) < 1:
                 errors.append(f"{where}: cool-wait must be positive")
             if rt == "uzu":

@@ -325,7 +325,7 @@ enum HeadlessAutoRun {
             return (p, d)
         }
         var nativeRecordTask: String?
-        if runtime == .mediaPipe, let size = nativeTaskSize(taskId) {
+        if [.mediaPipe, .mlxSwift, .llamaCpp].contains(runtime), let size = nativeTaskSize(taskId) {
             // The flag next to the task could measure something else under the task's name.
             guard value("--litert-native-benchmark") == nil else {
                 fatal("--task \(taskId) and --litert-native-benchmark are exclusive")
@@ -480,50 +480,6 @@ struct HeadlessRunnerView: View {
     }
 }
 #endif
-
-/// One `--task native-benchmark-<P>x<D>` call as a record: schema v1 (schema/result.v1.json), a task
-/// run's top-level keys, and in `metrics` only what the call measured, under the keys
-/// scripts/import_native_benchmark.py --schema-v1 gives the attached iPhone's YARDSTICK_NATIVE_OK
-/// lines. `BenchmarkResult` cannot carry it: `Metrics` requires a stop reason, a peak thermal state,
-/// a rolling decode rate and a battery delta, and this path reads none of them.
-private struct NativeBenchmarkRecord: Encodable, Sendable {
-    struct Measured: Encodable, Sendable {
-        let coldRun: Bool
-        let promptTokenCount: Int
-        let generatedTokenCount: Int
-        let promptTokensPerSecond: Double
-        let decodeTokensPerSecond: Double
-        let firstTokenLatencyMS: Double
-        let loadTimeSeconds: Double
-        let memoryPeakDuringDecodeMB: Double
-        let memoryMedianMB: Double?
-        let memoryMedianResidentMB: Double?
-        let memorySampleCount: Int
-        let memoryPostTeardownFootprintMB: Double
-        let contextTokensConfigured: Int
-        let wallSeconds: Double
-        let initialThermalState: String
-        let finalThermalState: String
-        let harnessStamp: String
-    }
-    struct Conditions: Encodable, Sendable {
-        let instrument: String
-        let run: Int
-        let runs: Int
-    }
-    var id = UUID()
-    var schemaVersion = 1
-    let timestamp: Date
-    let device: DeviceSnapshot
-    let runtime: String
-    let engineVersion: String?
-    let engineArtifact: String?
-    let model: ModelInfo
-    let modelRevision: String?
-    let task: String
-    let metrics: Measured
-    let conditions: Conditions
-}
 
 /// The headless run without its view: the view above hands it the runtime, its printer and its
 /// exit; the lab build's harness (SourcesDDP/DDPHarness.swift, an XCTest's entry) hands it a
@@ -787,88 +743,154 @@ struct HeadlessRun {
     /// process and the on-disk caches are: each one still loads a new engine.
     ///
     /// `recordTask` (`--task native-benchmark-<P>x<D>`): each call also writes one record under
-    /// that task (`NativeBenchmarkRecord`).
+    /// that task (`NativeBenchmarkRecord`). Supports LiteRT-LM (`MediaPipeRuntime`), MLX
+    /// (`MLXRuntime`), and llama.cpp (`LlamaCppRuntime`).
     private func runNativeBenchmark(
         runtime: any LLMRuntime, model: ModelInfo, spec: (prefill: Int, decode: Int),
         runs: Int, contextTokensValue: Int?, coolWaitSeconds: Int? = nil, recordTask: String? = nil
     ) async {
-        #if canImport(LiteRTLM)
-        guard let litert = runtime as? MediaPipeRuntime else {
-            await log("YARDSTICK_FATAL native_benchmark requires runtime=litert-lm")
-            await finish(5)
-            return
+        struct CallOutcome {
+            let prefillTokenCount: Int
+            let prefillTokensPerSecond: Double
+            let decodeTokenCount: Int
+            let decodeTokensPerSecond: Double
+            let ttftSeconds: Double
+            let initSeconds: Double
+            let instrument: String
         }
-        // The context length is an independent axis of the protocol (2048 for Gemma-4),
-        // but LiteRT-LM's own `benchmark()` ties it to prefill: without --context-tokens this
-        // runs at max(prefill, decode) + 32 — 1056 at 1024x256. Both paths are allowed; only
-        // one is on-protocol, so the log says which was taken instead of leaving it implicit.
         let contextTokens = contextTokensValue ?? (max(spec.prefill, spec.decode) + 32)
         if contextTokensValue == nil {
-            await log("YARDSTICK_WARN native_benchmark context_tokens=\(contextTokens) (litert stock default; the protocol is 2048 for gemma-4 — pass --context-tokens)")
+            await log("YARDSTICK_WARN native_benchmark context_tokens=\(contextTokens) (defaulted; pass --context-tokens)")
         }
-        await log("YARDSTICK_BEGIN native_benchmark model=\(model.id) prefill=\(spec.prefill) decode=\(spec.decode) context_tokens=\(contextTokens) runs=\(runs)")
+        let runtimeLabel = await runtime.recordRuntimeLabel
+        await log("YARDSTICK_BEGIN native_benchmark runtime=\(runtimeLabel) model=\(model.id) prefill=\(spec.prefill) decode=\(spec.decode) context_tokens=\(contextTokens) runs=\(runs)")
         let warmRuns = runs > 1 ? "runs 2...\(runs)" : "none (--runs 1)"
         let pauseNote = coolWaitSeconds.map { "before every call a pause of \($0) s, up to \(2 * $0) s until thermal nominal" } ?? "no pause between calls"
-        await log("YARDSTICK_NOTE native_benchmark cold=run 1 (the first benchmark() call in this process) warm=\(warmRuns) (same process, \(pauseNote); benchmark() builds a new engine on every call, so only the process and the on-disk caches are warm)")
+        await log("YARDSTICK_NOTE native_benchmark cold=run 1 warm=\(warmRuns) (\(pauseNote))")
+
+        var sharedLoadSeconds: Double = 0
+        do {
+            #if canImport(MLXLLM)
+            if let mlx = runtime as? MLXRuntime {
+                let t0 = CFAbsoluteTimeGetCurrent()
+                try await mlx.loadModel(model) { _ in }
+                sharedLoadSeconds = CFAbsoluteTimeGetCurrent() - t0
+            }
+            #endif
+            #if canImport(llama)
+            if let llama = runtime as? LlamaCppRuntime {
+                await llama.prepareContext(maxContextTokens: contextTokens)
+                let t0 = CFAbsoluteTimeGetCurrent()
+                try await llama.loadModel(model) { _ in }
+                sharedLoadSeconds = CFAbsoluteTimeGetCurrent() - t0
+            }
+            #endif
+        } catch {
+            await log("YARDSTICK_FATAL native_benchmark_load_failed \(error.localizedDescription)")
+            await finish(6)
+            return
+        }
 
         for run in 1...runs {
             if let pause = coolWaitSeconds {
-                // --native-cool-wait: a pause before every call (see coolWait); the OK line still
-                // carries the state it starts at
                 let w = await HeadlessRun.coolWait(pause: pause)
                 await log("YARDSTICK_NOTE native_benchmark cool_wait run=\(run) waited_s=\(w.waited) pause_s=\(pause) thermal_before=\(w.before) thermal_after=\(w.after)")
             }
-            // Sample memory *during* the benchmark. The published 92 MB deep-context cell was a
-            // single footprint read taken after `benchmark()` returned and released the engine,
-            // which is not the same quantity as the in-run peaks it was tabulated against.
             let thermalInitial = ThermalMonitor.describe(ProcessInfo.processInfo.thermalState)
             let deviceAtStart = recordTask == nil ? nil : DeviceSnapshot.capture()
             let sampler = MemorySampler()
             await sampler.start()
             do {
                 let callStart = CFAbsoluteTimeGetCurrent()
-                let info = try await litert.nativeBenchmark(
-                    model, prefillTokens: spec.prefill, decodeTokens: spec.decode,
-                    maxNumTokens: contextTokens)
+                var outcomeOpt: CallOutcome? = nil
+                #if canImport(LiteRTLM)
+                if outcomeOpt == nil, let litert = runtime as? MediaPipeRuntime {
+                    let info = try await litert.nativeBenchmark(
+                        model, prefillTokens: spec.prefill, decodeTokens: spec.decode,
+                        maxNumTokens: contextTokens)
+                    outcomeOpt = CallOutcome(
+                        prefillTokenCount: info.prefillTokenCount,
+                        prefillTokensPerSecond: info.prefillTokensPerSecond,
+                        decodeTokenCount: info.decodeTokenCount,
+                        decodeTokensPerSecond: info.decodeTokensPerSecond,
+                        ttftSeconds: info.timeToFirstTokenSeconds,
+                        initSeconds: info.initTimeSeconds,
+                        instrument: "litert-lm native benchmark() via BenchmarkApp --task \(recordTask ?? "native")")
+                }
+                #endif
+                #if canImport(MLXLLM)
+                if outcomeOpt == nil, let mlx = runtime as? MLXRuntime {
+                    let r = try await mlx.nativeBenchmark(prefillTokens: spec.prefill, decodeTokens: spec.decode)
+                    outcomeOpt = CallOutcome(
+                        prefillTokenCount: r.prefillTokenCount,
+                        prefillTokensPerSecond: r.prefillTokensPerSecond,
+                        decodeTokenCount: r.decodeTokenCount,
+                        decodeTokensPerSecond: r.decodeTokensPerSecond,
+                        ttftSeconds: r.prefillSeconds,
+                        initSeconds: run == 1 ? sharedLoadSeconds : 0,
+                        instrument: "mlx-swift MLXRuntime.nativeBenchmark via BenchmarkApp --task \(recordTask ?? "native")")
+                }
+                #endif
+                #if canImport(llama)
+                if outcomeOpt == nil, let llama = runtime as? LlamaCppRuntime {
+                    let r = try await llama.nativeBenchmark(prefillTokens: spec.prefill, decodeTokens: spec.decode)
+                    outcomeOpt = CallOutcome(
+                        prefillTokenCount: r.prefillTokenCount,
+                        prefillTokensPerSecond: r.prefillTokensPerSecond,
+                        decodeTokenCount: r.decodeTokenCount,
+                        decodeTokensPerSecond: r.decodeTokensPerSecond,
+                        ttftSeconds: r.prefillSeconds,
+                        initSeconds: run == 1 ? sharedLoadSeconds : 0,
+                        instrument: "llama.cpp LlamaCppRuntime.nativeBenchmark via BenchmarkApp --task \(recordTask ?? "native")")
+                }
+                #endif
+                guard let outcome = outcomeOpt else {
+                    await sampler.stop()
+                    await log("YARDSTICK_FATAL native_benchmark unsupported for runtime=\(runtimeLabel)")
+                    await finish(5)
+                    return
+                }
+
                 let wallSeconds = CFAbsoluteTimeGetCurrent() - callStart
                 await sampler.stop()
                 let thermalFinal = ThermalMonitor.describe(ProcessInfo.processInfo.thermalState)
                 let peakMB = await sampler.peakMB
+                let peakResidentMB = await sampler.peakResidentMB
                 let medianMB = await sampler.medianMB
                 let medianResidentMB = await sampler.medianResidentMB
                 let samples = await sampler.sampleCount
                 let teardownFootprintMB = MemoryMonitor.footprintMB()
                 await log(String(
-                    format: "YARDSTICK_NATIVE_OK run=%d runs=%d cold=%d prefill_tokens=%d prefill_tok_s=%.2f decode_tokens=%d decode_tok_s=%.2f ttft_ms=%.1f init_s=%.2f context_tokens=%d peak_mb=%.0f median_mb=%.0f median_resident_mb=%.0f samples=%d teardown_footprint_mb=%.0f thermal_initial=%@ thermal_final=%@ wall_s=%.3f harness=%@",
-                    run, runs, run == 1 ? 1 : 0,
-                    info.prefillTokenCount, info.prefillTokensPerSecond,
-                    info.decodeTokenCount, info.decodeTokensPerSecond,
-                    info.timeToFirstTokenSeconds * 1000, info.initTimeSeconds,
+                    format: "YARDSTICK_NATIVE_OK runtime=%@ run=%d runs=%d cold=%d prefill_tokens=%d prefill_tok_s=%.2f decode_tokens=%d decode_tok_s=%.2f ttft_ms=%.1f init_s=%.2f context_tokens=%d peak_mb=%.0f median_mb=%.0f median_resident_mb=%.0f samples=%d teardown_footprint_mb=%.0f thermal_initial=%@ thermal_final=%@ wall_s=%.3f harness=%@",
+                    runtimeLabel, run, runs, run == 1 ? 1 : 0,
+                    outcome.prefillTokenCount, outcome.prefillTokensPerSecond,
+                    outcome.decodeTokenCount, outcome.decodeTokensPerSecond,
+                    outcome.ttftSeconds * 1000, outcome.initSeconds,
                     contextTokens, peakMB, medianMB, medianResidentMB, samples,
                     teardownFootprintMB,
                     thermalInitial, thermalFinal, wallSeconds,
                     BenchmarkRunner.harnessStamp
                 ))
                 if let recordTask, var device = deviceAtStart {
-                    // As BenchmarkRunner: the battery fields say where the run ended.
                     let battery = DeviceSnapshot.currentBattery()
                     device.batteryState = battery.state
                     device.batteryLevel = battery.level
                     let record = NativeBenchmarkRecord(
-                        timestamp: Date(), device: device, runtime: await runtime.recordRuntimeLabel,
+                        timestamp: Date(), device: device, runtime: runtimeLabel,
                         engineVersion: EnginePins.version(for: runtime.kind),
                         engineArtifact: EnginePins.artifact(for: runtime.kind),
                         model: model, modelRevision: HFDownloader.resolvedRevision(hfRepoId: model.hfRepoId),
                         task: recordTask,
                         metrics: .init(
                             coldRun: run == 1,
-                            promptTokenCount: info.prefillTokenCount,
-                            generatedTokenCount: info.decodeTokenCount,
-                            promptTokensPerSecond: info.prefillTokensPerSecond,
-                            decodeTokensPerSecond: info.decodeTokensPerSecond,
-                            firstTokenLatencyMS: info.timeToFirstTokenSeconds * 1000,
-                            loadTimeSeconds: info.initTimeSeconds,
+                            promptTokenCount: outcome.prefillTokenCount,
+                            generatedTokenCount: outcome.decodeTokenCount,
+                            promptTokensPerSecond: outcome.prefillTokensPerSecond,
+                            decodeTokensPerSecond: outcome.decodeTokensPerSecond,
+                            firstTokenLatencyMS: outcome.ttftSeconds * 1000,
+                            loadTimeSeconds: outcome.initSeconds,
                             memoryPeakDuringDecodeMB: peakMB,
+                            memoryPeakResidentMB: peakResidentMB > 0 ? peakResidentMB : nil,
                             memoryMedianMB: medianMB > 0 ? medianMB : nil,
                             memoryMedianResidentMB: medianResidentMB > 0 ? medianResidentMB : nil,
                             memorySampleCount: samples,
@@ -879,13 +901,12 @@ struct HeadlessRun {
                             finalThermalState: thermalFinal,
                             harnessStamp: BenchmarkRunner.harnessStamp),
                         conditions: .init(
-                            instrument: "litert-lm native benchmark() via BenchmarkApp --task \(recordTask)",
+                            instrument: outcome.instrument,
                             run: run, runs: runs))
                     do {
                         _ = try await ResultStore.shared.save(record, runtime: record.runtime, modelId: model.id,
                                                               task: recordTask, timestamp: record.timestamp)
                     } catch {
-                        // The XCTest fails on the missing record; the console says why.
                         await log("YARDSTICK_WARN native_record_not_written run=\(run) \(error.localizedDescription)")
                     }
                 }
@@ -897,10 +918,6 @@ struct HeadlessRun {
             }
         }
         await finish(0)
-        #else
-        await log("YARDSTICK_FATAL native_benchmark unavailable (LiteRTLM not linked)")
-        await finish(5)
-        #endif
     }
 
     /// Apple's `llm-benchmark` measurement on the Core AI stock path

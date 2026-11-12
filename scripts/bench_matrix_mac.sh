@@ -538,6 +538,8 @@ run_cell(){
       # ynnpack=1 on a litert-lm cpu row: YNNPACK kernels instead of XNNPACK's
       # (yardstick --litert-ynnpack on; the iOS app's flag, Android's ynnpack=1).
       [ "$ynnpack" = "1" ] && extra+=(--litert-ynnpack on)
+    elif [ "$rt" = "llama.cpp" ]; then
+      extra+=(--llama-backend "$backend")
     elif [ "$rt" = "core-ai" ] && [ "$backend" = "ane" ]; then
       :   # the Core AI stock arm: arm identity only (core-ai-ane); the engine picks the Neural Engine
     else
@@ -550,14 +552,14 @@ run_cell(){
   case "$task" in native-benchmark-*)
     # The native benchmark runs INSTEAD of a task (yardstick resolves --task
     # before the native branch, so it must still name a real task id): LiteRT-LM's
-    # benchmark(), or for the Core AI stock arm Apple's llm-benchmark measurement
-    # (--runs = timed trials after the warmup trial, which prints as trial 0, cold).
-    # An mlx-swift row: MLXRuntime.nativeBenchmark (token ids into one prefill, decode to
-    # maxTokens, nothing stops it at EOS), one YARDSTICK_NATIVE_OK runtime=mlx-swift line per run.
+    # benchmark(), MLXRuntime.nativeBenchmark, LlamaCppRuntime.nativeBenchmark, or for
+    # the Core AI stock arm Apple's llm-benchmark measurement.
     if [ "$rt" = "core-ai" ]; then
       extra+=(--coreai-native-benchmark "${task#native-benchmark-}")
     elif [ "$rt" = "mlx-swift" ]; then
       extra+=(--mlx-native-benchmark "${task#native-benchmark-}")
+    elif [ "$rt" = "llama.cpp" ]; then
+      extra+=(--llama-native-benchmark "${task#native-benchmark-}")
     else
       extra+=(--litert-native-benchmark "${task#native-benchmark-}")
     fi

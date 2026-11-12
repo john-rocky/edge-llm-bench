@@ -93,6 +93,7 @@ struct YardstickApp {
         var nativeBenchmark: (prefill: Int, decode: Int)? = nil
         var coreAINativeBenchmark: (prefill: Int, decode: Int)? = nil
         var mlxNativeBenchmark: (prefill: Int, decode: Int)? = nil
+        var llamaNativeBenchmark: (prefill: Int, decode: Int)? = nil
         // LiteRT-LM compute backend (arm identity). Default gpu = every Apple row so far;
         // `cpu` runs the XNNPACK path and stamps `runtime: litert-lm-cpu` (2026-09-18, the
         // dashboard's long-context column: does decode track the allocated KV on each arm).
@@ -153,6 +154,30 @@ struct YardstickApp {
                     exit(2)
                 }
                 mlxNativeBenchmark = (p, d)
+            case "--llama-native-benchmark":
+                let raw = argv.value(after: &i)
+                let parts = raw.lowercased().split(separator: "x")
+                guard parts.count == 2, let p = Int(parts[0]), let d = Int(parts[1]),
+                      p > 0, d > 0 else {
+                    FileHandle.standardError.write(Data(
+                        "bad --llama-native-benchmark '\(raw)' — expected <prefill>x<decode>, e.g. 1024x256\n".utf8))
+                    exit(2)
+                }
+                llamaNativeBenchmark = (p, d)
+            case "--llama-backend":
+                let raw = argv.value(after: &i).lowercased()
+                #if !YARDSTICK_SPM
+                guard let b = LlamaCppRuntime.ComputeBackend(rawValue: raw) else {
+                    FileHandle.standardError.write(Data(
+                        "bad --llama-backend '\(raw)' — expected cpu|gpu\n".utf8))
+                    exit(2)
+                }
+                LlamaCppRuntime.launchBackend = b
+                #else
+                FileHandle.standardError.write(Data(
+                    "--llama-backend unavailable in YARDSTICK_SPM build ('\(raw)')\n".utf8))
+                exit(2)
+                #endif
             case "--litert-backend":
                 let raw = argv.value(after: &i).lowercased()
                 guard let b = MediaPipeRuntime.ComputeBackend(rawValue: raw) else {
@@ -213,14 +238,15 @@ struct YardstickApp {
         }
         #endif
 
-        if coreAINativeBenchmark != nil, nativeBenchmark != nil {
+        let nativeFlagsSet = [
+            nativeBenchmark != nil,
+            coreAINativeBenchmark != nil,
+            mlxNativeBenchmark != nil,
+            llamaNativeBenchmark != nil,
+        ].filter { $0 }.count
+        if nativeFlagsSet > 1 {
             FileHandle.standardError.write(Data(
-                "--coreai-native-benchmark and --litert-native-benchmark are exclusive\n".utf8))
-            exit(2)
-        }
-        if mlxNativeBenchmark != nil, nativeBenchmark != nil || coreAINativeBenchmark != nil {
-            FileHandle.standardError.write(Data(
-                "--mlx-native-benchmark excludes --litert-native-benchmark and --coreai-native-benchmark\n".utf8))
+                "--litert-native-benchmark, --coreai-native-benchmark, --mlx-native-benchmark, and --llama-native-benchmark are mutually exclusive\n".utf8))
             exit(2)
         }
         if litertBackend != .gpu, !["litert-lm", "mediapipe"].contains(runtimeID) {
@@ -233,8 +259,7 @@ struct YardstickApp {
         let model = try resolveModel(idOrHF: modelID, runtime: runtime)
 
         // The vendor-benchmark row runs instead of the task, not alongside it: it forces a
-        // prefill with no prompt, so there is no task to run. It is the only row that is
-        // card-comparable, and the only one no other runtime can produce.
+        // prefill with no prompt, so there is no task to run.
         if let native = nativeBenchmark {
             try await runNativeBenchmark(runtime: runtime, runtimeID: runtimeID, model: model,
                                          spec: native, runs: runs, contextTokens: contextTokens,
@@ -251,6 +276,12 @@ struct YardstickApp {
             try await runMLXNativeBenchmark(runtime: runtime, runtimeID: runtimeID, model: model,
                                             spec: native, runs: runs, contextTokens: contextTokens,
                                             outputPath: outputPath)
+            return
+        }
+        if let native = llamaNativeBenchmark {
+            try await runLlamaNativeBenchmark(runtime: runtime, runtimeID: runtimeID, model: model,
+                                              spec: native, runs: runs, contextTokens: contextTokens,
+                                              outputPath: outputPath)
             return
         }
 
@@ -432,6 +463,26 @@ struct YardstickApp {
     /// `runs` calls run back to back in this process, one YARDSTICK_NATIVE_OK line each (stdout,
     /// and appended to `--output` as each ends). `benchmark()` builds and releases its own engine
     /// on every call: run 1 is cold, runs 2...N are warm only in the process and the disk caches.
+    private static func writeNativeOutput(
+        outputPath: String?,
+        rawLine: String,
+        record: NativeBenchmarkRecord
+    ) throws {
+        guard let outputPath else { return }
+        if outputPath.hasSuffix(".jsonl") {
+            try appendJSONL(result: record, path: outputPath)
+        } else {
+            if !FileManager.default.fileExists(atPath: outputPath) {
+                FileManager.default.createFile(atPath: outputPath, contents: nil)
+            }
+            let handle = try FileHandle(forWritingTo: URL(fileURLWithPath: outputPath))
+            try handle.seekToEnd()
+            try handle.write(contentsOf: Data((rawLine + "\n").utf8))
+            try handle.close()
+        }
+        FileHandle.standardError.write(Data("yardstick: appended to \(outputPath)\n".utf8))
+    }
+
     static func runNativeBenchmark(
         runtime: any LLMRuntime, runtimeID: String, model: ModelInfo,
         spec: (prefill: Int, decode: Int), runs: Int, contextTokens: Int?, outputPath: String?
@@ -446,42 +497,76 @@ struct YardstickApp {
             FileHandle.standardError.write(Data(
                 "yardstick: WARNING native benchmark context_tokens=\(ctx) (litert stock default; the Gemma-4 protocol is 2048 — pass --context-tokens)\n".utf8))
         }
+        let runtimeLabel = await runtime.recordRuntimeLabel
+        let taskName = "native-benchmark-\(spec.prefill)x\(spec.decode)"
         FileHandle.standardError.write(Data(
-            "yardstick: native benchmark model=\(model.id) prefill=\(spec.prefill) decode=\(spec.decode) context_tokens=\(ctx) runs=\(runs)\n".utf8))
+            "yardstick: native benchmark runtime=\(runtimeLabel) model=\(model.id) prefill=\(spec.prefill) decode=\(spec.decode) context_tokens=\(ctx) runs=\(runs)\n".utf8))
         let warmRuns = runs > 1 ? "runs 2...\(runs)" : "none (--runs 1)"
         FileHandle.standardError.write(Data(
             "yardstick: native benchmark cold=run 1 (the first benchmark() call in this process) warm=\(warmRuns) (same process, no pause between calls; benchmark() builds a new engine on every call, so only the process and the on-disk caches are warm)\n".utf8))
 
         for run in 1...runs {
             let thermalInitial = ThermalMonitor.describe(ProcessInfo.processInfo.thermalState)
+            let deviceAtStart = DeviceSnapshot.capture()
+            let sampler = MemorySampler()
+            await sampler.start()
             let callStart = CFAbsoluteTimeGetCurrent()
-            let info = try await litert.nativeBenchmark(
-                model, prefillTokens: spec.prefill, decodeTokens: spec.decode, maxNumTokens: ctx)
-            let wallSeconds = CFAbsoluteTimeGetCurrent() - callStart
-            let thermalFinal = ThermalMonitor.describe(ProcessInfo.processInfo.thermalState)
+            do {
+                let info = try await litert.nativeBenchmark(
+                    model, prefillTokens: spec.prefill, decodeTokens: spec.decode, maxNumTokens: ctx)
+                let wallSeconds = CFAbsoluteTimeGetCurrent() - callStart
+                await sampler.stop()
+                let thermalFinal = ThermalMonitor.describe(ProcessInfo.processInfo.thermalState)
+                let peakMB = await sampler.peakMB
+                let peakResidentMB = await sampler.peakResidentMB
+                let medianMB = await sampler.medianMB
+                let medianResidentMB = await sampler.medianResidentMB
+                let samples = await sampler.sampleCount
+                let teardownFootprintMB = MemoryMonitor.footprintMB()
 
-            // Emitted in the same shape the iPhone driver's console lines carry, so
-            // scripts/import_native_benchmark.py can lift Mac and iPhone rows identically.
-            let line = String(
-                format: "YARDSTICK_NATIVE_OK run=%d runs=%d cold=%d prefill_tokens=%d prefill_tok_s=%.2f decode_tokens=%d decode_tok_s=%.2f ttft_ms=%.1f init_s=%.2f context_tokens=%d thermal_initial=%@ thermal_final=%@ wall_s=%.3f harness=%@",
-                run, runs, run == 1 ? 1 : 0,
-                info.prefillTokenCount, info.prefillTokensPerSecond,
-                info.decodeTokenCount, info.decodeTokensPerSecond,
-                info.timeToFirstTokenSeconds * 1000, info.initTimeSeconds, ctx,
-                thermalInitial, thermalFinal, wallSeconds,
-                BenchmarkRunner.harnessStamp)
-            print(line)
-            fflush(stdout)
-            if let outputPath {
-                let handle: FileHandle
-                if !FileManager.default.fileExists(atPath: outputPath) {
-                    FileManager.default.createFile(atPath: outputPath, contents: nil)
-                }
-                handle = try FileHandle(forWritingTo: URL(fileURLWithPath: outputPath))
-                try handle.seekToEnd()
-                try handle.write(contentsOf: Data((line + "\n").utf8))
-                try handle.close()
-                FileHandle.standardError.write(Data("yardstick: appended to \(outputPath)\n".utf8))
+                let line = String(
+                    format: "YARDSTICK_NATIVE_OK runtime=%@ run=%d runs=%d cold=%d prefill_tokens=%d prefill_tok_s=%.2f decode_tokens=%d decode_tok_s=%.2f ttft_ms=%.1f init_s=%.2f context_tokens=%d peak_mb=%.0f median_mb=%.0f median_resident_mb=%.0f samples=%d teardown_footprint_mb=%.0f thermal_initial=%@ thermal_final=%@ wall_s=%.3f harness=%@",
+                    runtimeLabel, run, runs, run == 1 ? 1 : 0,
+                    info.prefillTokenCount, info.prefillTokensPerSecond,
+                    info.decodeTokenCount, info.decodeTokensPerSecond,
+                    info.timeToFirstTokenSeconds * 1000, info.initTimeSeconds, ctx,
+                    peakMB, medianMB, medianResidentMB, samples, teardownFootprintMB,
+                    thermalInitial, thermalFinal, wallSeconds,
+                    BenchmarkRunner.harnessStamp)
+                print(line)
+                fflush(stdout)
+                let record = NativeBenchmarkRecord(
+                    timestamp: Date(), device: deviceAtStart, runtime: runtimeLabel,
+                    engineVersion: EnginePins.version(for: runtime.kind),
+                    engineArtifact: EnginePins.artifact(for: runtime.kind),
+                    model: model, modelRevision: HFDownloader.resolvedRevision(hfRepoId: model.hfRepoId),
+                    task: taskName,
+                    metrics: .init(
+                        coldRun: run == 1,
+                        promptTokenCount: info.prefillTokenCount,
+                        generatedTokenCount: info.decodeTokenCount,
+                        promptTokensPerSecond: info.prefillTokensPerSecond,
+                        decodeTokensPerSecond: info.decodeTokensPerSecond,
+                        firstTokenLatencyMS: info.timeToFirstTokenSeconds * 1000,
+                        loadTimeSeconds: info.initTimeSeconds,
+                        memoryPeakDuringDecodeMB: peakMB,
+                        memoryPeakResidentMB: peakResidentMB > 0 ? peakResidentMB : nil,
+                        memoryMedianMB: medianMB > 0 ? medianMB : nil,
+                        memoryMedianResidentMB: medianResidentMB > 0 ? medianResidentMB : nil,
+                        memorySampleCount: samples,
+                        memoryPostTeardownFootprintMB: teardownFootprintMB,
+                        contextTokensConfigured: ctx,
+                        wallSeconds: wallSeconds,
+                        initialThermalState: thermalInitial,
+                        finalThermalState: thermalFinal,
+                        harnessStamp: BenchmarkRunner.harnessStamp),
+                    conditions: .init(
+                        instrument: "litert-lm native benchmark() via yardstick",
+                        run: run, runs: runs))
+                try writeNativeOutput(outputPath: outputPath, rawLine: line, record: record)
+            } catch {
+                await sampler.stop()
+                throw error
             }
         }
         #else
@@ -490,14 +575,6 @@ struct YardstickApp {
         #endif
     }
 
-    /// `--mlx-native-benchmark <P>x<D>`: `MLXRuntime.nativeBenchmark` — P token ids (SplitMix64 from
-    /// seed 0 below the model's vocab_size) into one TokenIterator prefill, then the iterator runs to
-    /// maxTokens = D, which only maxTokens can end (no EOS check on this path). The model loads once
-    /// (init_s); `runs` calls run back to back in this process: run 1 is cold (the first call after the
-    /// load: Metal kernels compile there), runs 2...N warm. One YARDSTICK_NATIVE_OK line per call
-    /// (`runtime=mlx-swift`), stdout and appended to `--output` as each ends: the LiteRT-LM line's keys
-    /// plus the MLX ones. A call whose counts are not P / D prints its line and fails the command.
-    /// The KV cache grows with the sequence (no allocation to force), so `--context-tokens` is refused.
     static func runMLXNativeBenchmark(
         runtime: any LLMRuntime, runtimeID: String, model: ModelInfo,
         spec: (prefill: Int, decode: Int), runs: Int, contextTokens: Int?, outputPath: String?
@@ -506,22 +583,41 @@ struct YardstickApp {
             throw CLIError.invalidArgument(
                 "--mlx-native-benchmark requires --runtime mlx-swift (got '\(runtimeID)')")
         }
-        if let ctx = contextTokens {
-            throw CLIError.invalidArgument(
-                "--mlx-native-benchmark takes no --context-tokens (\(ctx)): the MLX KV cache grows with the sequence")
+        let ctx = contextTokens ?? (max(spec.prefill, spec.decode) + 32)
+        if let contextTokens {
+            FileHandle.standardError.write(Data(
+                "yardstick: NOTE --mlx-native-benchmark recording context_tokens=\(contextTokens) (MLX KV cache grows dynamically)\n".utf8))
         }
         let loadStart = CFAbsoluteTimeGetCurrent()
         try await mlx.loadModel(model) { _ in }
         let initSeconds = CFAbsoluteTimeGetCurrent() - loadStart
+        let runtimeLabel = await runtime.recordRuntimeLabel
+        let taskName = "native-benchmark-\(spec.prefill)x\(spec.decode)"
         FileHandle.standardError.write(Data(
-            "yardstick: native benchmark runtime=mlx-swift model=\(model.id) prefill=\(spec.prefill) decode=\(spec.decode) runs=\(runs) init_s=\(String(format: "%.2f", initSeconds))\n".utf8))
+            "yardstick: native benchmark runtime=\(runtimeLabel) model=\(model.id) prefill=\(spec.prefill) decode=\(spec.decode) runs=\(runs) init_s=\(String(format: "%.2f", initSeconds))\n".utf8))
         var mismatch = false
         for run in 1...runs {
             let thermalInitial = ThermalMonitor.describe(ProcessInfo.processInfo.thermalState)
+            let deviceAtStart = DeviceSnapshot.capture()
+            let sampler = MemorySampler()
+            await sampler.start()
             let callStart = CFAbsoluteTimeGetCurrent()
-            let r = try await mlx.nativeBenchmark(prefillTokens: spec.prefill, decodeTokens: spec.decode)
+            let r: MLXRuntime.NativeBenchmarkResult
+            do {
+                r = try await mlx.nativeBenchmark(prefillTokens: spec.prefill, decodeTokens: spec.decode)
+            } catch {
+                await sampler.stop()
+                throw error
+            }
             let wallSeconds = CFAbsoluteTimeGetCurrent() - callStart
+            await sampler.stop()
             let thermalFinal = ThermalMonitor.describe(ProcessInfo.processInfo.thermalState)
+            let peakMB = await sampler.peakMB
+            let peakResidentMB = await sampler.peakResidentMB
+            let medianMB = await sampler.medianMB
+            let medianResidentMB = await sampler.medianResidentMB
+            let samples = await sampler.sampleCount
+            let teardownFootprintMB = MemoryMonitor.footprintMB()
             let head = r.firstTokenIds.map(String.init).joined(separator: ",")
             let line = String(
                 format: "YARDSTICK_NATIVE_OK runtime=mlx-swift run=%d runs=%d cold=%d prefill_tokens=%d prefill_tok_s=%.2f decode_tokens=%d decode_tok_s=%.2f ttft_ms=%.1f init_s=%.2f prefill_s=%.4f decode_s=%.4f prefill_step=%d prefill_chunks=%d vocab=%d seed=%llu ids_head=%@ kv_cache=dynamic thermal_initial=%@ thermal_final=%@ wall_s=%.3f harness=%@",
@@ -533,16 +629,35 @@ struct YardstickApp {
                 thermalInitial, thermalFinal, wallSeconds, BenchmarkRunner.harnessStamp)
             print(line)
             fflush(stdout)
-            if let outputPath {
-                if !FileManager.default.fileExists(atPath: outputPath) {
-                    FileManager.default.createFile(atPath: outputPath, contents: nil)
-                }
-                let handle = try FileHandle(forWritingTo: URL(fileURLWithPath: outputPath))
-                try handle.seekToEnd()
-                try handle.write(contentsOf: Data((line + "\n").utf8))
-                try handle.close()
-                FileHandle.standardError.write(Data("yardstick: appended to \(outputPath)\n".utf8))
-            }
+            let record = NativeBenchmarkRecord(
+                timestamp: Date(), device: deviceAtStart, runtime: runtimeLabel,
+                engineVersion: EnginePins.version(for: runtime.kind),
+                engineArtifact: EnginePins.artifact(for: runtime.kind),
+                model: model, modelRevision: HFDownloader.resolvedRevision(hfRepoId: model.hfRepoId),
+                task: taskName,
+                metrics: .init(
+                    coldRun: run == 1,
+                    promptTokenCount: r.prefillTokenCount,
+                    generatedTokenCount: r.decodeTokenCount,
+                    promptTokensPerSecond: r.prefillTokensPerSecond,
+                    decodeTokensPerSecond: r.decodeTokensPerSecond,
+                    firstTokenLatencyMS: r.prefillSeconds * 1000,
+                    loadTimeSeconds: run == 1 ? initSeconds : 0,
+                    memoryPeakDuringDecodeMB: peakMB,
+                    memoryPeakResidentMB: peakResidentMB > 0 ? peakResidentMB : nil,
+                    memoryMedianMB: medianMB > 0 ? medianMB : nil,
+                    memoryMedianResidentMB: medianResidentMB > 0 ? medianResidentMB : nil,
+                    memorySampleCount: samples,
+                    memoryPostTeardownFootprintMB: teardownFootprintMB,
+                    contextTokensConfigured: ctx,
+                    wallSeconds: wallSeconds,
+                    initialThermalState: thermalInitial,
+                    finalThermalState: thermalFinal,
+                    harnessStamp: BenchmarkRunner.harnessStamp),
+                conditions: .init(
+                    instrument: "mlx-swift MLXRuntime.nativeBenchmark via yardstick",
+                    run: run, runs: runs))
+            try writeNativeOutput(outputPath: outputPath, rawLine: line, record: record)
             if r.prefillTokenCount != spec.prefill || r.decodeTokenCount != spec.decode {
                 print("YARDSTICK_NATIVE_COUNT_MISMATCH runtime=mlx-swift run=\(run) prefill_tokens=\(r.prefillTokenCount) want=\(spec.prefill) decode_tokens=\(r.decodeTokenCount) want=\(spec.decode)")
                 mismatch = true
@@ -551,6 +666,100 @@ struct YardstickApp {
         if mismatch {
             throw CLIError.invalidArgument("--mlx-native-benchmark: a call's counts were not \(spec.prefill)x\(spec.decode)")
         }
+    }
+
+    static func runLlamaNativeBenchmark(
+        runtime: any LLMRuntime, runtimeID: String, model: ModelInfo,
+        spec: (prefill: Int, decode: Int), runs: Int, contextTokens: Int?, outputPath: String?
+    ) async throws {
+        #if !YARDSTICK_SPM
+        guard let llama = runtime as? LlamaCppRuntime else {
+            throw CLIError.invalidArgument(
+                "--llama-native-benchmark requires --runtime llama.cpp (got '\(runtimeID)')")
+        }
+        let ctx = contextTokens ?? max(2048, spec.prefill + spec.decode)
+        await llama.prepareContext(maxContextTokens: ctx)
+        let loadStart = CFAbsoluteTimeGetCurrent()
+        try await llama.loadModel(model) { _ in }
+        let initSeconds = CFAbsoluteTimeGetCurrent() - loadStart
+        let runtimeLabel = await runtime.recordRuntimeLabel
+        let taskName = "native-benchmark-\(spec.prefill)x\(spec.decode)"
+        FileHandle.standardError.write(Data(
+            "yardstick: native benchmark runtime=\(runtimeLabel) model=\(model.id) prefill=\(spec.prefill) decode=\(spec.decode) context_tokens=\(ctx) runs=\(runs) init_s=\(String(format: "%.2f", initSeconds))\n".utf8))
+        var mismatch = false
+        for run in 1...runs {
+            let thermalInitial = ThermalMonitor.describe(ProcessInfo.processInfo.thermalState)
+            let deviceAtStart = DeviceSnapshot.capture()
+            let sampler = MemorySampler()
+            await sampler.start()
+            let callStart = CFAbsoluteTimeGetCurrent()
+            let r: LlamaCppRuntime.NativeBenchmarkResult
+            do {
+                r = try await llama.nativeBenchmark(prefillTokens: spec.prefill, decodeTokens: spec.decode)
+            } catch {
+                await sampler.stop()
+                throw error
+            }
+            let wallSeconds = CFAbsoluteTimeGetCurrent() - callStart
+            await sampler.stop()
+            let thermalFinal = ThermalMonitor.describe(ProcessInfo.processInfo.thermalState)
+            let peakMB = await sampler.peakMB
+            let peakResidentMB = await sampler.peakResidentMB
+            let medianMB = await sampler.medianMB
+            let medianResidentMB = await sampler.medianResidentMB
+            let samples = await sampler.sampleCount
+            let teardownFootprintMB = MemoryMonitor.footprintMB()
+            let head = r.firstTokenIds.map(String.init).joined(separator: ",")
+            let line = String(
+                format: "YARDSTICK_NATIVE_OK runtime=%@ run=%d runs=%d cold=%d prefill_tokens=%d prefill_tok_s=%.2f decode_tokens=%d decode_tok_s=%.2f ttft_ms=%.1f init_s=%.2f prefill_s=%.4f decode_s=%.4f vocab=%d seed=%llu ids_head=%@ context_tokens=%d thermal_initial=%@ thermal_final=%@ wall_s=%.3f harness=%@",
+                runtimeLabel, run, runs, run == 1 ? 1 : 0,
+                r.prefillTokenCount, r.prefillTokensPerSecond,
+                r.decodeTokenCount, r.decodeTokensPerSecond,
+                r.prefillSeconds * 1000, initSeconds, r.prefillSeconds, r.decodeSeconds,
+                r.vocabSize, r.seed, head, ctx,
+                thermalInitial, thermalFinal, wallSeconds, BenchmarkRunner.harnessStamp)
+            print(line)
+            fflush(stdout)
+            let record = NativeBenchmarkRecord(
+                timestamp: Date(), device: deviceAtStart, runtime: runtimeLabel,
+                engineVersion: EnginePins.version(for: runtime.kind),
+                engineArtifact: EnginePins.artifact(for: runtime.kind),
+                model: model, modelRevision: HFDownloader.resolvedRevision(hfRepoId: model.hfRepoId),
+                task: taskName,
+                metrics: .init(
+                    coldRun: run == 1,
+                    promptTokenCount: r.prefillTokenCount,
+                    generatedTokenCount: r.decodeTokenCount,
+                    promptTokensPerSecond: r.prefillTokensPerSecond,
+                    decodeTokensPerSecond: r.decodeTokensPerSecond,
+                    firstTokenLatencyMS: r.prefillSeconds * 1000,
+                    loadTimeSeconds: run == 1 ? initSeconds : 0,
+                    memoryPeakDuringDecodeMB: peakMB,
+                    memoryPeakResidentMB: peakResidentMB > 0 ? peakResidentMB : nil,
+                    memoryMedianMB: medianMB > 0 ? medianMB : nil,
+                    memoryMedianResidentMB: medianResidentMB > 0 ? medianResidentMB : nil,
+                    memorySampleCount: samples,
+                    memoryPostTeardownFootprintMB: teardownFootprintMB,
+                    contextTokensConfigured: ctx,
+                    wallSeconds: wallSeconds,
+                    initialThermalState: thermalInitial,
+                    finalThermalState: thermalFinal,
+                    harnessStamp: BenchmarkRunner.harnessStamp),
+                conditions: .init(
+                    instrument: "llama.cpp LlamaCppRuntime.nativeBenchmark via yardstick",
+                    run: run, runs: runs))
+            try writeNativeOutput(outputPath: outputPath, rawLine: line, record: record)
+            if r.prefillTokenCount != spec.prefill || r.decodeTokenCount != spec.decode {
+                print("YARDSTICK_NATIVE_COUNT_MISMATCH runtime=\(runtimeLabel) run=\(run) prefill_tokens=\(r.prefillTokenCount) want=\(spec.prefill) decode_tokens=\(r.decodeTokenCount) want=\(spec.decode)")
+                mismatch = true
+            }
+        }
+        if mismatch {
+            throw CLIError.invalidArgument("--llama-native-benchmark: a call's counts were not \(spec.prefill)x\(spec.decode)")
+        }
+        #else
+        throw CLIError.invalidArgument("--llama-native-benchmark unavailable in YARDSTICK_SPM build")
+        #endif
     }
 
     /// Apple's llm-benchmark measurement (BenchmarkMain.swift, apple/coreai-models d30b086) on the
@@ -767,7 +976,7 @@ struct YardstickApp {
         )
     }
 
-    static func appendJSONL(result: BenchmarkResult, path: String) throws {
+    static func appendJSONL<T: Encodable>(result: T, path: String) throws {
         let url = URL(fileURLWithPath: path)
         try FileManager.default.createDirectory(
             at: url.deletingLastPathComponent(),
