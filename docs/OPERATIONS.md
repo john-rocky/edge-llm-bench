@@ -590,8 +590,11 @@ outputs under `automation/sessions/`).
   (CoreDeviceError 4016); the third run of the cell then running had decoded
   at 19.5 tok/s against 38.3 and 38.9 for the first two. The runner ended
   the session after two refused launches (`DEVICE_LOST.txt`, verdict DEVICE)
-  with 16 of 26 cells recorded. Whether the phone was charging is not known.
-  Keep the bench iPhone on the Mac's USB.
+  with 16 of 26 cells recorded. A record's `batteryState` and `batteryLevel`
+  say whether a sitting ran on the charger: all 81 records of that sitting
+  (its anchor and part a) read unplugged, with the level at 0.20 at the first
+  (16:48), 0.05 from 17:47 and 0.01 at the last (18:38), eleven minutes before
+  the phone became unavailable. Keep the bench iPhone on the Mac's USB.
 - **`mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit` does not load on the iPhone 17 Pro**: the
   7.5 GB repo downloads, then the app is SIGKILLed while loading its 6.5 GB of
   text weights (2026-09-06). The iOS row carries `exclude=app-killed-at-model-load-sigkill`.
