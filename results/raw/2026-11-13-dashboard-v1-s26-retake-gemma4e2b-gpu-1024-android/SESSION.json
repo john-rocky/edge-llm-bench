@@ -1,0 +1,125 @@
+{
+ "campaign": "results/raw/2026-11-13-dashboard-v1-s26-retake-gemma4e2b-gpu-1024-android",
+ "phase": "payload",
+ "cells": "logs/dashboard-job/retake-2026-11-13-s26.cells",
+ "device_key": "s26",
+ "device_display": "Galaxy S26",
+ "device_identifier": "SM-S942Q",
+ "platform": "android",
+ "attempt": 1,
+ "started": "2026-11-13 02:00:08",
+ "ended": "2026-11-13 02:37:28",
+ "admitted": true,
+ "verdict": "COMPLETED",
+ "reason": "anchor nominal, ratio 1.011 vs reference (b11721)",
+ "anchor": {
+  "regime": "cold",
+  "anchors": [
+   {
+    "cell": "llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat",
+    "primary": true,
+    "median": 100.9,
+    "n": 3,
+    "thermal": [
+     "nominal"
+    ],
+    "engine_version": "b11721",
+    "reference": {
+     "campaign": "results/raw/2026-11-13-dashboard-v1-s26-retake-gemma4e2b-gpu-1024-anchor-android",
+     "median": 99.8,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "b11721"
+    },
+    "reference_nominal": {
+     "campaign": "results/raw/2026-11-13-dashboard-v1-s26-retake-gemma4e2b-gpu-1024-anchor-android",
+     "median": 99.8,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "b11721"
+    },
+    "reference_any_version": {
+     "campaign": "results/raw/2026-11-13-dashboard-v1-s26-retake-gemma4e2b-gpu-1024-anchor-android",
+     "median": 99.8,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "b11721"
+    },
+    "ratio": 1.0110220440881765
+   },
+   {
+    "cell": "litert-lm-gpu litert-community/Qwen3-0.6B short-chat",
+    "primary": false,
+    "median": 84.67,
+    "n": 3,
+    "thermal": [
+     "nominal"
+    ],
+    "engine_version": "v0.19.0",
+    "reference": {
+     "campaign": "results/raw/2026-11-13-dashboard-v1-s26-retake-gemma4e2b-gpu-1024-anchor-android",
+     "median": 84.65,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.19.0"
+    },
+    "reference_nominal": {
+     "campaign": "results/raw/2026-11-13-dashboard-v1-s26-retake-gemma4e2b-gpu-1024-anchor-android",
+     "median": 84.65,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.19.0"
+    },
+    "reference_any_version": {
+     "campaign": "results/raw/2026-11-13-dashboard-v1-s26-retake-gemma4e2b-gpu-1024-anchor-android",
+     "median": 84.65,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.19.0"
+    },
+    "ratio": 1.0002362669816893
+   }
+  ]
+ },
+ "anchor_phase": "results/raw/2026-11-13-dashboard-v1-s26-retake-gemma4e2b-gpu-1024-anchor-android",
+ "runner_exit": 0,
+ "cells_expected": 3,
+ "cells_with_records": 3,
+ "release_by": "2026-11-13 08:00",
+ "retake": {
+  "ids": [
+   "2026-11-12-s26-gemma4e2b-gpu-1024"
+  ],
+  "cells_file": "logs/dashboard-job/retake-2026-11-13-s26.cells",
+  "rows": [
+   "android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu engine-build=v0.19.0-pregpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm",
+   "android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf",
+   "android litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-1024-gen256 backend=gpu engine-build=v0.19.0-pregpu cooldown=300 file=gemma-4-E2B-it.litertlm context-tokens=2048"
+  ]
+ },
+ "thermal_gate": [
+  "cpu-capped litert-lm-gpu_litert-community_Qwen3-0.6B_short-chat_2026-11-12T17-11-11.031624_run1: policy0 min 3513.6/3628.8 MHz (cpus 0-5); policy6 min 4262.4/4742.4 MHz (cpus 6-7)",
+  "cpu-capped litert-lm-gpu_litert-community_Qwen3-0.6B_short-chat_2026-11-12T17-13-17.323272_run2: policy6 min 4396.8/4742.4 MHz (cpus 6-7)",
+  "cpu-capped litert-lm-gpu_litert-community_Qwen3-0.6B_short-chat_2026-11-12T17-15-23.859094_run3: policy6 min 4396.8/4742.4 MHz (cpus 6-7)",
+  "cpu-capped llama.cpp_unsloth_Qwen3-0.6B-GGUF_short-chat_2026-11-12T17-17-28.874771_run1: policy6 min 4185.6/4742.4 MHz (cpus 6-7)",
+  "cpu-capped llama.cpp_unsloth_Qwen3-0.6B-GGUF_short-chat_2026-11-12T17-19-31.918040_run2: policy6 min 4339.2/4742.4 MHz (cpus 6-7)",
+  "cpu-capped llama.cpp_unsloth_Qwen3-0.6B-GGUF_short-chat_2026-11-12T17-21-35.002187_run3: policy6 min 3974.4/4742.4 MHz (cpus 6-7)",
+  "cpu-capped litert-lm-gpu_litert-community_gemma-4-E2B-it-litert-lm_long-context-1024-gen256__ctx2048_filecc74888a3a34daff9b242d593ee644fb0f8c363134b5403efef7e4d598128e75_2026-11-12T17-26-52.799748_run1: policy0 min 3187.2/3628.8 MHz (cpus 0-5); policy6 min 3398.4/4742.4 MHz (cpus 6-7)",
+  "cpu-capped litert-lm-gpu_litert-community_gemma-4-E2B-it-litert-lm_long-context-1024-gen256__ctx2048_filecc74888a3a34daff9b242d593ee644fb0f8c363134b5403efef7e4d598128e75_2026-11-12T17-32-08.964120_run1: policy0 min 3187.2/3628.8 MHz (cpus 0-5); policy6 min 3398.4/4742.4 MHz (cpus 6-7)",
+  "cpu-capped litert-lm-gpu_litert-community_gemma-4-E2B-it-litert-lm_long-context-1024-gen256__ctx2048_filecc74888a3a34daff9b242d593ee644fb0f8c363134b5403efef7e4d598128e75_2026-11-12T17-37-25.098244_run1: policy0 min 3187.2/3628.8 MHz (cpus 0-5); policy6 min 3398.4/4742.4 MHz (cpus 6-7)"
+ ],
+ "schema": "dashboard-job-session.v1",
+ "job": "dashboard-v1"
+}
