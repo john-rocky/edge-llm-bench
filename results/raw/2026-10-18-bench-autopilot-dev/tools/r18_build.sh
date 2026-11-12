@@ -66,7 +66,7 @@ gtimeout 1800 xcodebuild build -project BenchmarkApp.xcodeproj -scheme Benchmark
 echo "ios build rc=\$? \$(date '+%T')"
 EOF
 log "quiet_hold r18-q06cand-build start"
-python3 "$HOME/code/standup/tools/quiet/quiet_hold.py" r18-q06cand-build -- bash "$L/builds.sh" 2>&1 | tee -a "$OUT"
+python3 "${QUIET_TOOLS:?}/quiet_hold.py" r18-q06cand-build -- bash "$L/builds.sh" 2>&1 | tee -a "$OUT"
 for f in mac ios; do log "$f: $(grep -E '\*\* BUILD (SUCCEEDED|FAILED) \*\*' "$L/$f-build.log" | tail -1)"; grep -E '\.swift:[0-9]+:[0-9]+: error' "$L/$f-build.log" | head -3 | tee -a "$OUT"; done
 log "pins after: MAIN $(shasum -a 256 "$M/ios/BenchmarkApp/Vendored/engine-pins.json" | cut -c1-16) SIDE $(shasum -a 256 "$SIDE/Vendored/engine-pins.json" | cut -c1-16)"
 grep -q '\*\* BUILD SUCCEEDED \*\*' "$L/mac-build.log" && grep -q '\*\* BUILD SUCCEEDED \*\*' "$L/ios-build.log"

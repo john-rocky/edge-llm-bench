@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""K/r5/matrix_b.py — the K/MATRIX.md row of the round-5 session (read only; prints markdown): the same cell as
-K/r2/matrix.py (Qwen3-1.7B GPU short-chat, wi4b32, runs=3) on m1q-36 with main-16ab54914, campaign
+"""r5/matrix_b.py — the MATRIX.md row of the round-5 session (read only; prints markdown): the same cell as
+r2/matrix.py (Qwen3-1.7B GPU short-chat, wi4b32, runs=3) on m1q-36 with main-16ab54914, campaign
 results/raw/2026-10-16-ddp-buildref-m1q-36-b-android. Its records are copied into a temp tree and
 scripts/build_summary.build_device() runs with ROOT / OUT patched to it (results/summary/ on disk is never
-written); pooled = render_leaderboard.arm_row of this session's runs alone. The columns are K/r2/matrix.py's.
+written); pooled = render_leaderboard.arm_row of this session's runs alone. The columns are r2/matrix.py's.
 Values only: no difference, no order."""
 import csv
 import glob

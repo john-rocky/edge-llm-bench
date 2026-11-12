@@ -78,7 +78,7 @@ Warm-up gains are **engine-dependent** (measured: Core AI ~2.5×, LiteRT E2B ~1.
 so cold rankings do not imply warm rankings — a table that compares engines must hold the regime
 fixed, and a table meant to be checked against official cards must be warm.
 
-Every number of a cell reads one regime (2026-11-06, D-719): decode, prefill and TTFT alike are
+Every number of a cell reads one regime (2026-11-06): decode, prefill and TTFT alike are
 medians over the runs of the regime the cell headlines (`render_leaderboard.headline_regime`: cold
 for a text task on Android and Windows, warm on the Apple lanes, warm for a protocol cell whose
 session has warm runs). Until then prefill and TTFT pooled both regimes, and a cell whose cold and
@@ -209,7 +209,7 @@ tok/s and the 14 uncapped ones at the cells' 2026-10-02 rates (Qwen3-1.7B 1K: 11
 before the run does not see it: the cap fell during the run and had lifted by the next
 launch 120 s later. LiteRT-LM sets its own affinity to cpu4-8 on this SoC (the X3 core
 included), so the rule reads where the engine was allowed to run instead of assuming the
-launch mask (evidence: standup ROUND-m5; the capped records are kept as
+launch mask (evidence: notes outside this repo; the capped records are kept as
 `results/raw/2026-10-07-dashboard-v1-pixel8a-a-llama-retake*-android/**/*.json.quarantine-cpu-cap`).
 
 - Before each launch the Android runner (`android/bench/run_cell.py`) waits up to
@@ -242,7 +242,7 @@ launch mask (evidence: standup ROUND-m5; the capped records are kept as
   before the column existed. A counted run's rate is not corrected for its cap; the mark is
   the disclosure. Material: the Galaxy S26 sittings of 2026-10-08 (USB, not charging,
   thermal status 0 at every start; in the ONNX Runtime GenAI sitting every CPU launch whose
-  load lasted beyond about 3 s was capped, standup ROUND4s26), where the prime cluster
+  load lasted beyond about 3 s was capped), where the prime cluster
   (policy6, cpus 6-7, 4742.4 MHz) fell furthest in every capped run. The largest fall of a run
   was 2.8 % in the LiteRT-LM GPU anchor's run 1, 11.7-14.2 % in the ONNX Runtime GenAI Qwen3
   1.7B short-chat runs (policy6 4070-4186 MHz) and 4.9-11.7 % in five ExecuTorch short-chat
@@ -265,8 +265,8 @@ launch mask (evidence: standup ROUND-m5; the capped records are kept as
   flag and the summary columns do not change: an accelerator arm's run is flagged on the CPUs
   its process may run on, as every arm's. Why: on these arms the capped CPUs carry the
   engine's host side, and the cap on the Galaxy S26 is the phone's, not a setting's. Material
-  (standup notes of the NPU rows lane): two llama-bench runs on the S26 on 2026-10-07
-  (ROUND-r1), during which the ceilings fell (policy0 to 3187 MHz and policy6 to 3130 MHz on
+  (notes outside this repo): two llama-bench runs on the S26 on 2026-10-07,
+  during which the ceilings fell (policy0 to 3187 MHz and policy6 to 3130 MHz on
   the NPU arm; both to 2227 MHz on the GPU arm) — the NPU arm's five tg256 repetitions spread
   1.2 % with no trend, the GPU arm's fell 3.4 % from the first to the last (the cap's
   direction; the cause not established); a diagnosis of the cap on 2026-10-08 (ROUND-r6, five

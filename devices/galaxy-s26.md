@@ -68,8 +68,8 @@
   before the first automated dashboard session). The dashboard job's preflight
   reads a cap as "busy" and polls — the right reading; do not measure under one.
 - What sets the cap (a diagnosis on 2026-10-08: five llama-bench loads of
-  Qwen3 0.6B, USB attached, screen dozing; standup ROUND-r6 of the NPU rows
-  lane): the SoC's temperature, not the skin sensor or charging. Both
+  Qwen3 0.6B, USB attached, screen dozing; notes outside this repo): the SoC's
+  temperature, not the skin sensor or charging. Both
   clusters' step-down began at AP sensor readings of 46-51 °C (the two loads
   that read the AP; the CPU load's earlier policy6 dips, at 31-44 °C, are not
   explained) while the skin sensor read 29-38 °C (under its first threshold,

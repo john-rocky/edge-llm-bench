@@ -15,7 +15,7 @@ IN=$CAND/in/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
 CUR=$CAND/cur/Qwen3-0.6B_dynamic_wi4b32_afp32.a3c5d805.litertlm  # APFS clone of the HF cache blob 03e7da1e… (a symlink resolves to a suffix-less blob name, which the tool refuses)
 OUT=$CAND/out/Qwen3-0.6B_dynamic_wi4b32_afp32.r0805meta018.litertlm
 NEW=$CAND/meta/NEW.LlmMetadataProto.pbtext
-QW=(python3 "$HOME/code/standup/tools/quiet/quiet_wait.py" --max-wait 1800 --)
+QW=(python3 "${QUIET_TOOLS:?}/quiet_wait.py" --max-wait 1800 --)
 PY=(uv run --no-project --with litert-lm==0.18.0 python -I)
 
 case "${1:-}" in

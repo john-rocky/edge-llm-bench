@@ -63,7 +63,7 @@ CPU_CAP_MAX_DROP_PCT = 15
 # flagged cpu-capped pools, counted and marked with its fall, whatever the fall; the line above
 # holds for every other arm (the CPU arms llama.cpp, litert-lm-cpu, executorch-xnnpack,
 # onnxruntime-genai-cpu, litert-cpu). On these arms the capped CPUs carry the engine's host
-# side. Material, the Galaxy S26 (standup ROUND-r1, -r3 and -r6 of the NPU rows lane,
+# side. Material, the Galaxy S26 (notes outside this repo,
 # 2026-10-07/08): five llama-bench tg256 repetitions under a cap that set in during the test
 # spread 1.2 % with no trend on the NPU arm and fell 3.4 % from the first to the last on the
 # GPU arm (the cap's direction; the cause not established); the cap follows the SoC's
@@ -81,7 +81,7 @@ CPU_CAP_EXEMPT_ARMS = frozenset({
     "executorch-qnn",     # ExecuTorch, QNN delegate (Hexagon NPU)
 })
 # cold-warm-split, the headline regime per platform (moved here from render_dashboard on
-# 2026-11-06, D-719, so that arm_row reads prefill and TTFT by it as the surfaces read decode):
+# 2026-11-06, so that arm_row reads prefill and TTFT by it as the surfaces read decode):
 # Apple lanes have in-process warm runs, the Android and Windows CLIs compare fresh-process cold
 # runs — the column header says which
 REGIME = {"ios": "warm", "mac": "warm", "android": "cold", "windows": "cold"}
@@ -230,7 +230,7 @@ def arm_row(rows, include_cpu_capped=False):
     # session's runs, with its spread, never a single trial).
     cmed = statistics.median(cold) if cold else None
     cspread = ((max(cold) - min(cold)) / cmed * 100) if cmed and len(cold) > 1 else 0.0
-    # cold-warm-split for prefill and TTFT as for decode (D-719, 2026-11-06): one median over
+    # cold-warm-split for prefill and TTFT as for decode (2026-11-06): one median over
     # the runs of the regime the cell headlines (headline_regime: its platform's for a text
     # task, warm for a protocol cell whose session has warm runs), never over both. Pooled
     # together, a cell whose cold and warm prefill read apart moved with the mix of its runs:

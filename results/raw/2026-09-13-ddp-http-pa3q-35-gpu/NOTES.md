@@ -17,7 +17,7 @@ Commands, observed output and the reading: `docs/ddp-integration.md`, section "R
   pushed beside the binary: it carries the GPU accelerator statically (`gpu_registry.cc:87`) and loads
   the phone's OpenCL itself (`Loaded OpenCL library with dlopen`); 70/70 nodes on the `LITERT_CL`
   delegate. The same was checked beforehand on the local Galaxy S26 over adb and on the macOS build
-  (Metal) — run log beside the drafts in the standup tree.
+  (Metal) — the run log is not in this repo.
 - Device `pa3q-35`: Galaxy S25 Ultra, OS version 35 (`device-pa3q-35.json`, the catalog entry). This
   execution's device log carries no line naming the model, so which physical unit of the `pa3q-35` pool
   ran is not recorded (the CPU session's log did name `SM-S938UZKAXAA`). Session 07:44:03–07:44:43 UTC

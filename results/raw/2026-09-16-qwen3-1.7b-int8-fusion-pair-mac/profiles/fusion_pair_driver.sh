@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Qwen3-1.7B int8: published unfused (CPU-recipe) file vs fused GPU-graph export (rope inlined), Mac Metal path, LiteRT-LM v0.17.0
 set -u
-SP=/private/tmp/claude-501/-Users-USER-code-standup/ffaa944f-6fbb-429f-99ea-bdd2ec1fa608/scratchpad
+SP=/tmp/scratch
 RUN=$SP/run-metal-0170; MODELS=$SP/models
 OUT=$HOME/code/edge-llm-bench/results/raw/2026-09-16-qwen3-1.7b-int8-fusion-pair-mac/profiles
 mkdir -p "$RUN" "$MODELS" "$OUT"

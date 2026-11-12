@@ -1,6 +1,6 @@
 #!/bin/bash
 # The Mac side of asr-sigbuf-v1 (docs/asr-sigbuf-v1.md), inside one Mac measurement window:
-#   python3 ~/code/standup/tools/quiet/quiet_hold.py asr-sigbuf-mac -- gtimeout 3000 bash tools/asr-sigbuf/mac_job.sh
+#   python3 quiet_hold.py asr-sigbuf-mac -- gtimeout 3000 bash tools/asr-sigbuf/mac_job.sh
 # 1. the venv (numpy, pyarrow, soundfile, tflite) when missing
 # 2. the bytes of every staged file against the Hub (stage_models.sh verify -> models.lock.json)
 # 3. the LibriSpeech test-clean parquet unpacked to WAVs (tools/omni-eval/prep_librispeech.py), then

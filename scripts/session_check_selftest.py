@@ -237,7 +237,7 @@ def ddp_record(i, runtime, engine, model="litert-community/Qwen3-1.7B", task="sh
                           "ddp": {"sessionId": "session-fake0001", "deviceId": "m1q-36"}},
            "provenance": {"modelShaSource": "device"}}
     if runtime == "litert-lm-gpu":
-        # as android/ddp/record.py writes a GPU run on Google's prebuilt accelerator (D-449)
+        # as android/ddp/record.py writes a GPU run on Google's prebuilt accelerator
         rec["conditions"].update(gpuAccelerator="prebuilt-dynamic", gpuAcceleratorLine=GPU_DYNAMIC_LINE)
     if log:
         rec["provenance"]["rawLog"] = log
@@ -443,7 +443,7 @@ def clean(r, expected, pin=False):
 
 def gate_unit(raw, name, model, runs, accel="field-dynamic", sha="a" * 64, minutes=0, admitted=True,
               runtime="litert-lm-gpu"):
-    """A lab unit's sitting for the D-449 gate: one short-chat cell of `model`, run 1 firstEver, prefill
+    """A lab unit's sitting for the gate: one short-chat cell of `model`, run 1 firstEver, prefill
     `runs` (one value a run), the model sha256 `sha`, timed `minutes` from now, one engine log whose
     accelerator line is set by `accel`: field-dynamic / field-static / field-unknown = the record names
     it (the log carries the matching line or none), log-static / log-dynamic = the record names nothing
@@ -479,9 +479,9 @@ def gate_unit(raw, name, model, runs, accel="field-dynamic", sha="a" * 64, minut
 
 
 def check_gpu_gate(tmp):
-    """D-449 (2026-11-03): gpu-accelerator-static and prefill-drop on lab-unit sittings of their own temp
+    """2026-11-03: gpu-accelerator-static and prefill-drop on lab-unit sittings of their own temp
     results/raw, the committed history a csv of build_summary.device_row rows of the earlier sittings."""
-    print("--- the GPU accelerator gate and the prefill line (D-449)")
+    print("--- the GPU accelerator gate and the prefill line")
     raw = os.path.join(tmp, "gate", "results", "raw")
     os.makedirs(raw)
     day = "2099-08-0"

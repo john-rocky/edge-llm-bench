@@ -1226,7 +1226,7 @@ class WindowsRunnerRows(unittest.TestCase):
         self.assertEqual({f for c in read + unreadable for f in c["protocolFlags"]}, set())
 
     def test_a_runs_engine_qos_passes_into_each_of_its_records(self):
-        # run_job.ps1 (2026-11-09, D-907) writes what -EngineQos did to the run's engine process: every iteration record
+        # run_job.ps1 (2026-11-09) writes what -EngineQos did to the run's engine process: every iteration record
         # of the run carries it as the job wrote it, the runs that set nothing too, and a run an older job script wrote
         # carries no key; never a flag
         head = "I0000 00:00:1.0 1 litert_lm_lib.cc:728] Choose backend: cpu\nnumber_of_threads: 4\nmax_tokens: 2048\n"
@@ -1576,7 +1576,7 @@ class WindowsSshExecutor(unittest.TestCase):
             self.assertFalse((pathlib.Path(tmp) / "c" / "host-logs").exists())
 
     def test_the_job_sets_high_qos_on_the_engine_right_after_finding_it(self):
-        # D-907 (2026-11-09). run_job.ps1 runs only on the Windows host, so this reads its text: on by default, the value
+        # 2026-11-09. run_job.ps1 runs only on the Windows host, so this reads its text: on by default, the value
         # Microsoft's SetProcessInformation page gives for High QoS, the type compiled before the first run and not for
         # off, alt's runs fixed by row and run, the set right after the job finds the engine and before the run's loop,
         # and the result in the run's JSON
@@ -1618,7 +1618,7 @@ class WindowsSshExecutor(unittest.TestCase):
         self.assertIn("gpuReadToStartSeconds = $gpuReadToStart", body[engine:])
 
     def test_the_quiet_gate_reads_the_processes_cpu_time_and_records_the_total_counters(self):
-        # D-932 (2026-11-10). run_job.ps1 runs only on the Windows host, so this reads its text: the gate's CPU is the CPU
+        # 2026-11-10. run_job.ps1 runs only on the Windows host, so this reads its text: the gate's CPU is the CPU
         # time every process used over a one-second window (TotalProcessorTime, the Idle process left out, all logical
         # processors = 100), three reads in a row under the same line; the _Total counters are read once right after the
         # gate and go into the run's before, beside the gate's outcome (windows/README.md, Run)

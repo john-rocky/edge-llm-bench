@@ -171,7 +171,7 @@ def main():
        "mac guard: the hf-to-litertlm one-command export (scripts/convert.py) is heavy")
     ok(not heavy("/Users/u/.local/bin/claude --model m 'read scripts/convert.py first'"),
        "mac guard: an agent CLI whose prompt names convert.py is not heavy")
-    # the Mac's HDD gate (window D-923, 2026-11-10): model files that resolve to the USB HDD hold a Mac
+    # the Mac's HDD gate (2026-11-10): model files that resolve to the USB HDD hold a Mac
     # sitting while hdd_streams.sh counts HDD_STREAMS_BUSY or more; none there, or fewer streams, it
     # passes; the volume gone, it is not ready
     hdir = os.path.join(tmp, "hddgate")
@@ -897,7 +897,7 @@ def main():
     ok(code == dj.EXIT_OK and at(lines, f"bench matrix {unit_cells} --ddp fake-1 --campaign {ucamp}") is not None
        and at(lines, "SESSION.json would read admitted true") is not None,
        f"the lab unit by hand (dashboard_job.py unit): its sitting, exit {code}")
-    # the unit's env (schedule.json; s26-ddp sets BENCH_DDP_ALL_RUNTIMES=1, D-449) goes to its plan and its run alike
+    # the unit's env (schedule.json; s26-ddp sets BENCH_DDP_ALL_RUNTIMES=1) goes to its plan and its run alike
     with open(sched_ddp, "w") as fh:
         json.dump(dict(sched, devices={"s26": s26, "unit": dict(unit, env={"BENCH_DDP_ALL_RUNTIMES": "1"})}), fh)
     n_plans = len(plans)

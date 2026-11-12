@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""K/r2/turns.py <row name>=<ddp-out dir> ... — the BenchmarkInfo turns of each run (run<i>.engine.txt) as a markdown
-table for K/MATRIX.md (read only): every prefill turn (tokens, ms, tok/s), the decode turn (tokens, tok/s),
+"""r2/turns.py <row name>=<ddp-out dir> ... — the BenchmarkInfo turns of each run (run<i>.engine.txt) as a markdown
+table for MATRIX.md (read only): every prefill turn (tokens, ms, tok/s), the decode turn (tokens, tok/s),
 time to first token, Init Executor, and the printed reply (the text between the input_prompt line and BenchmarkInfo)
 in Qwen3 tokens (Qwen/Qwen3-1.7B tokenizer.json from the local HF cache) and its first words."""
 import glob

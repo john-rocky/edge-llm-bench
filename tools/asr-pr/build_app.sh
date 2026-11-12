@@ -4,7 +4,7 @@
 # route: run-as), the bench APK (measured: not debuggable) and the bench test APK. Run it inside a Mac
 # quiet window:
 #
-#   python3 ~/code/standup/tools/quiet/quiet_hold.py asr-pr-app-build -- \
+#   python3 quiet_hold.py asr-pr-app-build -- \
 #     gtimeout 1800 bash tools/asr-pr/build_app.sh > .build/asr-pr/build_N.log 2>&1
 set -euo pipefail
 APPDIR="${APPDIR:-$HOME/code/litert-samples-asr-pr-bench-wt/samples/litert/speech_recognition/AndroidApp}"

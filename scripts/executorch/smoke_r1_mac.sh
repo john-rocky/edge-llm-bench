@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Round r1 smoke of the ExecuTorch Mac arm (Qwen3 0.6B own export, llama_main XNNPACK).
 # Run it inside a measurement window:
-#   python3 ~/code/standup/tools/quiet/quiet_hold.py et-r1-smoke -- bash scripts/executorch/smoke_r1_mac.sh <out-dir>
+#   python3 quiet_hold.py et-r1-smoke -- bash scripts/executorch/smoke_r1_mac.sh <out-dir>
 #
 # 1. <out-dir>: the stock Release binary, short-chat and long-context-1024-gen256,
 #    cold x 3 then warm x 3 per task, 30 s apart (smoke_mac.py), after a 60 s lead

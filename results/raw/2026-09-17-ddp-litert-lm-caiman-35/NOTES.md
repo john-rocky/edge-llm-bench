@@ -9,7 +9,7 @@ Session 06:10:42–06:14:16 UTC (214 s); job 06:10:44–06:14:15 (211 s, the lea
 pushes); execution 06:11:40–06:14:12 (152 s = 4 s before the first run's first log line + 130 s of runs and cooldowns,
 of which the four binary invocations took 38.6 s and the three cooldowns 30 s each + 18 s of logcat and pull). Console:
 https://console.cloud.google.com/storage/browser/litert-edge-portal-devicerun/automation/sessions/session-944b220b/
-Commands and observed output: `standup/drafts/2026-09-17-litert-lm-on-ddp.run-log.txt`.
+Commands and observed output: a run log not in this repo.
 
 ## What ran
 

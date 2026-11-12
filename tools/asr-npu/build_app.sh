@@ -4,7 +4,7 @@
 # file), the debug APK (setup route: run-as), the bench APK and the bench test APK (AsrBenchTest,
 # NpuCompareTest).
 #
-#   python3 ~/code/standup/tools/quiet/quiet_hold.py asr-npu-app-build -- gtimeout 900 \
+#   python3 quiet_hold.py asr-npu-app-build -- gtimeout 900 \
 #     env MEL_JOBS=.build/asr-npu/mel-jobs.json bash tools/asr-npu/build_app.sh > .build/asr-npu/logs/build_N.log 2>&1
 set -euo pipefail
 APPDIR="${APPDIR:-$HOME/code/litert-samples-asr-npu-wt/samples/litert/speech_recognition/AndroidApp}"

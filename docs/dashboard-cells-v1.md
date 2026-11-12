@@ -714,9 +714,7 @@ phone has read from 0.9 to 5.4 tok/s across four sittings (2026-09-05 to
 September level (6.9 / 7.4 against 6.6–6.7); the row goes as a whole because
 the phone's memory state, not one arm, moved. The records stay in raw for
 audit; Qwen3 0.6B / 1.7B and Gemma 4 E2B keep running on the Pixel 8a, and
-every row keeps running on the Galaxy S26. Source: the lane's round notes
-`~/code/standup/drafts/2026-10-06-dashboard-first-tab-attachments/ROUND-m5.md`
-(outside this repo) and that sitting's records.
+every row keeps running on the Galaxy S26. Source: notes outside this repo and that sitting's records.
 
 ## CPU frequency cap line (2026-10-08)
 
@@ -1266,7 +1264,7 @@ the other arms are 4-bit, and the upstream issue.
 ## Qwen3 0.6B candidate (2026-10-19)
 
 A local candidate for the iPhone Metal failure above, measured beside the current file in one sitting per device (owner
-decision 2026-10-19 via code-2d). Nothing is uploaded and no page row moves: the candidate's rows live in their own cells
+decision 2026-10-19). Nothing is uploaded and no page row moves: the candidate's rows live in their own cells
 files, under their own model id.
 
 - The candidate = the dynamic INT4 file's 2026-08-05 revision (litert-community/Qwen3-0.6B at 8414150f, hvt4's export,
@@ -1518,9 +1516,9 @@ this paragraph first said "the rule keeps them off the page"). If a newer mlx-sw
 `matrices/mlx-gemma4-file-mac.cells` lose their `exclude=` and run as candidates of the QAT class, in the
 schema of the LiteRT-LM file. The iPhone leg is the same procedure in its own sitting.
 
-### 2 rows from 2026-10-19 (owner decision via code-2d)
+### 2 rows from 2026-10-19 (owner decision)
 
-Decision (2026-10-19 11:4x, code-2d for the owner): the page's MLX Gemma 4 has two rows per model and platform, the
+Decision (2026-10-19 11:4x, the owner's): the page's MLX Gemma 4 has two rows per model and platform, the
 QAT OptiQ row the rule above picks and the PTQ row `mlx-community/gemma-4-{e2b,e4b}-it-4bit`, each with its class in
 its name. Why:
 

@@ -22,4 +22,4 @@ for be in gpu cpu; do
   done
 done
 EOF
-python3 "$HOME/code/standup/tools/quiet/quiet_hold.py" r18-q06cand-mac-smoke -- bash "$O/smoke.sh"
+python3 "${QUIET_TOOLS:?}/quiet_hold.py" r18-q06cand-mac-smoke -- bash "$O/smoke.sh"

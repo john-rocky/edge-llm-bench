@@ -1,7 +1,7 @@
 #!/bin/bash
 # The Mac-side build of asr-npu-v1 (docs/asr-npu-v1.md), after mac_prep.sh, inside one Mac
 # measurement window:
-#   python3 ~/code/standup/tools/quiet/quiet_hold.py asr-npu-build -- gtimeout 1500 bash tools/asr-npu/mac_build.sh
+#   python3 quiet_hold.py asr-npu-build -- gtimeout 1500 bash tools/asr-npu/mac_build.sh
 # 1. build_app.sh with the mel jobs (JVM tests incl. MelDumpTest, debug / bench / bench test APKs)
 # 2. B's inputs (pick_windows.py -> .build/asr-npu/mel + MANIFEST, the record's b-inputs.json)
 # 3. the APKs frozen (run_npu_s26.sh freeze) and the record's LOCK.json (make_lock.py)

@@ -171,15 +171,11 @@ is moot either way: its mask operand is 2 copies, 0.56 MiB at 1024 (own #3508 co
 
 ## ③ Follow-up comments (drafts, GO after the day's numbers)
 
-Drafted by an Opus 5.5 subagent, checked here (the writing rules;
-ledger `~/code/standup/state/opus-draft-ledger.md`):
-`~/code/standup/drafts/2026-10-02-npu-dynamic-kv-day0/comments.{opus,post,facts}.md`
-— A = LiteRT-LM #2568 (re-run table + the S26 CPU baseline, never posted there), B =
+Three comments follow the day's numbers: A = LiteRT-LM #2568 (re-run table + the S26 CPU baseline, never posted there), B =
 LiteRT-LM #3444 (re-verification of the three probes p9 / p7 / p5 against the two
 clamp/error fixes 91a926c16 + dc911c3db, also unreleased today), C = litert-torch PR
-#1226 (scope line, with the ② result or "not run"). All day-0 values are `[…]`
-placeholders; the lint passed on the template with the facts table of 2026-10-02 and
-must be re-run on the filled text (claims = the final sentences).
+#1226 (scope line, with the ② result or "not run"). Each takes its values from the day-0
+records.
 
 ## Day-0 run order (one sitting; GO list at the end)
 

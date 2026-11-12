@@ -1,6 +1,6 @@
 #!/bin/bash
 # The decoder-only run's build (docs/asr-npu-v1.md), inside one Mac measurement window:
-#   python3 ~/code/standup/tools/quiet/quiet_hold.py asr-npu-build2 -- gtimeout 900 bash tools/asr-npu/mac_build2.sh
+#   python3 quiet_hold.py asr-npu-build2 -- gtimeout 900 bash tools/asr-npu/mac_build2.sh
 # The bench test APK with DecoderBufferTest (the app APK on the phone stays the frozen one), frozen to
 # .build/asr-npu/apk2, then the driver's dry run of the sitting (no adb).
 set -euo pipefail

@@ -44,7 +44,7 @@
 #                     sampler unavailable" and samples on the CPU, decode 46.6 against 78 tok/s on the Galaxy S26; the
 #                     main-da28df6aa-pregpu build of 2026-10-27 is that form, LITERTLM_GPU_SAMPLER=prebuilt rebuilds it)
 #   LITERTLM_BAZEL_BATCH  1: run bazel with --batch (no server outside this process tree), as a build under
-#                     ~/code/standup/tools/quiet/quiet_yield.py needs to be paused whole; the outputs are the same
+#                     quiet_yield.py needs to be paused whole; the outputs are the same
 #   LITERTLM_BAZEL_JOBS   N: bazel build --jobs=N (fewer actions side by side: less memory, a longer build); the
 #                     outputs are the same
 #   The BUILD files a prebuilt build empties are put back (git checkout) when the script exits, so the checkout

@@ -1,6 +1,6 @@
 #!/bin/bash
 # The decoder-only run 2's build (docs/asr-npu-v1.md), inside one Mac measurement window:
-#   python3 ~/code/standup/tools/quiet/quiet_hold.py asr-npu-build3 -- gtimeout 900 bash tools/asr-npu/mac_build3.sh
+#   python3 quiet_hold.py asr-npu-build3 -- gtimeout 900 bash tools/asr-npu/mac_build3.sh
 # The bench test APK (seeded encoder outputs, the pattern mode, its own logcat), frozen to
 # .build/asr-npu/apk3, then the driver's dry run of the sitting (no adb).
 set -euo pipefail

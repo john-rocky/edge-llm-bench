@@ -10,7 +10,7 @@ here=$(cd "$(dirname "$0")" && pwd)
 G=$HOME/.cache/edge-llm-bench/litert-candidates/graph
 mkdir -p "$G"
 [ -e "$G/$label.ops.txt" ] && { echo "refusing to overwrite $G/$label.ops.txt" >&2; exit 2; }
-QW=(python3 "$HOME/code/standup/tools/quiet/quiet_wait.py" --max-wait 1800 --)
+QW=(python3 "${QUIET_TOOLS:?}/quiet_wait.py" --max-wait 1800 --)
 "${QW[@]}" uv run --no-project --with litert-lm==0.18.0 python -I "$here/r18_extract_tflite.py" "$bundle" "$G/$label.tflite" \
   > "$G/$label.extract.txt" 2>&1
 rc=$?; cat "$G/$label.extract.txt"; [ $rc -eq 0 ] || exit $rc

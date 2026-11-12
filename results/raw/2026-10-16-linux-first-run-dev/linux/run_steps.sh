@@ -1,15 +1,15 @@
 #!/bin/bash
 # D3S4 r1 / r2 / r2b driver: the container steps of the Linux first run, one after another; each step starts only after
-# the Mac measurement window is closed (quiet_wait.py before every step) and appends its output to K/linux/<log>.
+# the Mac measurement window is closed (quiet_wait.py before every step) and appends its output to linux/<log>.
 #   bash run_steps.sh [main|verify|r2-dry|r2-session|r2-after|r2b-dry|r2b-session|r2b-ci]
 #   START_AT=<step> resumes the phase at that step; ONLY="<step> <step>" runs just those steps.
-# Writes K/linux/steps.tsv (step, start, end, seconds, rc, log), K/linux/STOPPED_AT (a fatal step that failed),
-# K/linux/FAILED_STEPS (non-fatal steps that failed) and, always last, K/linux/run_steps.done.
-K=$HOME/code/edge-llm-bench-wt-linux/results/raw/2026-10-16-linux-first-run-dev
+# Writes linux/steps.tsv (step, start, end, seconds, rc, log), linux/STOPPED_AT (a fatal step that failed),
+# linux/FAILED_STEPS (non-fatal steps that failed) and, always last, linux/run_steps.done.
+WD=$HOME/code/edge-llm-bench-wt-linux/results/raw/2026-10-16-linux-first-run-dev
 WT=$HOME/code/edge-llm-bench-wt-linux
-L=$K/linux
+L=$WD/linux
 C=elb-linux-first-run
-QW=$HOME/code/standup/tools/quiet/quiet_wait.py
+QW=${QUIET_TOOLS:?}/quiet_wait.py
 STEPS_IN=/opt/elb-steps
 TSV=$L/steps.tsv
 DONE=$L/run_steps.done
@@ -118,10 +118,10 @@ h_copy_into_clone() {  # r2: h_copy_into_clone <path>...: the worktree's files i
       "$(docker exec -u dev "$C" sha256sum "/home/dev/edge-llm-bench/$f" | cut -d' ' -f1)"
   done
 }
-h_doctor_mac() {  # r2: the worktree's `bench doctor --platform ddp` on the Mac -> K/doctor-ddp-mac.log (user name ->
+h_doctor_mac() {  # r2: the worktree's `bench doctor --platform ddp` on the Mac -> doctor-ddp-mac.log (user name ->
   # USER); adb left off PATH, so the doctor reaches no attached phone (no phone in this round); the pinned engine
   # files are the main checkout's (the worktree has no android/bin)
-  local p rc out=$K/doctor-ddp-mac.log
+  local p rc out=$WD/doctor-ddp-mac.log
   p=$(printf '%s' "$PATH" | tr ':' '\n' | grep -v '/platform-tools$' | paste -sd: -)
   {
     printf '## %s; python3 = %s (%s); adb on PATH: %s\n' "$(stamp)" "$(PATH=$p command -v python3)" \

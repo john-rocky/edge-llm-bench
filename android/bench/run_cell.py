@@ -1981,7 +1981,7 @@ ANDROID_QUANT_LABELS = {
     # (ios/BenchmarkApp/Sources/Models/ModelCatalog.swift; its card's File / Recipe table: int8, the 36
     # GatedDeltaNet decay/gate projections float since 2026-10-12)
     "Qwen3.5-0.8B_int8.litertlm": "int8 dynamic on linears + embedding (convs, delta rule, GatedDeltaNet decay/gate projections float)",
-    # 2026-11-05 D-583 local exports, side-loaded by a file= path (not on the Hub): public litert-torch export_hf
+    # 2026-11-05 local exports, side-loaded by a file= path (not on the Hub): public litert-torch export_hf
     # --apply_gpu_composites=True. b0 / b1 / b2 = main 54b7962, cache 4096, the Hub file's prefill ladder, the same TFLite section
     # (b2 carries the Hub file's metadata and tokenizer sections and fp32 declared; b1 the metadata the exporter writes by itself, type
     # qwen3, no declaration, so the runtime's fp16 default; b0 LiteRT-LM's own Qwen3.5 metadata, generic, no declaration). b6 / b7 = the

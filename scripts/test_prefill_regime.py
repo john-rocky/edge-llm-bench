@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """render_leaderboard.arm_row reads prefill and TTFT over the runs of the regime the cell headlines
-(headline_regime), as the surfaces read decode (cold-warm-split; D-719, 2026-11-06). Pooled over both
+(headline_regime), as the surfaces read decode (cold-warm-split; 2026-11-06). Pooled over both
 regimes, a cell whose cold and warm prefill read apart moved with the mix of its runs: the Pixel 11 Pro
 Qwen3 0.6B CPU long-context-1024 cell read 168.6 tok/s on 2026-11-05 and 119.3 on the 2026-11-06 retake
 (prefill-drop held the post) where cold against cold read -3.5 %.

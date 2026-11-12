@@ -1,6 +1,6 @@
 #!/bin/bash
 # The Mac-side data of asr-npu-v1 (docs/asr-npu-v1.md), run inside one Mac measurement window:
-#   python3 ~/code/standup/tools/quiet/quiet_hold.py asr-npu-prep -- gtimeout 1800 bash tools/asr-npu/mac_prep.sh
+#   python3 quiet_hold.py asr-npu-prep -- gtimeout 1800 bash tools/asr-npu/mac_prep.sh
 # 1. the bytes of every staged file against the Hub (stage_models.sh verify -> models.lock.json)
 # 2. the LibriSpeech test-clean parquet unpacked to WAVs (tools/omni-eval/prep_librispeech.py)
 # 3. S32 / F20 / F10 / W and the phone's tar (make_set.py; the S32 chain must be asr-fix-v1's)

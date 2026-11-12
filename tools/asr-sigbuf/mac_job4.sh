@@ -2,7 +2,7 @@
 # The fourth Mac window of asr-sigbuf-v1 (docs/asr-sigbuf-v1.md): the check build with SigbufMainActivityTest
 # (MainActivity loads the entry itself; the decoder it built) on top of the second form of the change,
 # the fix and npu-fix sets into .build/asr-sigbuf/apk3/ (hold 3).
-#   python3 ~/code/standup/tools/quiet/quiet_hold.py asr-sigbuf-mac4 -- gtimeout 1800 bash tools/asr-sigbuf/mac_job4.sh
+#   python3 quiet_hold.py asr-sigbuf-mac4 -- gtimeout 1800 bash tools/asr-sigbuf/mac_job4.sh
 set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 B="$ROOT/.build/asr-sigbuf"

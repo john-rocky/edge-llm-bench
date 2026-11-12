@@ -700,7 +700,7 @@ def preflight_iphone(dev, dry, cells_files=()):
     return {}
 
 
-# The USB HDD the disk cleanup of 2026-10-28 moved hub-cache blobs to (window D-923, 2026-11-10). The Mac
+# The USB HDD the disk cleanup of 2026-10-28 moved hub-cache blobs to (2026-11-10). The Mac
 # rows read their models from ~/.cache/huggingface/hub (HFDownloader: HubClient's cache on a non-sandboxed
 # Mac), and ten of the weekly set's repos resolve there (the MLX Gemma 4 E2B / E4B pairs and Qwen3 4B, the
 # five unsloth GGUFs: 33.4 GiB). The Mac headlines warm runs, which read no disk: the 2026-11-08 sittings
@@ -783,7 +783,7 @@ def hdd_gate(cells_files):
         return
     if n >= HDD_STREAMS_BUSY:
         raise Busy(f"the USB HDD that holds {len(on)} of this sitting's model repos ({gib:.1f} GiB) has {n} "
-                   f"data files open (window D-923: a job reading GBs there waits at {HDD_STREAMS_BUSY} or more)")
+                   f"data files open (a job reading GBs there waits at {HDD_STREAMS_BUSY} or more)")
     log(f"model files on the USB HDD: {len(on)} repos, {gib:.1f} GiB; {n} data files open there "
         f"(below {HDD_STREAMS_BUSY})")
 
@@ -1209,7 +1209,7 @@ QUIET_SCHEDULED = re.compile(r"\d+\s+(?:adopted|thaw)\s+(\d+)")  # a scheduler's
 
 def quiet_lock_others(path):
     """What the other jobs want of the Mac window at `path` -> a reason, or None when nothing.
-    Counted as quiet_rank.py counts the jobs a window waits for (~/code/standup/tools/quiet:
+    Counted as quiet_rank.py counts the jobs a window waits for (the quiet-window tools:
     window_blockers): a quiet_hold.py window waiter registered in `<lock>.waiters/<pid>`
     (hold_waiters), a quiet_yield.py job registered in `<lock>.yield_waiters/<pid>` while it waits for
     a build slot (waiting_jobs), and the job a held `<lock>.yield_slots/<i>` names (running_jobs): the
@@ -1218,7 +1218,7 @@ def quiet_lock_others(path):
     A registration counts while its process lives, is not stopped (SIGSTOP from outside: it cannot take
     its turn) and started before the file was written (else the pid was reused); a slot's job counts
     stopped too (it keeps the slot); the lock line's holder and this process's ancestors never count.
-    Every such job counts: the user's Mac priority (~/code/standup/state/mac-priority.txt, 2026-10-28)
+    Every such job counts: the user's Mac priority (the machine's priority file, 2026-10-28)
     ranks the nightly dashboard last, with the other bench work (bench goes last, user 2026-10-22), so
     the job reads no ranks, and it lets the bench-rank jobs go first too, where quiet_hold orders them by
     waiting time. quiet_rank's scan for quiet_yield waiters from before the registry (2026-10-28 09:05)
@@ -2321,7 +2321,7 @@ def ddp_sitting(schedule, key, dev, args, cells=None, suffix=None):
     scrubs the logcats, writes the records, rebuilds the summary), then SESSION.json: admitted when the
     sitting wrote records (DDP_REASON; anchor null), the sessions, jobs and device minutes. The unit's env
     (schedule.json) goes to the plan and the run alike: s26-ddp's BENCH_DDP_ALL_RUNTIMES=1 makes run_ddp wire
-    each row's engine-build=, the weekly GPU rows' side build v0.19.0-pregpu (D-449, 2026-11-03), with the
+    each row's engine-build=, the weekly GPU rows' side build v0.19.0-pregpu (2026-11-03), with the
     sessions still one after another (the --all-runtimes flag would create them all first)."""
     dry = args.dry_run
     ddp_id, cells = dev.get("ddp_id"), cells or dev.get("cells")

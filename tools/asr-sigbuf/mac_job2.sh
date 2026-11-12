@@ -1,7 +1,7 @@
 #!/bin/bash
 # The second Mac window of asr-sigbuf-v1 (docs/asr-sigbuf-v1.md), after mac_job.sh built the main, npu-fix
 # and npu-main sets and the fix set stopped at the JVM test task's name:
-#   python3 ~/code/standup/tools/quiet/quiet_hold.py asr-sigbuf-mac2 -- gtimeout 1800 bash tools/asr-sigbuf/mac_job2.sh
+#   python3 quiet_hold.py asr-sigbuf-mac2 -- gtimeout 1800 bash tools/asr-sigbuf/mac_job2.sh
 # 1. build_apks.sh fix (the fix set + the sample's JVM tests), no style gate (it ran in the first window)
 # 2. why the style gate's `:app:assembleDebug` fails: the Gradle error on the change's branch and on
 #    upstream main (the worktree back on the change's branch afterwards)

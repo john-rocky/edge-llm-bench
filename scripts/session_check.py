@@ -133,14 +133,14 @@ LITERT_RUNTIMES = ("litert-lm", "litert-lm-cpu", "litert-lm-gpu")
 LITERT_PIN_BLOCKS = ("mac", "android", "ios")
 # a LiteRT-LM release tag (v0.18.0); main@1dadd00c, main-20260821-selfbuilt and the like are not
 RELEASE_TAG_RE = re.compile(r"v?(\d+)\.(\d+)(?:\.(\d+))?")
-# gpu-accelerator-static (D-449, 2026-11-03): the arms whose records name the GPU accelerator they ran
+# gpu-accelerator-static (2026-11-03): the arms whose records name the GPU accelerator they ran
 # (Android LiteRT-LM GPU: run_cell.py and android/ddp/record.py write conditions.gpuAccelerator from the
 # engine's registration line, parsers.litert_gpu_accelerator; a record from before reads its raw log).
 # Only Google's prebuilt accelerator, loaded at run time, measures the engine the page names: the one
 # bazel compiled from the open-source tree read 0.3-0.6x its GPU prefill on the same phone and file
 # (the Galaxy S26 A/B of 2026-11-03, one LiteRT-LM commit and file: 1,506.9 against 2,617.9 tok/s)
 GPU_ACCELERATOR_ARMS = ("litert-lm-gpu",)
-# prefill-drop (D-449): the % a cell's prefill (render_leaderboard.arm_row) may fall below the same cell's
+# prefill-drop: the % a cell's prefill (render_leaderboard.arm_row) may fall below the same cell's
 # in its previous admitted sitting (same device, arm, model id, model sha256, task, context and prompt
 # version) before the sitting is held for a person; the one place the line is set
 PREFILL_DROP_PCT = 25.0

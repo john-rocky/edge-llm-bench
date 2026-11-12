@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""K/r2/log_lines.py <name>=<ddp-out dir> ... — counts from each run's raw log (ddp-out/run<i>.log: the sampler
-lines and the engine's output) for K/ROUND2.md "op と delegate の観察" (read only; prints text):
+"""r2/log_lines.py <name>=<ddp-out dir> ... — counts from each run's raw log (ddp-out/run<i>.log: the sampler
+lines and the engine's output) for ROUND2.md "op と delegate の観察" (read only; prints text):
 delegate lines ("Replacing N out of M node(s) with delegate (D) node, yielding P partitions for subgraph S"),
 registered accelerators (RegisterAccelerator name=), NPU registry warnings, E / F lines (glog E/F, ERROR: / FATAL:),
 Invalid decode, the GPU program-cache lines, the Mali weights-preparation warning, Init Executor ms, the

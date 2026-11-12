@@ -174,8 +174,8 @@ dashboard_post.py main()                       one at a time (logs/dashboard-job
 
 Off is the default. Turning a key on is a person's decision (the owner's), one key at a time;
 the ledger's `would …` lines are what each key would have done on the nights before. `push_bench`
-is on since 2026-10-19 (the owner's GO, b70e4f6f) and `push_page` since 2026-11-06 (D-722,
-b94541d3); `publish` is off. `ddp_weekly`
+is on since 2026-10-19 (the owner's GO, b70e4f6f) and `push_page` since 2026-11-06
+(b94541d3); `publish` is off. `ddp_weekly`
 is on since 2026-10-18 on the user's word of 2026-10-16 (DDP sessions need no GO each); it goes
 off when another host runs the weekly DDP set (§9).
 

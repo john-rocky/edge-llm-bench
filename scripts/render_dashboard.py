@@ -66,7 +66,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from bench_common import (DEVICE_DISPLAY, atomic_write, bandwidth_ceiling,  # noqa: E402
                           bandwidth_utilization, fmt_bw, logical_model)
 # REGIME, PROTOCOL_TASK_PREFIX and headline_regime live in render_leaderboard since 2026-11-06
-# (D-719: arm_row reads prefill and TTFT by the same rule); imported here under the same names,
+# (arm_row reads prefill and TTFT by the same rule); imported here under the same names,
 # so `from render_dashboard import headline_regime` / `REGIME` (dashboard_job.py,
 # regression_watch.py, the dashboard page's build.py) reads the one rule as before
 from render_leaderboard import (CPU_CAP_EXEMPT_ARMS, CPU_CAP_MAX_DROP_PCT,  # noqa: E402,F401

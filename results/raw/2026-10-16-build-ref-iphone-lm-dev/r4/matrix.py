@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""K/MATRIX-IOS.md's table: python3 -I K/r4/matrix.py <checkout> <repo>
+"""MATRIX-IOS.md's table: python3 -I r4/matrix.py <checkout> <repo>
 <checkout> = a temp tree of the git index with results/raw/2026-10-16-ddp-iphone16pro-18-3-ios/ copied in and
 its own scripts/build_summary.py run (results/summary/ of <repo> untouched); <repo> = the worktree (cell_gate.py).
 Per-run values from the records; pooled = render_leaderboard.arm_row of the cell's summary rows (device,

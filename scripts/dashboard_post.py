@@ -102,8 +102,8 @@ PAGE_DATA = ("index.html", "cells.csv", "cells.json", "regression.json", "regres
              "aa.json", "aa.csv")
 # the red segment: the commit's tree's own copy of the page's regression rule
 RED_SCRIPT = os.path.join("scripts", "regression_watch.py")
-# the words the commit-msg hook every repo under ~/code carries refuses (standup
-# tools/git-hooks/commit-msg); the message is checked before the hook sees it
+# the words the commit-msg hook every repo under ~/code carries refuses (a hook kept
+# outside this repo); the message is checked before the hook sees it
 REFUSED_WORDS = re.compile(r"claude|anthropic", re.I)
 # a percentage or a standing word: the public repo's text carries no standings (CLAUDE.md
 # "Cross-runtime standings stay LOCAL"; no DDP-to-attached difference in percent), so a generated

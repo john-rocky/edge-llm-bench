@@ -1,6 +1,6 @@
 #!/bin/bash
 # The Mac-side reading of one asr-npu sitting (docs/asr-npu-v1.md), inside one Mac measurement window:
-#   python3 ~/code/standup/tools/quiet/quiet_hold.py asr-npu-post -- gtimeout 900 bash tools/asr-npu/mac_post.sh
+#   python3 quiet_hold.py asr-npu-post -- gtimeout 900 bash tools/asr-npu/mac_post.sh
 # 1. B: compare.py over the pulled outputs -> <REC>/b-compare.json
 # 2. A / C: summarize.py -> <REC>/summary/ (score.py, the r2 L1 rows of the same ids for the NPU runs)
 # 3. LOCK.json again (make_lock.py)

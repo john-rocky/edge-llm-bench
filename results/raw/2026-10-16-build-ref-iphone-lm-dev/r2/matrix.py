@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""K/r2/matrix.py — the rows of K/MATRIX.md (read only; prints markdown). Four rows of one cell, the
+"""r2/matrix.py — the rows of MATRIX.md (read only; prints markdown). Four rows of one cell, the
 Qwen3-1.7B GPU short-chat (wi4b32 file, runs=3), each one DDP session = one job on one lab unit:
   main@HEAD   results/raw/2026-10-16-ddp-buildref-<id>-android: its records copied into a temp tree,
               scripts/build_summary.build_device() run with ROOT / OUT patched to that tree (the

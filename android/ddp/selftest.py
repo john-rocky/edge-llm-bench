@@ -173,7 +173,7 @@ def check_plan(tmp, bin_dir, models):
             patch.object(run_ddp, "model_file", fake_model), patch.dict(os.environ, no_switch, clear=True):
         for dev in ("akita-35", "m1q-36", "caiman-35"):
             plans[dev] = run_ddp.plan(DASHBOARD, dev, f"selftest-{dev}-android", plan_args(bin_dir))
-    # the weekly LiteRT-LM GPU rows run the side build v0.19.0-pregpu (engine-build=, D-449). Without run_ddp's
+    # the weekly LiteRT-LM GPU rows run the side build v0.19.0-pregpu (engine-build=). Without run_ddp's
     # all-runtimes switch (a by-hand `bench matrix --ddp`) a row's side build is not wired on DDP
     # (side-build-not-wired-on-ddp, ahead of exclude-on), so the CPU rows are the jobs here; the weekly slot sets the
     # switch and runs them (check_weekly_slot)
@@ -297,7 +297,7 @@ def check_plan(tmp, bin_dir, models):
 def check_weekly_slot(tmp, bin_dir, fake_model):
     """The dashboard job's weekly lab-unit slot (ops/dashboard-v1/schedule.json s26-ddp: its cells file and env;
     scripts/dashboard_job.py hands the env to the plan and the run) runs the weekly set's LiteRT-LM GPU rows on their
-    side build (D-449, 2026-11-03): the env sets BENCH_DDP_ALL_RUNTIMES=1, so run_ddp wires each row's engine-build=
+    side build (2026-11-03): the env sets BENCH_DDP_ALL_RUNTIMES=1, so run_ddp wires each row's engine-build=
     and pushes that build to engines/<tag>/ beside the flat one. The side build's files are stand-ins in a temp bin
     dir with their sha256 in a copy of the pins (CI's bin dir holds the pinned build only); the flat CPU rows push
     the pinned build's real files. Without the env the same file's GPU rows skip as side-build-not-wired-on-ddp."""
@@ -921,7 +921,7 @@ def check_wrapper_host_run(tmp):
                           if os.path.exists(os.path.join(out_bad, "wrapper.log")) else ""),
        "no --command: no run, the reason in wrapper.log, exit 0")
     # a row's LiteRT-LM side build (engine-build=, BENCH_DDP_ALL_RUNTIMES=1): its tools and libs side by side in
-    # engines/<tag>/ (run_cell.SIDE_DIRS), pushed without the execute bit. Before 2026-11-03 (D-449 r5) the wrapper
+    # engines/<tag>/ (run_cell.SIDE_DIRS), pushed without the execute bit. Before 2026-11-03 the wrapper
     # read the sha256 of neither (record.witness: engine unknown, the sitting held at engine-stamp)
     side = os.path.join(dev, "engines", "v0.0.0-selftest-side")
     write(os.path.join(side, "litert_lm_main"), FAKE_ENGINE, 0o644)
@@ -1416,7 +1416,7 @@ def check_billed_path(tmp, raw_root, bin_dir, models, sampler_head, att_short, a
 
 
 def check_gpu_accelerator(tmp, ddp, plan_s, session):
-    """D-449 (2026-11-03): a lab unit's LiteRT-LM GPU record names its GPU accelerator, flat build or side
+    """2026-11-03: a lab unit's LiteRT-LM GPU record names its GPU accelerator, flat build or side
     build (conditions.gpuAccelerator / gpuAcceleratorLine, parsers.litert_gpu_accelerator as run_cell):
     the GPU job's logs as pulled (the unit loaded Google's prebuilt .so) -> prebuilt-dynamic with that
     line; the same logs with the Statically linked line instead (the flat v0.19.0 build's, the 2026-11-03
@@ -1541,7 +1541,7 @@ def check_build_name(tmp, ddp, plan_s, session, flat_recs):
 
 
 def check_side_build_row(tmp, ddp, plan_s, session):
-    """D-449 r5 (2026-11-03): a row's engine-build= on a lab unit (BENCH_DDP_ALL_RUNTIMES=1; run_ddp pushes the
+    """2026-11-03: a row's engine-build= on a lab unit (BENCH_DDP_ALL_RUNTIMES=1; run_ddp pushes the
     build to engines/<tag>/ beside the flat one, the job carries engineBuild = engineTag = the tag). With the unit's
     sha256 of engines/<tag>/'s tools and libs in provenance.txt (ddp_cell.sh reads them since r5) the witness names
     the entry's engine_version and the record the build; without them (a provenance.txt from the wrapper before r5,

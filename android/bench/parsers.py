@@ -610,7 +610,7 @@ def litert_side_lines(text):
     return out
 
 
-# Where a LiteRT-LM GPU launch's GPU accelerator came from (D-449, 2026-11-03): the engine's own
+# Where a LiteRT-LM GPU launch's GPU accelerator came from (2026-11-03): the engine's own
 # registration line (gpu_registry.cc). The forms on the Galaxy S26:
 #   INFO: [gpu_registry.cc:121] Statically linked GPU accelerator registered.        (v0.19.0, 2026-11-02)
 #   INFO: [gpu_registry.cc:138] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.

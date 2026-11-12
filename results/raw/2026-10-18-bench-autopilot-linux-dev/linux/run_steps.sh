@@ -1,16 +1,16 @@
 #!/bin/bash
 # ROUND6 driver (stage 5, the one command): the container steps of `./bench autopilot` from a clean Ubuntu 24.04, one
 # after another; each step starts only after the Mac measurement window is closed (quiet_wait.py before every step)
-# and appends its output to K/linux/<log>. The form of results/raw/2026-10-16-linux-first-run-dev/linux/run_steps.sh.
+# and appends its output to linux/<log>. The form of results/raw/2026-10-16-linux-first-run-dev/linux/run_steps.sh.
 #   bash run_steps.sh [main|update|session|after|update2|session2|r1-tar]   (after: TAG=r1|r2)
 #   START_AT=<step> resumes the phase at that step; ONLY="<step> <step>" runs just those steps.
-# Writes K/linux/steps.tsv (step, start, end, seconds, rc, log), K/linux/STOPPED_AT (a fatal step that failed),
-# K/linux/FAILED_STEPS (non-fatal steps that failed) and, always last, K/linux/run_steps.done.
+# Writes linux/steps.tsv (step, start, end, seconds, rc, log), linux/STOPPED_AT (a fatal step that failed),
+# linux/FAILED_STEPS (non-fatal steps that failed) and, always last, linux/run_steps.done.
 WT=$HOME/code/edge-llm-bench-wt-autopilot-linux
-K=$WT/results/raw/2026-10-18-bench-autopilot-linux-dev
-L=$K/linux
+WD=$WT/results/raw/2026-10-18-bench-autopilot-linux-dev
+L=$WD/linux
 C=elb-autopilot-linux
-QW=$HOME/code/standup/tools/quiet/quiet_wait.py
+QW=${QUIET_TOOLS:?}/quiet_wait.py
 STEPS_IN=/opt/elb-steps
 # a scratch dir for the bundle, the base commit and the patches (this round's run used the session's scratchpad)
 SCRATCH=${SCRATCH:?set SCRATCH to a scratch dir}
@@ -115,13 +115,13 @@ h_patch() {  # r5's 63ec5615 (bench-autopilot) as a patch for the clone only: no
   docker cp "$SCRATCH/63ec5615.patch" "$C:/opt/elb/63ec5615.patch" || return 1
   docker exec -u root "$C" chmod a+r /opt/elb/63ec5615.patch
 }
-h_r1_tar() {  # r1's dir without ddp-raw/ (the logcats before the scrub) -> K/container-campaign-r1.tar (untracked)
+h_r1_tar() {  # r1's dir without ddp-raw/ (the logcats before the scrub) -> container-campaign-r1.tar (untracked)
   local d=results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android
   docker exec -u dev "$C" tar -C /home/dev/edge-llm-bench --exclude=ddp-raw -cf /tmp/campaign-r1.tar "$d" || return 1
   printf '## campaign-r1.tar: %s members, ddp-raw members %s\n' "$(docker exec -u dev "$C" tar -tf /tmp/campaign-r1.tar | wc -l | tr -d ' ')" \
     "$(docker exec -u dev "$C" tar -tf /tmp/campaign-r1.tar | grep -c 'ddp-raw')"
-  docker cp "$C:/tmp/campaign-r1.tar" "$K/container-campaign-r1.tar" || return 1
-  printf '## %s: %s bytes\n' "container-campaign-r1.tar" "$(stat -f %z "$K/container-campaign-r1.tar")"
+  docker cp "$C:/tmp/campaign-r1.tar" "$WD/container-campaign-r1.tar" || return 1
+  printf '## %s: %s bytes\n' "container-campaign-r1.tar" "$(stat -f %z "$WD/container-campaign-r1.tar")"
 }
 h_patch2() {  # r5's 6e3d5908 (bench-autopilot) as a patch for the clone only
   git -C "$WT" format-patch -1 6e3d5908 --stdout > "$SCRATCH/6e3d5908.patch" || return 1
@@ -150,11 +150,11 @@ h_copy_after() {  # after a billed run (TAG r1 / r2): the post's commits as a bu
   day=$(docker exec "$C" date +%F)   # the job names its log by the container's day (UTC)
   printf '## campaign %s\n' "$camp"
   if docker exec -u dev "$C" test -f /tmp/autopilot-commit.bundle; then
-    docker cp "$C:/tmp/autopilot-commit.bundle" "$K/autopilot-commit-$TAG.bundle" || return 1
-    printf '## %s: %s bytes, sha256 %s\n' "autopilot-commit-$TAG.bundle" "$(stat -f %z "$K/autopilot-commit-$TAG.bundle")" \
-      "$(shasum -a 256 < "$K/autopilot-commit-$TAG.bundle" | cut -d' ' -f1)"
-    git -C "$WT" bundle verify "$K/autopilot-commit-$TAG.bundle" || return 1
-    git -C "$WT" fetch -q "$K/autopilot-commit-$TAG.bundle" bench-autopilot-googler || return 1
+    docker cp "$C:/tmp/autopilot-commit.bundle" "$WD/autopilot-commit-$TAG.bundle" || return 1
+    printf '## %s: %s bytes, sha256 %s\n' "autopilot-commit-$TAG.bundle" "$(stat -f %z "$WD/autopilot-commit-$TAG.bundle")" \
+      "$(shasum -a 256 < "$WD/autopilot-commit-$TAG.bundle" | cut -d' ' -f1)"
+    git -C "$WT" bundle verify "$WD/autopilot-commit-$TAG.bundle" || return 1
+    git -C "$WT" fetch -q "$WD/autopilot-commit-$TAG.bundle" bench-autopilot-googler || return 1
     printf '## host: git fetch <bundle> bench-autopilot-googler -> FETCH_HEAD %s (no branch moved)\n' "$(git -C "$WT" rev-parse FETCH_HEAD)"
     git -C "$WT" log -1 --stat --format='commit %H%nAuthor: %an <%ae>%nDate:   %cI%n%n    %s' FETCH_HEAD | cut -c1-400
   else
@@ -163,7 +163,7 @@ h_copy_after() {  # after a billed run (TAG r1 / r2): the post's commits as a bu
     docker exec -u dev "$C" tar -C /home/dev/edge-llm-bench --exclude=ddp-raw -cf /tmp/campaign.tar "$camp" || return 1
     printf '## campaign.tar: %s members, ddp-raw members %s\n' "$(docker exec -u dev "$C" tar -tf /tmp/campaign.tar | wc -l | tr -d ' ')" \
       "$(docker exec -u dev "$C" tar -tf /tmp/campaign.tar | grep -c 'ddp-raw')"
-    docker cp "$C:/tmp/campaign.tar" "$K/container-campaign-$TAG.tar" || return 1
+    docker cp "$C:/tmp/campaign.tar" "$WD/container-campaign-$TAG.tar" || return 1
   fi
   for f in "logs/dashboard-job/$day-pixel8a-ddp.log" logs/dashboard-job/ledger.tsv logs/dashboard-job/autopilot-ledger.tsv; do
     docker cp "$C:/home/dev/edge-llm-bench/$f" "$L/container-$TAG-$(basename "$f")" && printf '## copied %s\n' "$f"

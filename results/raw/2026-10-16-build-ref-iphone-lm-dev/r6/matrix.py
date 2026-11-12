@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""The four retake rows of K/MATRIX-IOS.md: python3 -I K/r6/matrix.py <checkout> <repo>
+"""The four retake rows of MATRIX-IOS.md: python3 -I r6/matrix.py <checkout> <repo>
 <checkout> = a temp tree of the git index with results/raw/2026-10-16-ddp-iphone16pro-18-3-ios/ copied in and its own
 scripts/build_summary.py run (results/summary/ of <repo> untouched); <repo> = the worktree (cell_gate.py).
-K/r4/matrix.py's columns plus "thermal gate waited s / state" (conditions.ddp.thermalGate*, the harness's wait before
+r4/matrix.py's columns plus "thermal gate waited s / state" (conditions.ddp.thermalGate*, the harness's wait before
 run 1): per-run values from the records in device-jsonl/ (the retakes; the first captures are in
 device-jsonl-flagged/), pooled = render_leaderboard.arm_row of the cell's summary rows in <checkout>, gate =
 scripts/cell_gate.py --runs 4 on the cell's records. The reply words are the reader's (r6), set below."""

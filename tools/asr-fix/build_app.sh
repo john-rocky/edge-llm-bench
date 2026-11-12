@@ -3,7 +3,7 @@
 # (TdtGreedyLoopTest with the rest), the debug APK (setup route: run-as), the bench APK (measured:
 # not debuggable) and the bench test APK. Run it inside a Mac quiet window:
 #
-#   python3 ~/code/standup/tools/quiet/quiet_wait.py -- python3 ~/code/standup/tools/quiet/quiet_hold.py \
+#   python3 quiet_wait.py -- python3 quiet_hold.py \
 #     asr-fix-app-build -- gtimeout 900 bash tools/asr-fix/build_app.sh > .build/asr-fix/build_N.log 2>&1
 set -euo pipefail
 APPDIR="${APPDIR:-$HOME/code/litert-samples-asr-fix-wt/samples/litert/speech_recognition/AndroidApp}"

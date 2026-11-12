@@ -125,17 +125,17 @@ command." (27 words), `language: english`, voice `demo_speaker.npy`, seed 1.
 
 | time | what | where |
 |---|---|---|
-| 00:40:11 | hold taken (`tts-fast-s26`, keeper pid 92756) | `hold_keeper.sh` (standup drafts) |
+| 00:40:11 | hold taken (`tts-fast-s26`, keeper pid 92756) | `hold_keeper.sh` (drafts outside this repo) |
 | 00:47–00:52 | build, both APKs installed, the three fast files pushed | this file, "Instrument" |
-| 00:52:46–00:53:08 | smoke by hand, fast graphs (RTF 1.79, selection flags true, mapped files the fast set; not a measurement) | standup drafts |
-| 00:59:33–01:03:29 | driver smoke, one launch per row, 20 s pause, warm phone (default 9.22, fast 1.90; not measurements) | standup drafts |
-| 01:06:02–01:16:05 | cool-down to battery 32.0 °C, no CPU cap | standup drafts `chain.log` |
+| 00:52:46–00:53:08 | smoke by hand, fast graphs (RTF 1.79, selection flags true, mapped files the fast set; not a measurement) | drafts outside this repo |
+| 00:59:33–01:03:29 | driver smoke, one launch per row, 20 s pause, warm phone (default 9.22, fast 1.90; not measurements) | drafts outside this repo |
+| 01:06:02–01:16:05 | cool-down to battery 32.0 °C, no CPU cap | drafts outside this repo `chain.log` |
 | 01:16:05–01:26:51 | anchor, unmasked: llama.cpp 105.1 / 105.3 / 107.1 (ratio 1.006 vs 104.7), litert-lm-gpu 53.62 / 52.03 / 52.0 → ADMITTED | `../2026-09-29-tts-rtf-fast-s26-anchor-android/` |
 | 01:26:52–01:44:12 | payload, first pass, D F D F D F, no warm-up: default 8.13 / 8.15 / 8.41, fast 1.80 / 1.68 / 1.66 → thrown out (spread-rule, fast row 8.4 %) | `attempt1/` |
 | 01:48:57–01:53:59 | cool-down to battery 32.0 °C, no CPU cap | `chain2.log` |
 | 01:53:59–02:04:46 | anchor retake, unmasked: llama.cpp 107.7 / 109.6 / 108.2 (ratio 1.028 vs this night's first anchor, 1.033 vs 104.7), litert-lm-gpu 57.77 / 52.53 / 52.14 → ADMITTED | `../2026-09-29-tts-rtf-fast-s26-anchor-retake-android/` |
 | 02:04:47–02:31:05 | **the cell**: warm-up round (default 8.32, fast 1.73), then default 8.94 / fast 1.67 / default 9.26 / fast 1.72 / default 9.13 / fast 1.73 | the JSONLs here |
-| 02:31–02:32 | files re-hashed on the phone (13 OK), the app's output dir cleared, hold released 02:32:10 | `runlog.txt`, standup drafts |
+| 02:31–02:32 | files re-hashed on the phone (13 OK), the app's output dir cleared, hold released 02:32:10 | `runlog.txt`, drafts outside this repo |
 
 Deviations from the brief, all recorded here: (1) a warm-up round (one unmeasured launch per row) came before
 the measured launches of the kept pass — added after the first pass failed the spread-rule on its first fast
@@ -144,4 +144,4 @@ uncapped CPUs (`--wait-uncapped`); (3) the harness gained the page-fault / CPU-t
 passes (test APK rebuilt, app APK unchanged); (4) admission was judged by `admit()` against the checkout's
 summary as `./bench matrix` had just rebuilt it — the helper meant to judge against a temp summary did not
 reach `admit()` (`load_rows` binds its CSV path at import); re-judged with the path rebound, both anchors
-give the same reference and ratio (files in the standup drafts).
+give the same reference and ratio (files in the drafts outside this repo).

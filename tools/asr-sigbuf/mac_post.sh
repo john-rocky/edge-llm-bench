@@ -1,7 +1,7 @@
 #!/bin/bash
 # The Mac-side summary of asr-sigbuf-v1 (docs/asr-sigbuf-v1.md) after the three holds, inside one Mac window
 # (Python reads every APK for LOCK.json):
-#   python3 ~/code/standup/tools/quiet/quiet_hold.py asr-sigbuf-post -- gtimeout 900 bash tools/asr-sigbuf/mac_post.sh
+#   python3 quiet_hold.py asr-sigbuf-post -- gtimeout 900 bash tools/asr-sigbuf/mac_post.sh
 # compare.py summary for both forms (compare-f1.json / compare-f2.json in the record; the verdicts with the
 # cost ratio in .build/asr-sigbuf/verdicts-f1.json / -f2.json), then LOCK.json (make_lock.py, the three APK dirs).
 set -uo pipefail
