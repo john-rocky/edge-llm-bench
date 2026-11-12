@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""Device-free, network-free selftest of the DDP iPhone driver (ios/ddp/; design:
-results/raw/2026-10-16-build-ref-iphone-lm-dev/DESIGN-D1.md).
+"""Device-free, network-free selftest of the DDP iPhone driver (ios/ddp/).
 
   ./ios/ddp/selftest.py        # exit 0 = pass; the temp dir is kept on failure
 

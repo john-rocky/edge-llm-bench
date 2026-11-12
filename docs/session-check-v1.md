@@ -2,10 +2,8 @@
 
 Status: written 2026-10-18 (stage 1 of the bench-autopilot lane); wired into the job the same day by the post step (`scripts/dashboard_post.py`, `docs/dashboard-autopilot-v1.md`).
 Code: `scripts/session_check.py`; selftest `scripts/session_check_selftest.py` (CI, data
-pipeline); allow-list `ops/session-check/allow-list.tsv`. Validation record:
-`results/raw/2026-10-18-bench-autopilot-dev/ROUND1.md`; the rules `pin-drift` and
-`protocol-off` (2026-10-19): `ROUND8.md` there; the text screen (`text_screen.json`, 2026-10-19):
-`ROUND10.md` there.
+pipeline); allow-list `ops/session-check/allow-list.tsv`. The rules `pin-drift` and `protocol-off`
+and the text screen (`text_screen.json`) were added on 2026-10-19.
 
 Until 2026-10-18 the dashboard job (`scripts/dashboard_job.py`, `docs/dashboard-recurring-job-v1.md`)
 never committed: a person read each campaign dir it made and committed it with a message that says

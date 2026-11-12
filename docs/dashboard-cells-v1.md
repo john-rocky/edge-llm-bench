@@ -1304,8 +1304,7 @@ files, under their own model id.
 - Reading (owner's rule): the candidate replaces the Hub file only if it is not slower anywhere (same-sitting warm decode
   and prefill within −3 % of the current file on every device and backend) and both pass the text check; then a Hub PR
   goes to a GO request. If it is slower somewhere it does not replace the file: an iOS-only file or a card note instead.
-  On the iPhone GPU the first question is whether the engine builds at all. Results: the lane's round record
-  (`results/raw/2026-10-18-bench-autopilot-dev/ROUND18.md`).
+  On the iPhone GPU the first question is whether the engine builds at all.
 
 ## Qwen3 0.6B on LiteRT-LM main@b7c40ea81: a GPU-composite export, and YNNPACK on the CPU (2026-10-20)
 
@@ -1653,7 +1652,7 @@ six Mac ExecuTorch Qwen3 prompts happen together, between sittings: the Android,
 the prompt file from the checkout and the yardstick and the app build the text into the binary, so a Mac
 sitting on the merged checkout and the old yardstick would run ONNX Runtime GenAI and ExecuTorch on the new text
 and the yardstick arms on the old one. Each record's version still names what it ran. Date: 2026-10-20, merge 40e2aec6; the rebuilt yardstick and app
-follow it once the Mac measurement window is free (the lane record, `results/raw/2026-10-18-bench-autopilot-dev/LANE.md`).
+follow it once the Mac measurement window is free.
 
 Back out: give the 1K task back its old tail and no version (the generator's `PROMPTS` entry without
 `tail=NOREF_TAIL` and its `VERSIONS` line removed; the Swift definition without `tail:` and `promptVersion:`),

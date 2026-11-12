@@ -9,8 +9,7 @@ the Mac and iPhone, the same day: §12; the fast-forward of `main` before the co
 `scripts/dashboard_post_selftest.py`, `scripts/regression_watch_selftest.py` (CI, data
 pipeline); switch `ops/autopilot/switch.json`; the page's regression rule as copied
 `ops/autopilot/regression-watch.json`; ledger `logs/dashboard-job/autopilot-ledger.tsv`.
-Validation records: `results/raw/2026-10-18-bench-autopilot-dev/ROUND3.md` (the post step),
-`ROUND4.md` (the regression response), `ROUND5.md` (the DDP weekly slot). The checker it runs: `docs/session-check-v1.md`. The job it
+The checker it runs: `docs/session-check-v1.md`. The job it
 follows: `docs/dashboard-recurring-job-v1.md`.
 
 ```bash
@@ -259,8 +258,8 @@ red = below `-render_leaderboard.SPREAD_FLAG` (5 %). `ops/autopilot/regression-w
 page's constants, read out of `build.py` at 8100b64 with their line numbers; the aggregation, the
 regime, the exclusions and the threshold are the bench's own functions, which `build.py` imports.
 `--compare` checks the copy: on 2026-10-18 the bench's summary at HEAD and at e3010721 (the commit
-the page was built from) give the page's 8 red points, 29 series, 78 sittings and 64 shown
-(`results/raw/2026-10-18-bench-autopilot-dev/ROUND4.md`). Every post repeats the check against the
+the page was built from) give the page's 8 red points, 29 series, 78 sittings and 64 shown.
+Every post repeats the check against the
 page it just built (`red: mismatch` in the ledger note when they differ; it stops nothing). When
 `build.py`'s rule changes, the definitions file and `regression_watch.py` change with it.
 
@@ -423,7 +422,7 @@ no `--compare`) is later; a red point there would route its bisect to the same p
 **Cost.** About 190-210 device-minutes a week (2026-10-16: 12 of the 16 jobs took 151.4; Gemma 4
 E2B's 4 jobs had not run on DDP), about an hour of wall time when the pool has free units.
 
-**The first sitting, 2026-10-18** (`results/raw/2026-10-18-bench-autopilot-dev/ROUND5.md`). By hand
+**The first sitting, 2026-10-18.** By hand
 (`dashboard_job.py s26-ddp --once`, the page built into a scratch dir, not committed): 2 Device Run
 sessions (`session-03ab291b` 15.3 min, `session-e314180b` 25.2 min; the 8 jobs of each started together
 once 8 units were free), 16 jobs PASSED, 193.0 device-min, 72 records on 16 units of one build
@@ -512,8 +511,8 @@ the post's commit is made with.
   are the page's stand-in rows, which its regression leaves out; akita-35's device is not one of
   the page's devices), so the red points are the page's, from the attached phones' sittings.
 
-**From a clean Ubuntu 24.04 container** (2026-10-18, colima's `ubuntu:24.04`, aarch64; record
-`results/raw/2026-10-18-bench-autopilot-linux-dev/ROUND6.md`): README steps 1 and 2 (the gcloud CLI by Google's apt
+**From a clean Ubuntu 24.04 container** (2026-10-18, colima's `ubuntu:24.04`, aarch64):
+README steps 1 and 2 (the gcloud CLI by Google's apt
 route, the venv, the release asset), this branch cloned from a bundle of a checkout (GitHub does not hold the
 branch), git's identity set (without it `git commit-tree` stops: "unable to auto-detect email address"), the model's
 Hugging Face cache entry copied in (huggingface_hub 2.2.0 read the 1.8.0 layout and downloaded nothing);
@@ -567,9 +566,6 @@ as committed then); unlike the Mac's block it is not taken back to earlier commi
 **The message guard** (§2) is the same rule set's third part, in the post: a generated commit
 message with a percentage or a standing word is never committed.
 
-Validation record: `results/raw/2026-10-18-bench-autopilot-dev/ROUND8.md` (the committed sittings,
-the backlog on the main checkout, the selftests).
-
 ## 12. Text screen for the Mac and iPhone (2026-10-19)
 
 **Why.** The Mac and iPhone runners write no text check, so a run whose reply was broken reached the
@@ -600,5 +596,3 @@ correct), and the checker's markdown lists one reply per cell. A cell that is te
 while a person reads the reply as a good answer is a defect of the screen (fairness-rules §12), fixed
 in its code (`android/bench/parsers.text_integrity`, `scripts/cell_gate.degenerate`), never a reason to
 quote the rate.
-
-Validation record: `results/raw/2026-10-18-bench-autopilot-dev/ROUND10.md`.

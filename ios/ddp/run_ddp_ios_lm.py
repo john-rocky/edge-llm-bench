@@ -90,7 +90,7 @@ MODEL_DIR = model_dir(RUNTIME)
 ARGS_DEST = "/Documents/yardstick_args.json"
 EXTRA_CATALOG_DEST = "/Documents/models/extra-catalog.json"  # ModelCatalog.loadExtraCatalog reads it
 PULL = ("/Documents/results", "/Documents/out")
-# --xctest-timeout by backend (results/raw/2026-10-16-build-ref-iphone-lm-dev/DESIGN-D1.md (f))
+# --xctest-timeout by backend
 TIMEOUT = {"gpu": "15m", "cpu": "30m"}
 # the wait past --xctest-timeout: the lab's preparation (install, a push of up to 2.6 GB) and cleanup
 WAIT_MARGIN_MIN = 45

@@ -413,8 +413,7 @@ calls HOT, SPREAD, DEAD or COLLAPSE moves to `device-jsonl-flagged/` with one
 `FLAGGED.txt` line and is taken again in a later session. Then steps 6 to 8
 above, with `ddp-raw/` (the lab's `system.log` and `junit.xml`) left out.
 
-Measured (2026-10-15, `results/raw/2026-10-15-ddp-backend-dev/ROUND2.md`,
-`ROUND3.md`): the smoke session (1 job of 2 runs on `akita-35`) took 22.6 min,
+Measured (2026-10-15): the smoke session (1 job of 2 runs on `akita-35`) took 22.6 min,
 of which 2.9 min of pushes and a 10-min thermal gate before run 2; the slice
 sessions (8 jobs of 3 runs each, side by side) took 37 min on `akita-35` and
 30 min on `m1q-36`, with 110 and 194 device-minutes in their executions (the
