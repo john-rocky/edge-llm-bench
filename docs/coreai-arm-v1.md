@@ -239,7 +239,7 @@ headlines its cold median. One rule for both arms and every platform:
   the process's `phys_footprint` (a 4-bit and an unpalettized export of the same model peak at
   about the same footprint), so the figure does not compare with the GPU arms' figures. The
   iPhone figure is the same `phys_footprint` window as every Apple arm's and ranks with them.
-- The phones run beta builds of iOS 27: their numbers stay on the internal page, never in a
+- The phones run beta builds of iOS 27: their numbers stay on the dashboard page, never in a
   public repo, card or post.
 - The weekly job does not run these cells yet (an owner decision; the arm joins a weekly file
   only after its first sittings).
