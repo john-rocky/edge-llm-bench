@@ -77,7 +77,8 @@ from pathlib import Path
 # where a non-numeric value returns None rather than a wrong number.
 FIELD = re.compile(r"(\w+)=(\S+)")
 
-MODEL_RE = re.compile(r"YARDSTICK_BEGIN native_benchmark model=(\S+)")
+# BenchmarkApp names the runtime before the model since its multi-runtime native benchmark
+MODEL_RE = re.compile(r"YARDSTICK_BEGIN native_benchmark(?: runtime=\S+)? model=(\S+)")
 BEGIN_RE = re.compile(r"prefill=(\d+) decode=(\d+)")
 
 

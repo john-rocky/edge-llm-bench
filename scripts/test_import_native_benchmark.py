@@ -132,6 +132,17 @@ class SchemaV1Import(unittest.TestCase):
             self.assertEqual(sorted(r["device"]), ["modelIdentifier", "systemVersion"])
             self.assertEqual(r["task"], "native-benchmark-1024x256")
 
+    def test_begin_line_with_runtime_before_model_names_the_model(self):
+        # BenchmarkApp's multi-runtime native benchmark names the runtime first on its BEGIN line
+        text = (f"YARDSTICK_BEGIN native_benchmark runtime=litert-lm model={MODEL} prefill=1024 decode=256 "
+                f"context_tokens=2048\n"
+                f"YARDSTICK_NATIVE_OK runtime=litert-lm run=1 runs=1 cold=1 {BASE.format(tps=80.0)} "
+                f"thermal_initial=nominal thermal_final=nominal wall_s=4.8 harness=h1\n")
+        rc, recs = self.run_import(text, T1)
+        self.assertEqual(rc, 0)
+        self.assertEqual([r["model"]["id"] for r in recs], [MODEL])
+        self.assertEqual([r["task"] for r in recs], ["native-benchmark-1024x256"])
+
     def test_new_line_keeps_thermal_wall_and_regime(self):
         rc, recs = self.run_import(NEW, f"{T1},{T2}", "--first-ever", "1")
         self.assertEqual(rc, 0)
