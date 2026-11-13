@@ -216,6 +216,14 @@ def main():
         os.rename(mnt, mnt + ".gone")
         hdd_gone = hdd_gate_says(cells_hdd, 0)
         os.rename(mnt + ".gone", mnt)
+        dj.HDD_STREAMS = ""   # no counter on this machine: neither BENCH_HDD_STREAMS nor ops/local-paths.json
+        hdd_unset = hdd_gate_says(cells_hdd, 9)
+        saved_local = dj.LOCAL_PATHS
+        dj.LOCAL_PATHS = os.path.join(hdir, "local-paths.json")
+        with open(dj.LOCAL_PATHS, "w") as fh:
+            json.dump({"hdd_streams": streams}, fh)
+        hdd_local = dj.local_path("hdd_streams")
+        dj.LOCAL_PATHS = saved_local
     finally:
         dj.HDD_MOUNT, dj.HUB_CACHE, dj.HDD_STREAMS = saved_hdd
     ok(dj.cells_repos([cells_hdd]) == {"org/onssd", "org/onhdd"},
@@ -226,6 +234,8 @@ def main():
        f"hdd gate: 2 streams, or no file there at 9, pass ({hdd_calm}; {hdd_none})")
     ok(hdd_gone.startswith("notready: 1 model file(s) of this sitting resolve to"),
        f"hdd gate: the volume gone = not ready ({hdd_gone})")
+    ok(hdd_unset == "pass" and hdd_local == streams,
+       f"hdd gate: no stream counter passes, and ops/local-paths.json names one ({hdd_unset}; {hdd_local})")
     # the Mac measurement window: the sitting flocks the lock schedule.json names and writes the
     # timing label; a lock another process holds is Busy; the release empties it
     import fcntl as _fcntl

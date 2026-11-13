@@ -710,7 +710,22 @@ def preflight_iphone(dev, dry, cells_files=()):
 # while HDD_STREAMS_BUSY or more data files are open on it (the window's line: hdd_streams.sh -q), and
 # does not start while the HDD is gone.
 HDD_MOUNT = "/Volumes/HD-SGDA"
-HDD_STREAMS = os.path.expanduser("~/code/standup/tools/supervisor/hdd_streams.sh")
+LOCAL_PATHS = os.path.join(ROOT, "ops", "local-paths.json")
+
+
+def local_path(key):
+    """A tool of this machine kept outside the repo, from LOCAL_PATHS (untracked: {key: path}), or ""."""
+    try:
+        with open(LOCAL_PATHS, encoding="utf-8") as fh:
+            value = json.load(fh).get(key, "")
+    except (OSError, ValueError, AttributeError):
+        return ""
+    return os.path.expanduser(value) if isinstance(value, str) else ""
+
+
+# the stream counter: BENCH_HDD_STREAMS, else LOCAL_PATHS' "hdd_streams"; neither = the count is unread and
+# the gate holds no sitting to it (hdd_gate says so)
+HDD_STREAMS = os.path.expanduser(os.environ.get("BENCH_HDD_STREAMS", "")) or local_path("hdd_streams")
 HDD_STREAMS_BUSY = 3
 HUB_CACHE = os.path.expanduser("~/.cache/huggingface/hub")
 
@@ -774,6 +789,10 @@ def hdd_gate(cells_files):
     if not on:
         return
     gib = sum(on.values()) / 2**30
+    if not HDD_STREAMS or not os.path.isfile(HDD_STREAMS):
+        log(f"model files on the USB HDD: {len(on)} repos, {gib:.1f} GiB; no stream counter here "
+            f"(BENCH_HDD_STREAMS, or 'hdd_streams' in ops/local-paths.json), not held to it")
+        return
     rc, out = sh(["bash", HDD_STREAMS, "-q"], timeout=120)
     try:
         n = int(out.strip().splitlines()[-1])
