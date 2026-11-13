@@ -308,6 +308,106 @@ public actor LlamaCppRuntime: LLMRuntime {
         continuation.finish()
     }
 
+    public struct NativeBenchmarkResult: Sendable {
+        public let prefillTokenCount: Int
+        public let decodeTokenCount: Int
+        public let prefillSeconds: Double
+        public let decodeSeconds: Double
+        public let firstTokenIds: [Int]
+        public let seed: UInt64
+        public let vocabSize: Int
+        public var prefillTokensPerSecond: Double {
+            Double(prefillTokenCount) / max(prefillSeconds, 1e-6)
+        }
+        public var decodeTokensPerSecond: Double {
+            Double(max(1, decodeTokenCount - 1)) / max(decodeSeconds, 1e-6)
+        }
+    }
+
+    /// `native-benchmark-<P>x<D>` on `llama.xcframework`: feeds `P` SplitMix64 token ids below
+    /// `llama_vocab_n_tokens` directly into `llama_decode` (no text prompt, no tokenizer, no chat
+    /// template), samples the first token greedily from the prefill logits, and runs `D - 1`
+    /// forced single-token greedy decode steps ignoring EOG so EOS cannot end the decode early.
+    public func nativeBenchmark(prefillTokens: Int, decodeTokens: Int, seed: UInt64 = 0) async throws
+        -> NativeBenchmarkResult
+    {
+        guard let context, let vocab else {
+            throw LLMRuntimeError.modelNotLoaded
+        }
+        let vocabCount = Int(llama_vocab_n_tokens(vocab))
+        guard vocabCount > 0 else {
+            throw LLMRuntimeError.generationFailed("llama_vocab_n_tokens returned \(vocabCount)")
+        }
+        var state = seed &+ 0x9E37_79B9_7F4A_7C15
+        let ids: [llama_token] = (0..<prefillTokens).map { _ in
+            state &+= 0x9E37_79B9_7F4A_7C15
+            var z = state
+            z = (z ^ (z >> 30)) &* 0xBF58_476D_1CE4_E5B9
+            z = (z ^ (z >> 27)) &* 0x94D0_49BB_1331_11EB
+            return llama_token((z ^ (z >> 31)) % UInt64(vocabCount))
+        }
+
+        llama_memory_clear(llama_get_memory(context), true)
+        guard let sampler = llama_sampler_chain_init(llama_sampler_chain_default_params()) else {
+            throw LLMRuntimeError.generationFailed("llama_sampler_chain_init returned NULL")
+        }
+        llama_sampler_chain_add(sampler, llama_sampler_init_greedy())
+        defer { llama_sampler_free(sampler) }
+
+        let batchCap = max(prefillTokens, 2048)
+        if batch == nil || prefillTokens > 2048 {
+            if var old = batch { llama_batch_free(old); _ = withUnsafeMutablePointer(to: &old) { _ in } }
+            batch = llama_batch_init(Int32(batchCap), 0, 1)
+        }
+        var b = batch!
+        let maxChunk = max(1, min(Int(contextBudget), 2048))
+
+        let prefillStart = CFAbsoluteTimeGetCurrent()
+        var offset = 0
+        while offset < ids.count {
+            let end = min(ids.count, offset + maxChunk)
+            b.n_tokens = 0
+            for idx in offset..<end {
+                let wantLogits = (idx == ids.count - 1)
+                llama_batch_add(&b, ids[idx], Int32(idx), [0], wantLogits)
+            }
+            guard llama_decode(context, b) == 0 else {
+                self.batch = b
+                throw LLMRuntimeError.generationFailed("llama_decode (native prefill) failed")
+            }
+            offset = end
+        }
+        var curToken = llama_sampler_sample(sampler, context, -1)
+        let prefillEnd = CFAbsoluteTimeGetCurrent()
+
+        let decodeSteps = max(0, decodeTokens - 1)
+        var pos = Int32(ids.count)
+        let decodeStart = CFAbsoluteTimeGetCurrent()
+        for _ in 0..<decodeSteps {
+            try Task.checkCancellation()
+            b.n_tokens = 0
+            llama_batch_add(&b, curToken, pos, [0], true)
+            pos += 1
+            guard llama_decode(context, b) == 0 else {
+                self.batch = b
+                throw LLMRuntimeError.generationFailed("llama_decode (native decode) failed")
+            }
+            curToken = llama_sampler_sample(sampler, context, -1)
+        }
+        let decodeEnd = CFAbsoluteTimeGetCurrent()
+        self.batch = b
+
+        return NativeBenchmarkResult(
+            prefillTokenCount: ids.count,
+            decodeTokenCount: 1 + decodeSteps,
+            prefillSeconds: prefillEnd - prefillStart,
+            decodeSeconds: max(decodeEnd - decodeStart, 1e-6),
+            firstTokenIds: ids.prefix(8).map { Int($0) },
+            seed: seed,
+            vocabSize: vocabCount
+        )
+    }
+
     // MARK: - Tokenization helpers (mirror upstream LibLlama.swift)
 
     private func tokenize(text: String, addBOS: Bool, parseSpecial: Bool = false) -> [llama_token] {
@@ -499,6 +599,24 @@ public final class LlamaCppRuntime: LLMRuntime, @unchecked Sendable {
         AsyncThrowingStream { c in
             c.finish(throwing: LLMRuntimeError.unsupported("llama.xcframework not added — run scripts/bootstrap.sh."))
         }
+    }
+
+    public struct NativeBenchmarkResult: Sendable {
+        public let prefillTokenCount: Int
+        public let decodeTokenCount: Int
+        public let prefillSeconds: Double
+        public let decodeSeconds: Double
+        public let firstTokenIds: [Int]
+        public let seed: UInt64
+        public let vocabSize: Int
+        public var prefillTokensPerSecond: Double { Double(prefillTokenCount) / max(prefillSeconds, 1e-6) }
+        public var decodeTokensPerSecond: Double { Double(max(1, decodeTokenCount - 1)) / max(decodeSeconds, 1e-6) }
+    }
+
+    public func nativeBenchmark(prefillTokens: Int, decodeTokens: Int, seed: UInt64 = 0) async throws
+        -> NativeBenchmarkResult
+    {
+        throw LLMRuntimeError.unsupported("llama.xcframework not added — run scripts/bootstrap.sh.")
     }
 }
 #endif

@@ -7,7 +7,7 @@ import HuggingFace
 public enum HFDownloader {
     /// hfRepoId namespaces with no Hub repo behind them: the side-loaded own exports. `own` is
     /// also a Hub user's name, so a download there could fetch someone else's files.
-    static let sideLoadedNamespaces = ["litert-local/", "own/"]
+    static let sideLoadedNamespaces = ["litert-local/", "own/", "local/"]
 
     public static func snapshot(
         for model: ModelInfo,

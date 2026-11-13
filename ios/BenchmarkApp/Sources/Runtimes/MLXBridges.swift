@@ -24,6 +24,15 @@ public struct HubDownloaderBridge: MLXLMCommon.Downloader {
         progressHandler: @Sendable @escaping (Foundation.Progress) -> Void
     ) async throws -> URL {
         print("[HubBridge] download id=\(id) rev=\(revision ?? "main") patterns=\(patterns)")
+        let repoKey = ModelCatalog.mlx.first(where: { $0.id == id })?.hfRepoId ?? id
+        let staged = HFDownloader.modelDirectory(runtime: .mlxSwift, hfRepoId: repoKey)
+        if FileManager.default.fileExists(atPath: staged.appendingPathComponent("config.json").path) {
+            let p = Foundation.Progress(totalUnitCount: 1)
+            p.completedUnitCount = 1
+            progressHandler(p)
+            print("[HubBridge] using staged directory \(staged.path)")
+            return staged
+        }
         guard let repoID = HuggingFace.Repo.ID(rawValue: id) else {
             print("[HubBridge] invalid repo id")
             throw NSError(domain: "MLXBridges", code: -1,

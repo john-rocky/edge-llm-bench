@@ -877,8 +877,10 @@ def check_native(tmp, archive, template):
     env = env_for(tmp)
     # the app's map: the same words as the cells grammar, and the counts the engine reports, not the request
     app = open(os.path.join(ROOT, "ios", "BenchmarkApp", "Sources", "BenchmarkApp.swift")).read()
-    ok('let prefix = "native-benchmark-"' in app and "promptTokenCount: info.prefillTokenCount" in app
-       and "generatedTokenCount: info.decodeTokenCount" in app,
+    ok('let prefix = "native-benchmark-"' in app
+       and "prefillTokenCount: info.prefillTokenCount" in app
+       and "promptTokenCount: outcome.prefillTokenCount" in app
+       and "generatedTokenCount: outcome.decodeTokenCount" in app,
        "BenchmarkApp.swift maps the task and records the engine's token counts")
     ok(mat.run_ddp_ios_lm.NATIVE_TASK.fullmatch(NATIVE_TASK) and validate_cells.NATIVE_TASK.match(NATIVE_TASK),
        "the driver and scripts/validate_cells.py read one task name")
@@ -898,8 +900,9 @@ def check_native(tmp, archive, template):
     litert = ["--model-id", mid, "--backend", "gpu"]
     for extra, why in ((litert + ["--task", "native-benchmark-1024"], "a task with no decode count"),
                        (litert + ["--task", "native-benchmark-0x256"], "a zero token count"),
-                       (["--runtime", "llama.cpp", "--model-id", "unsloth/Qwen3.5-0.8B-GGUF/Q4_0", "--backend", "gpu",
-                         "--task", NATIVE_TASK], "another runtime")):
+                       (["--runtime", "executorch",
+                         "--model-id", "own-export/Qwen3.5-0.8B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048",
+                         "--task", NATIVE_TASK], "an unsupported runtime")):
         r = driver(base + extra, env)
         ok(r.returncode == 2 and "native-benchmark" in r.stderr, f"exit 2 for {why} ({r.returncode}: {r.stderr.strip()[-120:]!r})")
     ok(gcloud_calls(tmp) == [], "the refusals called gcloud 0 times")

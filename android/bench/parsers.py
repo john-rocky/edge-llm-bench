@@ -932,7 +932,7 @@ def executorch_runner_for(name):
     low = os.path.basename(name).lower()
     if re.search(r"gemma-?4", low):
         return "gemma4_e2e_runner"
-    if re.search(r"qwen3(?:[._]5)?[-_]", low):
+    if re.search(r"qwen3(?:[._][58])?[-_]", low):
         return "llama_main"
     return None
 

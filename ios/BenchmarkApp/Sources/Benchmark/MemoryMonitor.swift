@@ -63,8 +63,8 @@ public enum MemoryMonitor {
 /// peaks: mapped pages fault in and out, so peak resident is page-cache noise
 /// (66-281% run-to-run, measured 2026-07-26).
 public actor MemorySampler {
-    private(set) var peakMB: Double = 0
-    private(set) var peakResidentMB: Double = 0
+    public private(set) var peakMB: Double = 0
+    public private(set) var peakResidentMB: Double = 0
     private var footprintSamples: [Double] = []
     private var residentSamples: [Double] = []
     private var task: Task<Void, Never>?
