@@ -111,6 +111,7 @@ import csv
 import datetime
 import fcntl
 import glob
+import importlib.util
 import json
 import os
 import re
@@ -1240,7 +1241,8 @@ def quiet_lock_others(path):
     Every such job counts: the user's Mac priority (the machine's priority file, 2026-10-28)
     ranks the nightly dashboard last, with the other bench work (bench goes last, user 2026-10-22), so
     the job reads no ranks, and it lets the bench-rank jobs go first too, where quiet_hold orders them by
-    waiting time. quiet_rank's scan for quiet_yield waiters from before the registry (2026-10-28 09:05)
+    waiting time. The one exception is a sitting by hand whose env QUIET_LANE names a key of that table
+    (priority_rank): it counts only the jobs ranked as good as its key or better. quiet_rank's scan for quiet_yield waiters from before the registry (2026-10-28 09:05)
     is left out. 2026-10-28 02:47: a sitting took the free window while lane builds ran outside the
     windows, and they stood stopped for its length."""
     rc, out = sh(["ps", "-A", "-o", "pid=,ppid=,stat=,lstart="], env=dict(os.environ, LC_ALL="C"))
@@ -1313,11 +1315,63 @@ def quiet_lock_others(path):
     except OSError:
         m = None
     window_waiters = registered(path + ".waiters", int(m.group(1)) if m else None)
-    why = [f"{len(jobs)} job(s) {what} (pid {jobs[0][0]}: {jobs[0][1][:80]})"
+    prio, ranked = priority_rank(), ""
+    if prio is not None:
+        qr, mine, key = prio
+
+        def ahead(pid, kind):
+            """ranked as good as this sitting or better, or a rank that cannot be read (it counts)"""
+            try:
+                p = qr.proc(pid)
+                return p is None or qr.Job(p, kind).rank <= mine
+            except Exception:
+                return True
+        running = [(pid, text) for pid, text in running if ahead(pid, "run")]
+        slot_waiters = [(pid, text) for pid, text in slot_waiters if ahead(pid, "yield")]
+        window_waiters = [(pid, text) for pid, text in window_waiters if ahead(pid, "hold")]
+        ranked = f" ranked {mine} or better (QUIET_LANE {key})"
+    why = [f"{len(jobs)} job(s){ranked} {what} (pid {jobs[0][0]}: {jobs[0][1][:80]})"
            for jobs, what in ((window_waiters, "waiting for the window"),
                               (slot_waiters, "waiting for a build slot"), (running, "holding a build slot"))
            if jobs]
     return "; ".join(why) or None
+
+
+def quiet_rank_tool():
+    """This machine's quiet_rank.py (the Mac priority's reader, kept outside the repo: BENCH_QUIET_TOOLS, else
+    LOCAL_PATHS' "quiet_tools", the directory that holds it), loaded fresh; None when there is none or it
+    does not load."""
+    d = os.path.expanduser(os.environ.get("BENCH_QUIET_TOOLS", "")) or local_path("quiet_tools")
+    f = os.path.join(d, "quiet_rank.py") if d else ""
+    if not f or not os.path.isfile(f):
+        return None
+    try:
+        spec = importlib.util.spec_from_file_location("bench_quiet_rank", f)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+    except Exception:
+        return None
+
+
+def priority_rank():
+    """(quiet_rank, rank, key) when env QUIET_LANE names a key of the Mac priority table, else None.
+    The nightly sitting carries no QUIET_LANE and gives way to every other job (bench goes last, user
+    2026-10-22); a sitting by hand under a key added to the table for it gives way only to the jobs ranked
+    as good as that key or better (first used 2026-11-14: one Mac sitting)."""
+    wanted = os.environ.get("QUIET_LANE", "").strip()
+    if not wanted:
+        return None
+    qr = quiet_rank_tool()
+    if qr is None:
+        return None
+    try:
+        m = qr.match({"QUIET_LANE": wanted}, None, "", "")
+    except Exception:
+        return None
+    if not m or m[2] != "QUIET_LANE":
+        return None
+    return qr, m[0], m[1]
 
 
 def quiet_lock_take(dev, label):
@@ -1344,6 +1398,10 @@ def quiet_lock_take(dev, label):
         os.close(fd)
         raise Busy(f"the Mac measurement window is held by another lane: {holder or path}")
     try:
+        prio = priority_rank()
+        if prio is not None:
+            log(f"quiet window: QUIET_LANE {prio[2]} ranks this sitting {prio[1]} in the Mac priority: it "
+                f"gives way to the jobs ranked {prio[1]} or better")
         others = quiet_lock_others(path)
         if others:
             raise Busy(f"the Mac measurement window goes to the other jobs first (bench goes last): {others}")

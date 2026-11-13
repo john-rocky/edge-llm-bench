@@ -391,6 +391,77 @@ def main():
        and free_held and open(qpath).read() == "",
        f"quiet lock, bench goes last: dead and reused-pid files, a stopped waiter, the lock line's holder, "
        f"slots held for dead jobs and a released slot leave it free: taken and released ({free_why})")
+    # the Mac priority under a QUIET_LANE key (priority_rank): a sitting by hand whose QUIET_LANE names a key of
+    # the table gives way only to the jobs ranked as good as the key or better; no QUIET_LANE, a key the
+    # table does not hold, or no quiet_rank.py = every job counts, as the nightly sitting always did. A stub
+    # quiet_rank.py ranks the live waiter from ranks.json.
+    qtools = os.path.join(tmp, "qtools")
+    os.makedirs(qtools)
+    with open(os.path.join(qtools, "quiet_rank.py"), "w") as fh:
+        fh.write("import json, os\n"
+                 "HERE = os.path.dirname(os.path.abspath(__file__))\n"
+                 "def _t():\n"
+                 "    with open(os.path.join(HERE, 'ranks.json')) as fh:\n"
+                 "        return json.load(fh)\n"
+                 "def match(env, label, text, cwd):\n"
+                 "    wanted = env.get('QUIET_LANE', '')\n"
+                 "    hits = sorted((r, k) for k, r in _t()['keys'].items() if k in wanted)\n"
+                 "    return (hits[0][0], hits[0][1], 'QUIET_LANE') if hits else None\n"
+                 "class _P:\n"
+                 "    def __init__(self, pid):\n"
+                 "        self.pid = pid\n"
+                 "def proc(pid):\n"
+                 "    return _P(pid)\n"
+                 "class Job:\n"
+                 "    def __init__(self, p, kind):\n"
+                 "        self.rank = _t()['pids'].get(str(p.pid), 4)\n")
+
+    def ranks(keys, pids):
+        with open(os.path.join(qtools, "ranks.json"), "w") as fh:
+            json.dump({"keys": keys, "pids": {str(k): v for k, v in pids.items()}}, fh)
+    saved_env = {k: os.environ.get(k) for k in ("QUIET_LANE", "BENCH_QUIET_TOOLS")}
+    lw = child("import time; time.sleep(60)")
+    try:
+        with open(qpath, "w"):
+            pass
+        os.environ["BENCH_QUIET_TOOLS"] = qtools
+        ranks({"bench-mac-1114": 1}, {lw.pid: 2})
+        lw_file = register(wdir, lw.pid, "other z timing")
+        os.environ.pop("QUIET_LANE", None)
+        prio_none = take("m4max no key")[0]
+        os.environ["QUIET_LANE"] = "bench-mac-1114"
+        prio_key = dj.priority_rank()
+        prio_free, prio_line, _ = take("m4max keyed")
+        ranks({"bench-mac-1114": 1}, {lw.pid: 1})
+        prio_tie = take("m4max keyed, a rank-1 waiter")[0]
+        ranks({}, {lw.pid: 2})
+        prio_norow = take("m4max keyed, the row gone")[0]
+        ranks({"bench-mac-1114": 1}, {lw.pid: 2})
+        os.environ["BENCH_QUIET_TOOLS"] = os.path.join(tmp, "no-qtools")
+        prio_notool = take("m4max keyed, no quiet_rank.py")[0]
+        os.unlink(lw_file)
+    finally:
+        for k, v in saved_env.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+        if lw.poll() is None:
+            lw.kill()
+            lw.wait()
+    ok(prio_none is not None and f"(pid {lw.pid}: other z timing)" in prio_none and "ranked" not in prio_none,
+       f"quiet lock, Mac priority: no QUIET_LANE = every waiter counts, as before ({prio_none})")
+    ok(prio_key is not None and prio_key[1:] == (1, "bench-mac-1114") and prio_free is None
+       and (prio_line or "").startswith("dashboard-job m4max keyed timing pid "),
+       f"quiet lock, Mac priority: QUIET_LANE bench-mac-1114 at rank 1 takes the window past a rank-2 waiter "
+       f"({prio_key and prio_key[1:]}; {prio_free})")
+    ok(prio_tie is not None and "ranked 1 or better (QUIET_LANE bench-mac-1114)" in prio_tie
+       and f"(pid {lw.pid}: other z timing)" in prio_tie,
+       f"quiet lock, Mac priority: a rank-1 waiter still goes first under the rank-1 key ({prio_tie})")
+    ok(prio_norow is not None and "ranked" not in prio_norow and prio_notool is not None
+       and "ranked" not in prio_notool,
+       f"quiet lock, Mac priority: the table without the key, or no quiet_rank.py = every waiter counts "
+       f"({prio_norow}; {prio_notool})")
     ok(not heavy("node /x/claude --prompt 'release/llm-benchmark --model'"), "mac guard: llm-benchmark named inside another argv is not heavy")
 
     def attached(*serials):
