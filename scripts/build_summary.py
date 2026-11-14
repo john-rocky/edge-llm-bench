@@ -316,7 +316,10 @@ DEVICE_FIELDS = [
     "thermal_initial", "thermal_final", "battery_state", "cold_run", "first_ever",
     "context_tokens", "device", "os_version", "mem_footprint_peak_mb",
     "mem_resident_peak_mb", "text_check", "cpu_capped", "cpu_max_freq",
-    "backend_registered", "cpu_cap_drop_pct",
+    "backend_registered", "cpu_cap_drop_pct", "mem_total_median_mb", "mem_total_peak_mb",
+    "mem_external_median_mb", "mem_external_peak_mb", "mem_accel_present_median_mb",
+    "mem_accel_present_peak_mb", "mem_accel_attributed_median_mb", "mem_accel_attributed_peak_mb",
+    "mem_resident_in_ram_median_mb", "mem_resident_in_ram_peak_mb", "mem_overlap_at_total_peak_mb",
 ]
 
 
@@ -499,6 +502,23 @@ def device_row(f, d, screens, campaign=None, raw_dirs=None):
         # how far the engine CPUs' clock ceiling fell (2026-10-08), appended last: a
         # capped run within the line pools, counted (cpu-cap-rule)
         "cpu_cap_drop_pct": cpu_cap_drop_of(d),
+        # memory in three places (2026-11-14), appended last: the Apple sampler's total that
+        # counts each page once (phys_footprint + mapped file pages in the page table + the
+        # GPU-wrapped pages in RAM - their measured overlaps with the first two), its
+        # parts, and LiteRT
+        # memory_profiling's accelerator / resident-in-RAM figures over the same window; empty
+        # on rows from an older binary and on every other writer (methodology/memory.md "Three places")
+        "mem_total_median_mb": m.get("memoryMedianTotalMB"),
+        "mem_total_peak_mb": m.get("memoryPeakTotalMB"),
+        "mem_external_median_mb": m.get("memoryMedianExternalMB"),
+        "mem_external_peak_mb": m.get("memoryPeakExternalMB"),
+        "mem_accel_present_median_mb": m.get("memoryMedianAcceleratorPresentMB"),
+        "mem_accel_present_peak_mb": m.get("memoryPeakAcceleratorPresentMB"),
+        "mem_accel_attributed_median_mb": m.get("memoryMedianAcceleratorAttributedMB"),
+        "mem_accel_attributed_peak_mb": m.get("memoryPeakAcceleratorAttributedMB"),
+        "mem_resident_in_ram_median_mb": m.get("memoryMedianResidentInRAMMB"),
+        "mem_resident_in_ram_peak_mb": m.get("memoryPeakResidentInRAMMB"),
+        "mem_overlap_at_total_peak_mb": (m.get("memoryAtTotalPeak") or {}).get("overlapMB"),
     }
 
 
@@ -645,13 +665,24 @@ def main(argv=None):
             "`false` run stays a row here and in raw but pools into no number\n"
             "(`render_leaderboard.arm_row`; `docs/dashboard-cells-v1.md` \"NPU and Android GPU\n"
             "rows\").\n\n"
-            "`cpu_cap_drop_pct` (the last column, 2026-10-08) is how far the clock ceiling of the\n"
+            "`cpu_cap_drop_pct` (after `backend_registered`, 2026-10-08) is how far the clock ceiling of the\n"
             "CPUs the engine ran on fell during the run: the largest `(1 - min / hw) x 100` over the\n"
             "cpufreq policies of those CPUs (`conditions.cpusAllowedList`, else the launch mask,\n"
             "else every CPU), one decimal; `0.0` where the caps were read and none of them fell,\n"
             "empty where they were not read. `render_leaderboard.arm_row` keeps a `cpu_capped`\n"
             "`true` run out of every number when it is above `CPU_CAP_MAX_DROP_PCT` (15) and pools\n"
             "it, counted, when it is not (`methodology/fairness-rules.md` cpu-cap-rule).\n\n"
+            "Memory in three places (the eleven columns after `cpu_cap_drop_pct`, 2026-11-14; Apple\n"
+            "`BenchmarkRunner` and the Mac yardstick's native paths only, empty on rows from an older\n"
+            "binary and on every other writer): `mem_total_*` = `memory{Median,Peak}TotalMB`, the sampler's\n"
+            "total that counts each page once (phys_footprint + mapped file pages in the page table + the\n"
+            "pages in RAM of the memory the GPU wraps without a copy, minus their measured overlaps with the\n"
+            "first two); `mem_external_*` = the mapped file pages in the page table; `mem_accel_present_*` /\n"
+            "`mem_accel_attributed_*` / `mem_resident_in_ram_*` = LiteRT memory_profiling's accelerator\n"
+            "present / attributed and resident-in-RAM figures over the same window;\n"
+            "`mem_overlap_at_total_peak_mb` = the overlaps subtracted at the total's peak\n"
+            "(`memoryAtTotalPeak.overlapMB`). Definitions: `methodology/memory.md` \"Three places\".\n\n"
+
             "Release-regression diffing over this layer: `scripts/regression_diff.py`\n"
             "(quality joins on tag; device cells join on device/runtime/model/task/cold-warm\n"
             "with budget-mode-rule/spread-rule/cross-session guardrails). The capture+diff loop is\n"

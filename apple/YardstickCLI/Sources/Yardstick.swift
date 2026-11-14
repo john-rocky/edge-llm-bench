@@ -522,6 +522,7 @@ struct YardstickApp {
                 let medianMB = await sampler.medianMB
                 let medianResidentMB = await sampler.medianResidentMB
                 let samples = await sampler.sampleCount
+                let accounting = await sampler.accounting
                 let teardownFootprintMB = MemoryMonitor.footprintMB()
 
                 let line = String(
@@ -559,7 +560,8 @@ struct YardstickApp {
                         wallSeconds: wallSeconds,
                         initialThermalState: thermalInitial,
                         finalThermalState: thermalFinal,
-                        harnessStamp: BenchmarkRunner.harnessStamp),
+                        harnessStamp: BenchmarkRunner.harnessStamp,
+                        memoryAccounting: accounting),
                     conditions: .init(
                         instrument: "litert-lm native benchmark() via yardstick",
                         run: run, runs: runs))
@@ -617,6 +619,7 @@ struct YardstickApp {
             let medianMB = await sampler.medianMB
             let medianResidentMB = await sampler.medianResidentMB
             let samples = await sampler.sampleCount
+            let accounting = await sampler.accounting
             let teardownFootprintMB = MemoryMonitor.footprintMB()
             let head = r.firstTokenIds.map(String.init).joined(separator: ",")
             let line = String(
@@ -653,7 +656,8 @@ struct YardstickApp {
                     wallSeconds: wallSeconds,
                     initialThermalState: thermalInitial,
                     finalThermalState: thermalFinal,
-                    harnessStamp: BenchmarkRunner.harnessStamp),
+                    harnessStamp: BenchmarkRunner.harnessStamp,
+                    memoryAccounting: accounting),
                 conditions: .init(
                     instrument: "mlx-swift MLXRuntime.nativeBenchmark via yardstick",
                     run: run, runs: runs))
@@ -708,6 +712,7 @@ struct YardstickApp {
             let medianMB = await sampler.medianMB
             let medianResidentMB = await sampler.medianResidentMB
             let samples = await sampler.sampleCount
+            let accounting = await sampler.accounting
             let teardownFootprintMB = MemoryMonitor.footprintMB()
             let head = r.firstTokenIds.map(String.init).joined(separator: ",")
             let line = String(
@@ -744,7 +749,8 @@ struct YardstickApp {
                     wallSeconds: wallSeconds,
                     initialThermalState: thermalInitial,
                     finalThermalState: thermalFinal,
-                    harnessStamp: BenchmarkRunner.harnessStamp),
+                    harnessStamp: BenchmarkRunner.harnessStamp,
+                    memoryAccounting: accounting),
                 conditions: .init(
                     instrument: "llama.cpp LlamaCppRuntime.nativeBenchmark via yardstick",
                     run: run, runs: runs))
