@@ -99,6 +99,12 @@ public actor MediaPipeRuntime: LLMRuntime {
     /// (`--define=litert_enable_ynnpack=true`) and an API that has the flag, compiled in with the
     /// LITERTLM_YNNPACK condition (build_xctest.sh SWIFT_CONDITIONS), takes it.
     public nonisolated(unsafe) static var enableYnnpack: Bool?
+    /// `ExperimentalFlags.filterChannelContentFromKvCache` for the next `loadModel`. Off (the default
+    /// here) keeps every decoded token in the KV, as llama.cpp, MLX and ExecuTorch do: a single-turn
+    /// cell does not rewind and re-prefill to strip the `<think>` channel after decode. The endurance
+    /// session turns it on (the engine's own default), so its multi-turn conversation drops each turn's
+    /// `<think>` content from the KV, as the 2026-09 endurance sessions did (methodology/endurance.md).
+    public nonisolated(unsafe) static var filterChannelContentFromKvCache = false
     public let kind: RuntimeKind = .mediaPipe
     public let isAvailable: Bool = true
     public nonisolated let supportedModels: [ModelInfo] = ModelCatalog.liteRTLM
@@ -160,8 +166,9 @@ public actor MediaPipeRuntime: LLMRuntime {
         ExperimentalFlags.optIntoExperimentalAPIs()
         ExperimentalFlags.enableBenchmark = Self.engineBenchmarkCounters
         // Single-turn benchmarks should not rewind and re-prefill to strip `<think>` channel
-        // tokens after decode (matching llama.cpp, MLX, and ExecuTorch).
-        ExperimentalFlags.filterChannelContentFromKvCache = false
+        // tokens after decode (matching llama.cpp, MLX, and ExecuTorch); the endurance session
+        // turns the filter on before its load (see `filterChannelContentFromKvCache`).
+        ExperimentalFlags.filterChannelContentFromKvCache = Self.filterChannelContentFromKvCache
         #if LITERTLM_YNNPACK
         if let ynnpack = Self.enableYnnpack {
             ExperimentalFlags.enableYnnpack = ynnpack
@@ -754,6 +761,7 @@ public final class MediaPipeRuntime: LLMRuntime, @unchecked Sendable {
     public nonisolated(unsafe) static var launchBackend: ComputeBackend = .gpu
     public nonisolated(unsafe) static var engineOutputCap = true
     public nonisolated(unsafe) static var enableYnnpack: Bool?
+    public nonisolated(unsafe) static var filterChannelContentFromKvCache = false
     public enum ComputeBackend: String, Sendable { case cpu, gpu }
     public nonisolated(unsafe) static var debugSyncSend = false
     public let kind: RuntimeKind = .mediaPipe
