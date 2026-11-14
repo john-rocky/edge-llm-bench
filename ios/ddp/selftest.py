@@ -968,8 +968,14 @@ def check_native(tmp, archive, template):
        f"session_argv: output-cap=drain forwards --litert-output-cap drain ({cap_argv})")
     mp_src = open(os.path.join(ROOT, "ios", "BenchmarkApp", "Sources", "Runtimes", "MediaPipeRuntime.swift")).read()
     ok("static var engineOutputCap = true" in mp_src
-       and "ExperimentalFlags.filterChannelContentFromKvCache = false" in mp_src,
+       and "static var filterChannelContentFromKvCache = false" in mp_src
+       and "ExperimentalFlags.filterChannelContentFromKvCache = Self.filterChannelContentFromKvCache" in mp_src,
        "MediaPipeRuntime.swift defaults to engineOutputCap and disables channel KV rewind")
+    en_src = open(os.path.join(ROOT, "ios", "BenchmarkApp", "Sources", "Benchmark", "EnduranceSession.swift")).read()
+    ok("MediaPipeRuntime.filterChannelContentFromKvCache = true" in en_src and '"+kv-channel-kept"' in en_src
+       and "MediaPipeRuntime.filterChannelContentFromKvCache = previousKvChannelFilter" in en_src,
+       "EnduranceSession.swift loads with the engine's channel KV filter on, puts the property back after the "
+       "load, and stamps a session without it")
 
 
 def main():
