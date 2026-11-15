@@ -33,7 +33,7 @@ Per run the record carries (metrics):
   loadTimeSeconds          = process start -> request marker (engine creation,
                              weight load / conversion, cache)
   vlTextCheck              = pass | fail — the manifest's keyword rule over the
-                             reply (benchmark-mode-needs-a-text-check)
+                             reply
   memoryPeakResidentMB (ps sampling), coldRun = true (fresh process)
 and conditions.gpuAccelerator = the GPU accelerator the launch's log registered,
 "<name> (<file>)" (added 2026-09-26: the 2026-09-24 GPU records ran on

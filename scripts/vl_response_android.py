@@ -354,7 +354,7 @@ def resolve_model(model_id, fname, model_dir):
     """-> (local_path, revision, hf_verified, repo_manifest_path) or None when not staged.
     HF cache snapshot (revision = snapshot dir; the path keeps the .litertlm extension the
     engine sniffs) or VL_MODEL_DIR/<file> with an HF_SHA256SUMS line proving the bytes are
-    the Hub's (hub-bytes-need-lfs-sha-check)."""
+    the Hub's."""
     org, name = model_id.split("/", 1)
     cands = glob.glob(os.path.expanduser(f"~/.cache/huggingface/hub/models--{org}--{name}/snapshots/*/{fname}"))
     mcands = glob.glob(os.path.expanduser(f"~/.cache/huggingface/hub/models--{org}--{name}/snapshots/*/litertlm_manifest.json"))

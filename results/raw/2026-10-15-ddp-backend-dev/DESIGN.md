@@ -1,8 +1,8 @@
 # D6 DDP backend — design (round 1)
 
 `bench matrix <cells> --ddp <device id> [--campaign NAME] [--dry-run]` → `android/ddp/run_ddp.py` (Route C:
-own request body + static wrapper `android/ddp/ddp_cell.sh` + own LiteRT-LM build). Decisions D1–D11:
-`LANE.md` §1. API facts: SDK 587.0.0 `devicerun_v1alpha_messages.py` (line numbers below).
+own request body + static wrapper `android/ddp/ddp_cell.sh` + own LiteRT-LM build).
+API facts: SDK 587.0.0 `devicerun_v1alpha_messages.py` (line numbers below).
 
 ## Files
 

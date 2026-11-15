@@ -365,7 +365,7 @@ is `<date>-s26-ddp.log`). At most once in the entry's `interval_days` (6): an ad
 unit that ended in the last 6 days means not due, and so does a sitting in them that ran Device Run
 sessions and was not admitted (one billed attempt a window; the next is a person's, by hand). A
 rolling window, not the attached devices' Monday week: a sitting on a Sunday night is not repeated
-by the Monday 02:00 firing (the supervisor's change of 2026-10-18; the first real sitting ran on a
+by the Monday 02:00 firing (changed 2026-10-18; the first real sitting ran on a
 Sunday night); the next one comes at the first firing at least six days after it, after that
 firing's attached sitting, so the slot recurs every six to seven days. `--no-ddp` skips it at a firing;
 `dashboard_job.py s26-ddp` runs it by hand (no week check, as for any explicit key; a second sitting

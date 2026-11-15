@@ -16,8 +16,8 @@ encoder, decoder, text merging — with model load and compile excluded and
 reported separately (`loadTimeSeconds`). Each run is a fresh process
 (`coldRun: true`); three runs per cell; the OS file cache is warm from run 2.
 
-**Text check.** A rate whose transcript nobody read is not a measurement
-(benchmark-mode-needs-a-text-check), so every record carries the transcript
+**Text check.** A rate whose transcript nobody read is not a measurement,
+so every record carries the transcript
 and its word error rate against the LibriSpeech reference after the
 manifest's normalization (lower-case, hyphen → space, `[a-z0-9']` only, no
 number expansion). WER here is a sanity gate on the protocol, **not** an
@@ -54,7 +54,7 @@ not `c9b1ba54` (.litertlm decoder, 2026-09-03), `007e7c76` (audio LMs,
 `main` at `1dadd00c` (2026-09-17, the commit whose prebuilt Metal accelerator
 the 2026-09-18 Qwen3 session already identified) and stamps
 `engineVersion: main@1dadd00c` — a bump for measurement, the pin in
-`environment.lock.json` untouched (bump-engine-for-comparison).
+`environment.lock.json` untouched.
 
 Build and stage (Mac, ~3.5 min with bazel 7.6.1 via bazelisk; the worktree
 must have the macOS Metal dylib pulled from LFS):
@@ -166,7 +166,7 @@ session of the same day built). Between `1dadd00c` (the Mac and Android legs) an
 `AsrEngine`, ten-line edits in both text mergers); the 2026-09-25 Mac session saw
 `asr_runner` at both commits give the same transcript on its probe utterance. The
 phone rows still carry `main@66058c82` as their own instrument version and are never
-pooled with `1dadd00c` rows (bump-engine-for-comparison).
+pooled with `1dadd00c` rows.
 
 `scripts/asr_rtf_iphone.py matrices/asr-rtf-v1.cells --campaign <name>` (the phone
 from `BENCH_UDID`) reads the `ios` rows, stages models, tokenizers,

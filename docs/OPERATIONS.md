@@ -623,7 +623,7 @@ outputs under `automation/sessions/`).
   selected developer dir (stable Xcode has no CoreAI framework in its SDK).
 - **GSM8K beyond the LiteRT arm still shells to external checkouts**
   (`environment.lock.json` → `external_instruments_not_yet_in_repo`).
-- **Cross-session device drift is 16-25%** (iphone-session-variance): never
+- **Cross-session device drift is 16-25%**: never
   compare absolute numbers across sittings without anchors; the differ
   enforces this (INFO-ONLY / anchor-normalized).
 - **HOT and wide-spread captures auto-retry once** (`scripts/cell_gate.py`,

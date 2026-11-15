@@ -4,7 +4,7 @@ Not applied. `~/code/litert-knowledge` is not a git repository, so this is `diff
 the five edits: a Revision 2026-10-17 paragraph in the header, one sentence appended to the CPU (XNNPACK) bullet of the EN summary
 and of the JA summary, the X2 row's open cell replaced by its DONE entry, and an iPhone 18 Pro clause in the K5 row. Every number
 is from `README.md` of this directory (the sittings' `ladder.md`). Apply with `patch -p1 -d ~/code/litert-knowledge < catalog-x2-diff.md`
-after the user's GO (the diff body starts at the `---` line).
+(the diff body starts at the `---` line).
 
 ```diff
 --- a/06-recommendations/op-level-catalog.md

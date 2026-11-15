@@ -377,7 +377,7 @@ def check_holds(dev, dry):
     """A live foreign pid in any of the device's hold files = busy. An
     unowned zero-byte hold cannot be attributed and is treated as busy too
     (someone's driver wrote it; leaving it alone costs a slot, taking the
-    phone costs a measurement — device-busy-is-probeable)."""
+    phone costs a measurement)."""
     for path in [dev.get("hold")] + list(dev.get("hold_also_check", [])):
         if not path:
             continue
@@ -390,8 +390,8 @@ def check_holds(dev, dry):
         # only a sibling file: the device's own hold file is this phone's whatever its device field
         # says (hold_cli.py writes "S26" into every hold it takes, the iPhone 18 Pro's too)
         if path != dev.get("hold") and other is not None and mine is not None and other != mine:
-            # the sibling lanes' .iphone_hold serves two phones and names its phone (memory
-            # device-busy-is-probeable): a hold that names another device of the schedule is not
+            # the sibling lanes' .iphone_hold serves two phones and names its phone:
+            # a hold that names another device of the schedule is not
             # this sitting's business (2026-10-19 12:3x: the 17 Pro's AA lane held it while the
             # 18 Pro was free); a device string the schedule does not know stays busy
             log(f"hold at {path} names another device ({h.get('device')} = {other}, pid {h.get('pid')}, "
@@ -1839,8 +1839,8 @@ def attempt(schedule, key, dev, attempt_no, args):
     stem = f"{date}-dashboard-v1-{key}" + (f"-{part['tag']}" if part else "") + suffix
     n = attempt_no
     # a weekly sitting never runs in a campaign an earlier sitting of the day ran in (its anchor phase's
-    # dir is on disk): admit() would pool both sittings' anchor rows (memory
-    # stopped-sitting-needs-a-new-campaign-name); the next -r<n> is free
+    # dir is on disk): admit() would pool both sittings' anchor rows;
+    # the next -r<n> is free
     while not args.cells and os.path.isdir(os.path.join(ROOT, campaign_rel(
             stem + (f"-r{n}" if n > 1 else "") + "-anchor", platform))):
         n += 1

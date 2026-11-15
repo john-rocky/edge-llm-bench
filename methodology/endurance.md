@@ -105,8 +105,8 @@ Two files per cell, both raw (stored-report-rule):
 - **spread-rule** — within-session turn spread is the instrument here (a wide
   first-window spread means a contended machine: throw the session out and
   re-run). **Sessions are never pooled**: one session = one record; a
-  cross-session delta only counts through the usual session anchors
-  (`iphone-session-variance`), and `runs=1` is enforced in the cells.
+  cross-session delta only counts through the usual session anchors,
+  and `runs=1` is enforced in the cells.
 - **failed-runs-stay** — crash/hang/empty sessions keep row, record, and
   partial series; the CLI exits 1 so the runner logs the failure too.
 
