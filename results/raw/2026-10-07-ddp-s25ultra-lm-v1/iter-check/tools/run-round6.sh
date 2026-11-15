@@ -1,6 +1,6 @@
 #!/bin/bash
 # run-round6.sh: four billed sessions in order gpu, cpu, gpu, cpu via sess-aligned.sh; stop after two failures.
-S=/private/tmp/claude-501/-Users-USER-code-edge-llm-bench/d21f53ca-5923-4da1-b5fc-7e34ecbf7034/scratchpad/r5
+S=<work>/r5
 fails=0
 for b in gpu cpu gpu cpu; do
   echo "[$(TZ=Asia/Tokyo date '+%F %T')] START $b" >> "$S/round6.progress"

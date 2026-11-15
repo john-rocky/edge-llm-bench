@@ -18,7 +18,7 @@
 set -u
 BENCH=/Users/USER/code/edge-llm-bench
 OUT=$BENCH/results/raw/2026-10-10-s26-reboot-cold; mkdir -p "$OUT"
-KIT=${KIT:-/private/tmp/claude-501/-Users-USER-code/7821f881-51f7-49d6-af4d-7b2ed69dbe10/scratchpad/lm-kit}
+KIT=${KIT:-<work>/lm-kit}
 CA=/Users/USER/code/litertlm-convert/community_accel_work
 L="$CA/s2_npu_sweep/.device_hold"
 NAME=edge-llm-bench/s26-reboot-cold

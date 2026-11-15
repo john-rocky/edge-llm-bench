@@ -5,7 +5,7 @@ SP=/tmp/scratch
 RUN=$SP/run-metal-0170; MODELS=$SP/models
 OUT=$HOME/code/edge-llm-bench/results/raw/2026-09-16-qwen3-1.7b-int8-fusion-pair-mac/profiles
 mkdir -p "$RUN" "$MODELS" "$OUT"
-SRC=/private/tmp/claude-501/-Users-USER-code-litertlm-convert/6f688ea3-b666-4bfc-8dbf-b5728df4a11f/scratchpad/run-metal-0170
+SRC=<work>/run-metal-0170
 echo "### CMD: cp -c $SRC/{litert_lm_advanced_main,*.dylib} $RUN/  $(date +%F' '%T)" >> "$OUT/runlog.txt"
 cp -c "$SRC"/litert_lm_advanced_main "$SRC"/*.dylib "$RUN"/ || { echo "COPY_RUN_FAILED"; exit 1; }
 UNF=$HOME/.cache/huggingface/hub/models--litert-community--Qwen3-1.7B/snapshots/73fbc3fe8271c162a603ee66f6e7ed25b6211195/Qwen3_1.7B.litertlm

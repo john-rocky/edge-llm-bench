@@ -15,7 +15,7 @@ please run:
 exit=0
 ### END 00:37:14 JST
 
-### CMD: cd /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad && uv venv --python=3.13 --seed .venv-nightly && source .venv-nightly/bin/activate && pip install litert-cli-nightly 2>&1 | tail -3 && pip show litert-cli-nightly | head -2 && pip list 2>/dev/null | grep -i -E 'litert|protobuf|huggingface'  (fresh venv, today's nightly)
+### CMD: cd <work> && uv venv --python=3.13 --seed .venv-nightly && source .venv-nightly/bin/activate && pip install litert-cli-nightly 2>&1 | tail -3 && pip show litert-cli-nightly | head -2 && pip list 2>/dev/null | grep -i -E 'litert|protobuf|huggingface'  (fresh venv, today's nightly)
 ### START 2026-10-07 00:37:19 JST
 Using CPython 3.13.13 interpreter at: /opt/homebrew/opt/python@3.13/bin/python3.13
 Creating virtual environment with seed packages at: .venv-nightly
@@ -54,7 +54,7 @@ TOTAL: 12 objects, 148529750 bytes (141.65MiB)
 exit=0
 ### END 00:37:28 JST
 
-### CMD: cd /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad && mkdir -p wheel0929 && source .venv-nightly/bin/activate && pip download litert-cli-nightly==0.3.0.dev20260929 --no-deps -d wheel0929 2>&1 | tail -2 && cd wheel0929 && unzip -q -o *.whl -d x && NEW=$(python -c 'import litert_cli,os;print(os.path.dirname(litert_cli.__file__))') && diff -rq x/litert_cli $NEW -x __pycache__ ; echo diff_rc=$?; diff -r x/litert_cli/commands/benchmark $NEW/commands/benchmark -x __pycache__ | head -150  (does the CLI's benchmark code differ from the 09-30 sessions' nightly; no install, wheel unpacked in its own dir)
+### CMD: cd <work> && mkdir -p wheel0929 && source .venv-nightly/bin/activate && pip download litert-cli-nightly==0.3.0.dev20260929 --no-deps -d wheel0929 2>&1 | tail -2 && cd wheel0929 && unzip -q -o *.whl -d x && NEW=$(python -c 'import litert_cli,os;print(os.path.dirname(litert_cli.__file__))') && diff -rq x/litert_cli $NEW -x __pycache__ ; echo diff_rc=$?; diff -r x/litert_cli/commands/benchmark $NEW/commands/benchmark -x __pycache__ | head -150  (does the CLI's benchmark code differ from the 09-30 sessions' nightly; no install, wheel unpacked in its own dir)
 ### START 2026-10-07 00:37:34 JST
 Saved ./wheel0929/litert_cli_nightly-0.3.0.dev20260929-py3-none-any.whl
 Successfully downloaded litert-cli-nightly
@@ -62,7 +62,7 @@ diff_rc=0
 exit=0
 ### END 00:37:35 JST
 
-### CMD: python3 -I /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/tools/hubsha.py  (cached bundles vs the Hub's lfs sha256 on main, read only)
+### CMD: python3 -I <work>/tools/hubsha.py  (cached bundles vs the Hub's lfs sha256 on main, read only)
 ### START 2026-10-07 00:37:46 JST
 SAME litert-community/Qwen3-0.6B qwen3_0_6b_mixed_int4.litertlm hub_main=a3c5d805 hub_lfs_sha256=7900eb4e7362d88c58782c6f9999bb7a129e03544aa98b8f338ea0cc5d8c22c1 size=497516544 local_snapshot=a3c5d805 local_blob=7900eb4e7362d88c58782c6f9999bb7a129e03544aa98b8f338ea0cc5d8c22c1
 SAME litert-community/Qwen3-1.7B Qwen3_1.7B.litertlm hub_main=73fbc3fe hub_lfs_sha256=66064a4e9269cb693e124c4e3040bcb8a446b10bca42663896329495add3861c size=2056729520 local_snapshot=73fbc3fe local_blob=66064a4e9269cb693e124c4e3040bcb8a446b10bca42663896329495add3861c
@@ -73,7 +73,7 @@ SAME litert-community/gemma-4-E4B-it-litert-lm gemma-4-E4B-it.litertlm hub_main=
 exit=0
 ### END 00:37:49 JST
 
-### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && litert benchmark --help  (CLI options, free)
+### CMD: source <work>/.venv-nightly/bin/activate && litert benchmark --help  (CLI options, free)
 ### START 2026-10-07 00:37:49 JST
 Usage: litert benchmark [OPTIONS] MODEL
 
@@ -253,7 +253,7 @@ gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-ff6aa89
 exit=0
 ### END 00:38:41 JST
 
-### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--Qwen3-1.7B/snapshots/73fbc3fe8271c162a603ee66f6e7ed25b6211195/Qwen3_1.7B.litertlm' --ddp --device pa3q-35 --cpu  (billed DDP session: qwen3-1.7b cpu attempt 1, CLI defaults (prefill 1024, decode 256, max 1280, 5 iterations))
+### CMD: source <work>/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--Qwen3-1.7B/snapshots/73fbc3fe8271c162a603ee66f6e7ed25b6211195/Qwen3_1.7B.litertlm' --ddp --device pa3q-35 --cpu  (billed DDP session: qwen3-1.7b cpu attempt 1, CLI defaults (prefill 1024, decode 256, max 1280, 5 iterations))
 ### START 2026-10-07 00:38:55 JST
 Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
 Ensuring GCS bucket 'gs://litert-edge-portal-devicerun' exists for project 'litert-edge-portal'...
@@ -399,7 +399,7 @@ LiteRT-LM benchmark: second process, 5 iteration(s), 1 warm-up; median of the ot
 exit=0
 ### END 00:49:31 JST
 
-### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--Qwen3-1.7B/snapshots/73fbc3fe8271c162a603ee66f6e7ed25b6211195/Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm' --ddp --device pa3q-35 --gpu  (billed DDP session: qwen3-1.7b gpu attempt 1, CLI defaults (prefill 1024, decode 256, max 1280, 5 iterations))
+### CMD: source <work>/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--Qwen3-1.7B/snapshots/73fbc3fe8271c162a603ee66f6e7ed25b6211195/Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm' --ddp --device pa3q-35 --gpu  (billed DDP session: qwen3-1.7b gpu attempt 1, CLI defaults (prefill 1024, decode 256, max 1280, 5 iterations))
 ### START 2026-10-07 00:49:42 JST
 ### NOTE: 00:50 JST the remaining seven sessions run from tools/queue.sh (scratch): one at a time, the same sess.sh line per session, a session without metrics.pb retried once (two retries in all), stop after two failures in a row. Qwen3-0.6B gpu = session-10701be8 of 2026-09-30 is reused (same CLI code: the litert_cli package of 0.3.0.dev20260929 and 0.3.0.dev20261006 is byte-identical; same binary and library sha256; same bundle sha256); Qwen3-0.6B cpu = session-0f3c1363 of 2026-09-30 is not reused (iterations 2-5 spread 27% prefill / 24% decode) and is taken again.
 Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
@@ -442,7 +442,7 @@ Session outputs on the Cloud Console: https://console.cloud.google.com/storage/b
 exit=1
 ### END 00:54:57 JST
 
-### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/a3c5d805ae362dff7f580bc25f2dfb9a5a7eaa76/qwen3_0_6b_mixed_int4.litertlm' --ddp --device pa3q-35 --cpu  (billed DDP session: qwen3-0.6b cpu attempt 1, CLI defaults (prefill 1024, decode 256, max 1280, 5 iterations))
+### CMD: source <work>/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/a3c5d805ae362dff7f580bc25f2dfb9a5a7eaa76/qwen3_0_6b_mixed_int4.litertlm' --ddp --device pa3q-35 --cpu  (billed DDP session: qwen3-0.6b cpu attempt 1, CLI defaults (prefill 1024, decode 256, max 1280, 5 iterations))
 ### START 2026-10-07 00:55:04 JST
 Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
 Ensuring GCS bucket 'gs://litert-edge-portal-devicerun' exists for project 'litert-edge-portal'...
@@ -588,7 +588,7 @@ LiteRT-LM benchmark: second process, 5 iteration(s), 1 warm-up; median of the ot
 exit=0
 ### END 01:00:56 JST
 
-### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --cpu  (billed DDP session: gemma-4-e2b cpu attempt 1, CLI defaults (prefill 1024, decode 256, max 1280, 5 iterations))
+### CMD: source <work>/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --cpu  (billed DDP session: gemma-4-e2b cpu attempt 1, CLI defaults (prefill 1024, decode 256, max 1280, 5 iterations))
 ### START 2026-10-07 01:00:56 JST
 Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
 Ensuring GCS bucket 'gs://litert-edge-portal-devicerun' exists for project 'litert-edge-portal'...
@@ -708,7 +708,7 @@ Output files saved to: /Users/USER/.cache/litert-cli/ddp/session-aecaca6b/cpu-pa
 exit=0
 ### END 01:08:14 JST
 
-### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --gpu  (billed DDP session: gemma-4-e2b gpu attempt 1, CLI defaults (prefill 1024, decode 256, max 1280, 5 iterations))
+### CMD: source <work>/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --gpu  (billed DDP session: gemma-4-e2b gpu attempt 1, CLI defaults (prefill 1024, decode 256, max 1280, 5 iterations))
 ### START 2026-10-07 01:08:14 JST
 Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
 Ensuring GCS bucket 'gs://litert-edge-portal-devicerun' exists for project 'litert-edge-portal'...
@@ -861,7 +861,7 @@ LiteRT-LM benchmark: second process, 5 iteration(s), 1 warm-up; median of the ot
 exit=0
 ### END 01:17:19 JST
 
-### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--Qwen3-4B/snapshots/84cc5a35c9c65cd18fcd65bb1f3a7d77a4acfe6e/qwen3_4b_mixed_int4.litertlm' --ddp --device pa3q-35 --cpu  (billed DDP session: qwen3-4b cpu attempt 1, CLI defaults (prefill 1024, decode 256, max 1280, 5 iterations))
+### CMD: source <work>/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--Qwen3-4B/snapshots/84cc5a35c9c65cd18fcd65bb1f3a7d77a4acfe6e/qwen3_4b_mixed_int4.litertlm' --ddp --device pa3q-35 --cpu  (billed DDP session: qwen3-4b cpu attempt 1, CLI defaults (prefill 1024, decode 256, max 1280, 5 iterations))
 ### START 2026-10-07 01:17:19 JST
 Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
 Ensuring GCS bucket 'gs://litert-edge-portal-devicerun' exists for project 'litert-edge-portal'...
@@ -1007,7 +1007,7 @@ LiteRT-LM benchmark: second process, 5 iteration(s), 1 warm-up; median of the ot
 exit=0
 ### END 01:32:40 JST
 
-### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--Qwen3-4B/snapshots/84cc5a35c9c65cd18fcd65bb1f3a7d77a4acfe6e/qwen3_4b_mixed_int4.litertlm' --ddp --device pa3q-35 --gpu  (billed DDP session: qwen3-4b gpu attempt 1, CLI defaults (prefill 1024, decode 256, max 1280, 5 iterations))
+### CMD: source <work>/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--Qwen3-4B/snapshots/84cc5a35c9c65cd18fcd65bb1f3a7d77a4acfe6e/qwen3_4b_mixed_int4.litertlm' --ddp --device pa3q-35 --gpu  (billed DDP session: qwen3-4b gpu attempt 1, CLI defaults (prefill 1024, decode 256, max 1280, 5 iterations))
 ### START 2026-10-07 01:32:40 JST
 Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
 Ensuring GCS bucket 'gs://litert-edge-portal-devicerun' exists for project 'litert-edge-portal'...
@@ -1158,7 +1158,7 @@ LiteRT-LM benchmark: second process, 5 iteration(s), 1 warm-up; median of the ot
 exit=0
 ### END 01:43:04 JST
 
-### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E4B-it-litert-lm/snapshots/2eee7ac325f20eb8c9ac1d0e972f7c84663062da/gemma-4-E4B-it.litertlm' --ddp --device pa3q-35 --cpu  (billed DDP session: gemma-4-e4b cpu attempt 1, CLI defaults (prefill 1024, decode 256, max 1280, 5 iterations))
+### CMD: source <work>/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E4B-it-litert-lm/snapshots/2eee7ac325f20eb8c9ac1d0e972f7c84663062da/gemma-4-E4B-it.litertlm' --ddp --device pa3q-35 --cpu  (billed DDP session: gemma-4-e4b cpu attempt 1, CLI defaults (prefill 1024, decode 256, max 1280, 5 iterations))
 ### START 2026-10-07 01:43:04 JST
 Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
 Ensuring GCS bucket 'gs://litert-edge-portal-devicerun' exists for project 'litert-edge-portal'...
@@ -1278,7 +1278,7 @@ Output files saved to: /Users/USER/.cache/litert-cli/ddp/session-565fe3f9/cpu-pa
 exit=0
 ### END 01:53:46 JST
 
-### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E4B-it-litert-lm/snapshots/2eee7ac325f20eb8c9ac1d0e972f7c84663062da/gemma-4-E4B-it.litertlm' --ddp --device pa3q-35 --gpu  (billed DDP session: gemma-4-e4b gpu attempt 1, CLI defaults (prefill 1024, decode 256, max 1280, 5 iterations))
+### CMD: source <work>/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E4B-it-litert-lm/snapshots/2eee7ac325f20eb8c9ac1d0e972f7c84663062da/gemma-4-E4B-it.litertlm' --ddp --device pa3q-35 --gpu  (billed DDP session: gemma-4-e4b gpu attempt 1, CLI defaults (prefill 1024, decode 256, max 1280, 5 iterations))
 ### START 2026-10-07 01:53:46 JST
 Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
 Ensuring GCS bucket 'gs://litert-edge-portal-devicerun' exists for project 'litert-edge-portal'...
@@ -1432,7 +1432,7 @@ exit=0
 ### END 02:01:14 JST
 ### NOTE: 02:01 JST queue done. session-83804732 (Qwen3-1.7B gpu, Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm) stopped in its first process with 'Failed to apply template ... (in template:32)': line 32 of that bundle's chat template adds message.content to a string, the other five bundles' templates do not (tools/tmpl.py read of the six files). The same file fails the same way on any run, so the one retry of that cell uses the repo's other file, Qwen3_1.7B.litertlm, with --gpu. session-aecaca6b (Gemma 4 E2B cpu) and session-565fe3f9 (Gemma 4 E4B cpu) finished PASSED with exit 0 in both processes and a metrics.pb without prefill or decode turns: 'dynamic_update_slice.cc:68 SizeOfDimension(update, i) <= SizeOfDimension(operand, i) was not true. Node number ... (DYNAMIC_UPDATE_SLICE) failed to prepare' on subgraph prefill_1024, six times each (one per conversation). Not retried: the failure is in tensor allocation, before any token.
 
-### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--Qwen3-1.7B/snapshots/73fbc3fe8271c162a603ee66f6e7ed25b6211195/Qwen3_1.7B.litertlm' --ddp --device pa3q-35 --gpu  (billed DDP session: qwen3-1.7b-int8file gpu attempt 2, CLI defaults (prefill 1024, decode 256, max 1280, 5 iterations))
+### CMD: source <work>/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--Qwen3-1.7B/snapshots/73fbc3fe8271c162a603ee66f6e7ed25b6211195/Qwen3_1.7B.litertlm' --ddp --device pa3q-35 --gpu  (billed DDP session: qwen3-1.7b-int8file gpu attempt 2, CLI defaults (prefill 1024, decode 256, max 1280, 5 iterations))
 ### START 2026-10-07 02:01:29 JST
 Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
 Ensuring GCS bucket 'gs://litert-edge-portal-devicerun' exists for project 'litert-edge-portal'...
@@ -1583,7 +1583,7 @@ LiteRT-LM benchmark: second process, 5 iteration(s), 1 warm-up; median of the ot
 exit=0
 ### END 02:09:05 JST
 
-### CMD: for n in $(cat /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/sessions/input-dirs.txt); do gcloud storage ls -l gs://litert-edge-portal-devicerun/litert-cli/inputs/$n/ 2>&1 | grep -v "^TOTAL"; done; gcloud storage du -s gs://litert-edge-portal-devicerun/litert-cli/inputs/ | tail -1  (look at the ten input dirs of today before removing them (owner: delete after the push))
+### CMD: for n in $(cat <work>/sessions/input-dirs.txt); do gcloud storage ls -l gs://litert-edge-portal-devicerun/litert-cli/inputs/$n/ 2>&1 | grep -v "^TOTAL"; done; gcloud storage du -s gs://litert-edge-portal-devicerun/litert-cli/inputs/ | tail -1  (look at the ten input dirs of today before removing them (owner: delete after the push))
 ### START 2026-10-07 02:20:10 JST
 2056729520  2026-10-06T15:41:35Z  gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-e8f06c5c/Qwen3_1.7B.litertlm
       1173  2026-10-06T15:41:40Z  gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-e8f06c5c/litert_lm_run.sh
@@ -1609,7 +1609,7 @@ exit=0
 exit=0
 ### END 02:20:44 JST
 
-### CMD: for n in $(cat /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/sessions/input-dirs.txt); do gcloud storage rm -r gs://litert-edge-portal-devicerun/litert-cli/inputs/$n/ 2>&1 | grep -c "^Removing gs://" | sed "s|^|$n removed objects: |"; done; gcloud storage du -s gs://litert-edge-portal-devicerun/litert-cli/inputs/ | tail -1; gcloud storage ls gs://litert-edge-portal-devicerun/litert-cli/sessions/ | grep -c "session-\(75cdf64a\|83804732\|a7c5ae10\|aecaca6b\|0d1cde8d\|fb63c76d\|981d881c\|565fe3f9\|e06d4f0b\|965ba2f4\)"  (remove today's ten input dirs (bundle + run script each); session outputs under litert-cli/sessions/ stay; owner word 2026-10-07)
+### CMD: for n in $(cat <work>/sessions/input-dirs.txt); do gcloud storage rm -r gs://litert-edge-portal-devicerun/litert-cli/inputs/$n/ 2>&1 | grep -c "^Removing gs://" | sed "s|^|$n removed objects: |"; done; gcloud storage du -s gs://litert-edge-portal-devicerun/litert-cli/inputs/ | tail -1; gcloud storage ls gs://litert-edge-portal-devicerun/litert-cli/sessions/ | grep -c "session-\(75cdf64a\|83804732\|a7c5ae10\|aecaca6b\|0d1cde8d\|fb63c76d\|981d881c\|565fe3f9\|e06d4f0b\|965ba2f4\)"  (remove today's ten input dirs (bundle + run script each); session outputs under litert-cli/sessions/ stay; owner word 2026-10-07)
 ### START 2026-10-07 02:21:01 JST
 litert-cli-benchmark-e8f06c5c removed objects: 2
 litert-cli-benchmark-f3c6f293 removed objects: 2
@@ -1626,7 +1626,7 @@ litert-cli-benchmark-b6024ada removed objects: 2
 exit=0
 ### END 02:22:07 JST
 
-### CMD: cd /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/lm-latest && for f in litert_lm_advanced_main libGemmaModelConstraintProvider.so libLiteRtDispatch_GoogleTensor.so libLiteRtDispatch_MediaTek.so libLiteRtDispatch_Qualcomm.so libLiteRtOpenClAccelerator.so libLiteRtTopKOpenClSampler.so; do gcloud storage cp gs://litert/binaries/latest/android_arm64/litert_lm/$f . 2>&1 | grep -i error; done; shasum -a 256 *  (the benchmark binary and its libraries from the public bucket, for a local run on the S26 (no DDP session))
+### CMD: cd <work>/lm-latest && for f in litert_lm_advanced_main libGemmaModelConstraintProvider.so libLiteRtDispatch_GoogleTensor.so libLiteRtDispatch_MediaTek.so libLiteRtDispatch_Qualcomm.so libLiteRtOpenClAccelerator.so libLiteRtTopKOpenClSampler.so; do gcloud storage cp gs://litert/binaries/latest/android_arm64/litert_lm/$f . 2>&1 | grep -i error; done; shasum -a 256 *  (the benchmark binary and its libraries from the public bucket, for a local run on the S26 (no DDP session))
 ### START 2026-10-07 02:23:09 JST
 f2aa38cecc5c728050652ffdbaed4c6f2d444e098e1ca3ecf8b85be46baae5b9  libGemmaModelConstraintProvider.so
 cd9dec7b85cf097b80530222562e8538b01a3b9e19eb9e4809861fc945625983  libLiteRtDispatch_GoogleTensor.so
@@ -1639,7 +1639,7 @@ exit=0
 ### END 02:23:27 JST
 ### NOTE: 02:25 JST owner word 'all recommended': pushed 60ebc90, removed today's ten input dirs (bucket inputs back to 11,680,278,877 bytes), and the Gemma 4 cpu cells are tried on the Galaxy S26 with the same binary before any further DDP session: tools/s26_gemma_cpu_repro.sh, queued on the shared S26 hold (the phone is held by another lane's sitting since 01:42).
 
-### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --cpu --max-num-tokens 2048  (billed DDP session: gemma-4-e2b cpu, --max-num-tokens 2048 (prefill 1024, decode 256, 5 iterations at the defaults); the 1280 default fails to allocate on this bundle)
+### CMD: source <work>/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --cpu --max-num-tokens 2048  (billed DDP session: gemma-4-e2b cpu, --max-num-tokens 2048 (prefill 1024, decode 256, 5 iterations at the defaults); the 1280 default fails to allocate on this bundle)
 ### START 2026-10-07 02:42:02 JST
 Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
 Ensuring GCS bucket 'gs://litert-edge-portal-devicerun' exists for project 'litert-edge-portal'...
@@ -1785,7 +1785,7 @@ LiteRT-LM benchmark: second process, 5 iteration(s), 1 warm-up; median of the ot
 exit=0
 ### END 02:49:53 JST
 
-### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E4B-it-litert-lm/snapshots/2eee7ac325f20eb8c9ac1d0e972f7c84663062da/gemma-4-E4B-it.litertlm' --ddp --device pa3q-35 --cpu --max-num-tokens 2048  (billed DDP session: gemma-4-e4b cpu, --max-num-tokens 2048 (prefill 1024, decode 256, 5 iterations at the defaults); the 1280 default fails to allocate on this bundle)
+### CMD: source <work>/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E4B-it-litert-lm/snapshots/2eee7ac325f20eb8c9ac1d0e972f7c84663062da/gemma-4-E4B-it.litertlm' --ddp --device pa3q-35 --cpu --max-num-tokens 2048  (billed DDP session: gemma-4-e4b cpu, --max-num-tokens 2048 (prefill 1024, decode 256, 5 iterations at the defaults); the 1280 default fails to allocate on this bundle)
 ### START 2026-10-07 02:49:53 JST
 Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
 Ensuring GCS bucket 'gs://litert-edge-portal-devicerun' exists for project 'litert-edge-portal'...

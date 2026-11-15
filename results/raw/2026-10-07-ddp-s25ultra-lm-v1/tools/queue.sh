@@ -1,7 +1,7 @@
 #!/bin/bash
 # queue.sh: the remaining sessions, one at a time. A session without metrics.pb is retried once;
 # stops after two failures in a row or when the retry budget (2) is spent and another failure comes.
-S=/private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad
+S=<work>
 H=$HOME/.cache/huggingface/hub
 TSV=$S/sessions/sessions.tsv
 Q=$S/sessions/queue.log

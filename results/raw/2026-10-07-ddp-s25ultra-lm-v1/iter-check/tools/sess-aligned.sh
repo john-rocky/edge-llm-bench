@@ -2,8 +2,8 @@
 # sess-aligned.sh <gpu|cpu>: one billed DDP session on pa3q-35, Gemma 4 E2B, --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096
 # (an app that sets no limit allocates the engine default, 4096 when the bundle carries no limit; the benchmark
 # binary picks 1280 on its own when the flag is absent, so 4096 is passed explicitly). Other flags at the CLI defaults.
-S=/private/tmp/claude-501/-Users-USER-code-edge-llm-bench/d21f53ca-5923-4da1-b5fc-7e34ecbf7034/scratchpad/r5
-V=/private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly
+S=<work>/r5
+V=<work>/.venv-nightly
 M=/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm
 b="$1"; label="gemma-4-e2b-$b-iter1-max4096"
 out="$S/sessions/$label.out"

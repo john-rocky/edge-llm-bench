@@ -1,6 +1,6 @@
 #!/bin/bash
 # sess.sh <label> <backend: cpu|gpu> <model path or gs:// url> [attempt]: one billed DDP session on pa3q-35, logged to the run-log.
-S=/private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad
+S=<work>
 label="$1"; backend="$2"; model="$3"; attempt="${4:-1}"
 out="$S/sessions/$label-$backend-a$attempt.out"
 mkdir -p "$S/sessions"

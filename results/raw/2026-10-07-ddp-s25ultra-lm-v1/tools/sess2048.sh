@@ -1,6 +1,6 @@
 #!/bin/bash
 # sess2048.sh <label> <model path>: one billed DDP cpu session on pa3q-35 with --max-num-tokens 2048 (the other flags at the CLI defaults).
-S=/private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad
+S=<work>
 label="$1"; model="$2"
 out="$S/sessions/$label-cpu-n2048.out"
 RL_TAIL=400 "$S/tools/rl.sh" "billed DDP session: $label cpu, --max-num-tokens 2048 (prefill 1024, decode 256, 5 iterations at the defaults); the 1280 default fails to allocate on this bundle" \

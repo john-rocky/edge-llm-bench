@@ -1,7 +1,7 @@
 #!/bin/bash
 # sess-iter.sh <num-iterations>: one billed DDP gpu session on pa3q-35, Gemma 4 E2B, every flag at the CLI default except --num-iterations.
-S=/private/tmp/claude-501/-Users-USER-code-edge-llm-bench/416ea1d0-f406-4a47-b20f-9762267e615e/scratchpad
-V=/private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly
+S=<work>
+V=<work>/.venv-nightly
 M=/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm
 n="$1"; label="gemma-4-e2b-gpu-iter$n"
 # --warmup-runs only sets how many leading iterations the CLI leaves out of the medians it prints (ddp.py _fetch_session_outputs);
