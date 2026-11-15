@@ -607,7 +607,7 @@ outputs under `automation/sessions/`).
 - **Short-chat prefill is not comparable across arms.** On a ~20-token prompt
   the prefill figure is dominated by fixed per-call overhead and ranks the
   arms differently from decode; the 1024-token task is the prefill
-  instrument (methodology/agreed-protocol-gemma4.md).
+  instrument (methodology/protocol-gemma4.md).
 
 - **Core AI arm**: PLE models (Gemma-4 E2B/E4B) need the unpublished
   `COREAI_STATIC_INPUTS` engine patch; a clean clone reports `unsupported`

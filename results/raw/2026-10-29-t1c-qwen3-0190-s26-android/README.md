@@ -1,6 +1,6 @@
-# T1c on LiteRT-LM 0.19.0 — Galaxy S26 column (2026-10-29)
+# GPU-composite exports on LiteRT-LM 0.19.0 — Galaxy S26 column (2026-10-29)
 
-**Terms.** T1c = a series of runs (2026-10-15) that exported Qwen3-1.7B with int8 channelwise weights (`dynamic_wi8_afp32`) and Qwen3-4B with int4 block-32 weights (`dynamic_wi4b32_afp32`) through litert-torch's GPU-composite path (`--apply_gpu_composites=True`, the flag of the Qwen3-0.6B export E2 in `results/raw/2026-10-26-t1b-qwen3-0181-s26-android/`) and compared them with the Hugging Face files of the time on early runtimes (the nightly wheel 0.19.0.dev20261013 and LiteRT-LM main@b7c40ea81). The same comparison on a released LiteRT-LM was left open. T1c's own files are in notes outside this repo; the lines this README relies on are restated here. The files of this column:
+**Terms.** The GPU-composite series (`t1c` in folder names) = the runs (2026-10-15) that exported Qwen3-1.7B with int8 channelwise weights (`dynamic_wi8_afp32`) and Qwen3-4B with int4 block-32 weights (`dynamic_wi4b32_afp32`) through litert-torch's GPU-composite path (`--apply_gpu_composites=True`, the flag of the Qwen3-0.6B export E2 in `results/raw/2026-10-26-t1b-qwen3-0181-s26-android/`) and compared them with the Hugging Face files of the time on early runtimes (the nightly wheel 0.19.0.dev20261013 and LiteRT-LM main@b7c40ea81). The same comparison on a released LiteRT-LM was left open. The series' own files are in notes outside this repo; the lines this README relies on are restated here. The files of this column:
 
 | label | file (litert-community repo) | role |
 |---|---|---|
@@ -23,7 +23,7 @@
 
 Shared Galaxy S26 hold (SM-S942Q, Android 16, build BP4A.251205.006), JST: ticket `s29q3-s26-e` 13:26:49–14:08:22 (the wheel's selftest, then N17 and I17B), `-f` 14:36:53–15:17:56 (N4 and M4B), `-h` 17:27:58–17:45:12 (W17B); the phone dir was removed at the end of each. Holds `-a` to `-d` (13:08–13:19) stopped before any model leg (a kit push that did not verify, then the selftest's `cannot locate symbol "OpenSSL_add_all_algorithms"`), and hold `-g` (15:40–16:17) ran a Qwen3-0.6B pair whose legs are not in this dir; all of them are in `logs/s26/runlog.txt`.
 
-**Numbers** (these holds only; not pooled with T1c's 2026-10-15 columns or with any page row):
+**Numbers** (these holds only; not pooled with the series' 2026-10-15 columns or with any page row):
 
 | row | N17 | I17B | N4 | M4B |
 |---|---|---|---|---|
@@ -42,6 +42,6 @@ W17B alone (hold `-h`): GPU protocol 1,187.0 / 38.80; dashboard prompt 978.8 / 9
 
 **After this sitting.** On 2026-10-31 litert-community/Qwen3-1.7B (commit ebb4eef4, 04:56 UTC) and litert-community/Qwen3-4B (commit 965e091f, 05:08 UTC) replaced `Qwen3_1.7B.litertlm` and `qwen3_4b_mixed_int4.litertlm` "with the GPU-composite export" (the commit titles); the names now hold 1,754,890,240 B (lfs `e4059962…`) and 2,272,935,936 B (lfs `4877b236…`), and the `_gpu_composites` names are no longer in the main tree. This dir holds no run of the bytes now under the kept names. The Android cells download their file by name from main (`android/bench/run_cell.py`, `hf_hub_download(model_id, fname)`) and push it again when its sha256 differs, so from the first sitting on the v0.19.0 pin the 1.7B CPU cells and both 4B cells run those bytes; the 1.7B GPU cells run W17B, which did not change.
 
-**Files.** `RESULTS.md` (the lane's `summarize.py` run on this dir's `logs/s26/` on 2026-11-01), `logs/s26/` (each leg's stderr, parsed JSON, meta and stdout for N17, I17B, N4, M4B, W17B and the wheel's selftest; `runlog.txt`, the keeper's log of every hold of the day; `device_props.txt`). The legs' logcat files are left out: they carry other processes' lines.
+**Files.** `RESULTS.md` (the series' `summarize.py` run on this dir's `logs/s26/` on 2026-11-01), `logs/s26/` (each leg's stderr, parsed JSON, meta and stdout for N17, I17B, N4, M4B, W17B and the wheel's selftest; `runlog.txt`, the keeper's log of every hold of the day; `device_props.txt`). The legs' logcat files are left out: they carry other processes' lines.
 
 Nothing here is a schema record: `scripts/build_summary.py` reads only `app-path*/` and `device-jsonl/` JSON, so `results/summary` does not change.

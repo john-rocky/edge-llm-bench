@@ -1,7 +1,7 @@
 # 2026-10-07-dashboard-protocol1024-v1-iphone18pro-ios — notes
 
 Protocol rows = LiteRT-LM's own `benchmark()` entry point: prefill forced to exactly 1024 tokens with no prompt,
-decode 256, context 2048 (`methodology/agreed-protocol-gemma4.md`), task `native-benchmark-1024x256`, rows 20-24 of
+decode 256, context 2048 (`methodology/protocol-gemma4.md`), task `native-benchmark-1024x256`, rows 20-24 of
 `matrices/dashboard-protocol1024-v1.cells` (`ios litert-lm <model> native-benchmark-1024x256 [cooldown=300]
 context-tokens=2048`), on the **iPhone 18 Pro** (`iPhone19,2`, iOS 27.2 beta, build 24B5099f, on USB).
 
@@ -10,7 +10,7 @@ App: `com.example.CoreMLLLMChat` 0.2.0 (1) as installed on 2026-10-07 02:48:08 J
 BenchmarkApp Release build of commit 3be68d7, whose bundled `engine-pins.json` pins LiteRT-LM v0.16.0
 (`CLiteRTLM.xcframework.zip@v0.16.0 sha256:4e0f683d…`, the same artifact as `environment.lock.json`). The
 LiteRT-LM records the same app wrote in the 1K task-prompt sitting right after this one
-(`2026-10-07-dashboard-longctx1024-v1-iphone18pro-c{1..4}-ios`) stamp that engine. Harness `2026-07-30-agreed-protocol-r4`.
+(`2026-10-07-dashboard-longctx1024-v1-iphone18pro-c{1..4}-ios`) stamp that engine. Harness `2026-07-30-protocol-r4`.
 
 The iPhone runner has no native entry point (`scripts/bench_matrix_iphone.sh` passes the task id as `--task`), so the
 launches were driven directly, one launch per call:

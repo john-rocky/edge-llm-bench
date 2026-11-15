@@ -13,7 +13,7 @@ prefill + decode (google-ai-edge/LiteRT-LM eae7821a, 2026-10-19); with `maxNumTo
 `.litertlm` metadata carries no `max_num_tokens`) gets the engine default 4096
 (`runtime/engine/engine_settings.cc`, the `GetMaxNumTokens() == 0` branch); v0.18.0's Swift helper used
 prefill + decode + 32 = 1312; this repo's protocol rows and the model card use 2048
-(`methodology/agreed-protocol-gemma4.md`).
+(`methodology/protocol-gemma4.md`).
 
 ## Protocol
 

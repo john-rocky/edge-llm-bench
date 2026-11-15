@@ -172,7 +172,7 @@ engine clock against the app's), and so does each against the text task: compare
 with a protocol row, and read the definitions with the number.
 
 **Which regime a protocol cell headlines.** Both arms' protocol cells read the protocol's
-regime (`methodology/agreed-protocol-gemma4.md`: warm for the side-by-side, cold reported
+regime (`methodology/protocol-gemma4.md`: warm for the side-by-side, cold reported
 separately as first use): the warm median — Core AI trials 1..N, LiteRT-LM `benchmark()` calls
 2..N — wherever the session has warm runs, with the cold first call's median beside it (the dashboard
 page's tooltip and inspector, `cold_tps`; the detail table of `scripts/render_dashboard.py`); a

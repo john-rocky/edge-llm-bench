@@ -34,7 +34,7 @@ see "Core AI arm (v2)" below; validated by `scripts/validate_cells.py`).
 Task: `short-chat`, the cross-arm standard cell (same prompt and token budget
 on every arm). The 1024-prefill / 256-decode / ctx-2048 column
 (`long-context-1024-gen256`, methodology
-`agreed-protocol-gemma4.md`) is the natural second task and was not in v1 —
+`protocol-gemma4.md`) is the natural second task and was not in v1 —
 open question 3 below; the Mac leg of a deeper column (p≈2K / g=256, three
 KV allocations) was measured 2026-09-18, section "Long-context column".
 Since 2026-10-06 the weekly set carries it: section "Second task in the
@@ -598,7 +598,7 @@ The same text goes to every arm. Since 2026-10-19 the tail is the 2K ladder's
 below.
 
 `context-tokens=2048` on every LiteRT-LM and llama.cpp row: the
-protocol's context (`methodology/agreed-protocol-gemma4.md`: prefill 1024,
+protocol's context (`methodology/protocol-gemma4.md`: prefill 1024,
 decode 256, context forced to 2048 for Gemma 4; the set uses the same
 allocation for the Qwen3 rows, so one column is one allocation) —
 LiteRT-LM `maxNumTokens`, llama.cpp `n_ctx`. On Android the option also
@@ -1122,7 +1122,7 @@ A `native-benchmark-<P>x<D>` cell is one launch of an engine's own benchmark ent
 call cold, the calls after it warm (LiteRT-LM `benchmark()` calls 2..N of a `--runs N` launch;
 the Core AI stock arm's trials 1..N, the ones `llm-benchmark` averages; llama-bench's in-process
 repeats, all recorded warm). Since 2026-10-08 such a cell headlines the protocol's regime
-(`methodology/agreed-protocol-gemma4.md`: warm for the side-by-side, cold reported separately as
+(`methodology/protocol-gemma4.md`: warm for the side-by-side, cold reported separately as
 first use) on every platform and for every arm: the warm median wherever the session has warm
 runs, with the session's cold first-call median beside it (`cold_tps`), and the cold median only
 where the session has none — the LiteRT-LM protocol sittings before 2026-10-08 made one call per
@@ -1737,7 +1737,7 @@ decode, median over 3 processes), against 251.8 / 9.01 for `Qwen3_1.7B.litertlm`
 `Qwen3-4B_dynamic_wi4b32_afp32_gpu_composites.litertlm` reaches the lane's memory guard there (MemAvailable under
 400,000 kB): the lowest read was under that line in three of its five GPU processes and just above it in two, and
 every GPU process built its engine. The guard stopped the process on 2026-11-02 2 s after the benchmark's session was
-created (as on a lab Pixel 8a in T1c's 2026-10-16 round with T1c's own 4B export), and on 2026-11-03, with background
+created (as on a lab Pixel 8a in a 2026-10-16 run with a GPU-composite 4B export), and on 2026-11-03, with background
 apps stopped first, after one finished run, 3 s after the second run's session was created. On 2026-11-05
 (`results/raw/2026-11-05-t1c-qwen3-0190-p8a-4b-cached-android/`), with background apps stopped before each process, one
 cold process and one reading its caches ran their 3 runs, median 104.6 / 8.74 tok/s, and the guard stopped a second

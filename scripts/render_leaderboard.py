@@ -86,14 +86,14 @@ CPU_CAP_EXEMPT_ARMS = frozenset({
 # runs — the column header says which
 REGIME = {"ios": "warm", "mac": "warm", "android": "cold", "windows": "cold"}
 # the protocol task family (native-benchmark-<P>x<D>: one launch of an engine's own benchmark
-# entry; methodology/agreed-protocol-gemma4.md, docs/dashboard-cells-v1.md)
+# entry; methodology/protocol-gemma4.md, docs/dashboard-cells-v1.md)
 PROTOCOL_TASK_PREFIX = "native-benchmark-"
 
 
 def headline_regime(plat, task, a):
     """The regime cell `task` on `plat` headlines from arm_row result `a` (cold-warm-split: one
     regime per number, never mixed). A text-task cell reads its platform's (REGIME). A protocol
-    cell reads the protocol's regime, warm (methodology/agreed-protocol-gemma4.md: warm
+    cell reads the protocol's regime, warm (methodology/protocol-gemma4.md: warm
     for the side-by-side, cold reported separately as first use), wherever its session has warm
     runs, on every platform and for every arm alike — LiteRT-LM benchmark() calls 2..N of a
     launch, Core AI trials 1..N (the trials llm-benchmark averages), llama-bench's in-process

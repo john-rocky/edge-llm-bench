@@ -33,7 +33,7 @@ from serialized data` four times = the ML Drift program cache in `$TMPDIR` (writ
 is not recorded) was read, not built. CPU protocol: the four calls read the cache the cache launch built (init 0.82 s,
 then 0.27–0.29 s; the file's mtime stayed 15:18:52); this engine prints no VERBOSE cache line on the Mac. The cache
 this sitting created was removed after it (a CPU run's XNNPACK cache slows later GPU runs:
-`methodology/agreed-protocol-gemma4.md` "Traps").
+`methodology/protocol-gemma4.md` "Traps").
 
 Instrument facts. The GPU arm registered `GPU WebGPU` (Dawn), not Metal (`RegisterAccelerator … name=GPU WebGPU` in
 every launch's console). The CPU arm runs the engine's default thread count, 4: the Swift wrapper passes none

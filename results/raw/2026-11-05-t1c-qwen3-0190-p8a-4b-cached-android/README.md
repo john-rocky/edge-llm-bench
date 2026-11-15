@@ -1,4 +1,4 @@
-# T1c on LiteRT-LM 0.19.0 — Pixel 8a, N4 on the GPU with its caches kept (2026-11-05)
+# GPU-composite exports on LiteRT-LM 0.19.0 — Pixel 8a, N4 on the GPU with its caches kept (2026-11-05)
 
 **Terms.** N4 = `Qwen3-4B_dynamic_wi4b32_afp32_gpu_composites.litertlm`, litert-community/Qwen3-4B at commit a45912eb (lfs sha256 `a11d1b4c…`, 2,272,915,968 B), the 4B file with int4 block-32 weights and GPU composite ops of the comparison in `results/raw/2026-10-29-t1c-qwen3-0190-p8a-android/` (added to the Hub repo on 2026-10-27). This dir is its third sitting on the Pixel 8a; the first two, and the phone's wheel, harness and protocol, are in that dir. A sitting is one stretch of time reserved on the shared phone (a hold). A GPU protocol process is one Python process that builds one GPU engine and calls `Benchmark(...)` 3 times (How). The memory guard is that dir's: it stops the process once MemAvailable reads under 400,000 kB on two polls 2 s apart, and the harness then reports exit 137.
 

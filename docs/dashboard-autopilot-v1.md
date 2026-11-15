@@ -537,7 +537,7 @@ reaches the page through this step.
   S26 Gemma 4 E2B GPU protocol cell at 25.9 tok/s decode on v0.16.0 and 44–47 on 0.18-era builds,
   same phone and file.
 - **`protocol-off`**: a LiteRT-LM headline cell off the protocol
-  (`methodology/agreed-protocol-gemma4.md`, "The spec"): the protocol cell
+  (`methodology/protocol-gemma4.md`, "The spec"): the protocol cell
   `native-benchmark-1024x256` with a context other than 2048, a prompt other than 1024 or a decode
   other than 256 tokens, or the overview workload `long-context-1024-gen256` with a context other
   than 2048; a run with no recorded context counts as off.

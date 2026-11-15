@@ -861,7 +861,7 @@ def native_records(template):
                            "memoryMedianResidentMB": 2500.0, "memorySampleCount": 120,
                            "memoryPostTeardownFootprintMB": 300.0, "contextTokensConfigured": 2048, "wallSeconds": 20.5,
                            "initialThermalState": "nominal", "finalThermalState": "nominal",
-                           "harnessStamp": "2026-07-30-agreed-protocol-r4"},
+                           "harnessStamp": "2026-07-30-protocol-r4"},
                "conditions": {"instrument": f"litert-lm native benchmark() via BenchmarkApp --task {NATIVE_TASK}",
                               "run": i + 1, "runs": 2}}
         recs.append((f"litert-lm_litert-community_Qwen3-1.7B_{NATIVE_TASK}_{stamp}.json", rec))

@@ -297,7 +297,7 @@ def main():
                 "ops/dashboard-v1/schedule.json"):
         with open(os.path.join(root, rel)) as fh:
             write(os.path.join(root_h, rel), fh.read())
-    H_OLD, H_NEW = "2026-07-30-agreed-protocol-r4", "2026-07-30-agreed-protocol-r4+litert-cap-engine-kvfilter-off"
+    H_OLD, H_NEW = "2026-07-30-protocol-r4", "2026-07-30-protocol-r4+litert-cap-engine-kvfilter-off"
     M5, M6 = "2026-09-15-dashboard-v1-m4max-mac", "2026-09-22-dashboard-v1-m4max-mac"
 
     def mac_runs_h(camp, day, decode, stamp):

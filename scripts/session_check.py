@@ -118,7 +118,7 @@ SCREEN_ABOUT = ("scripts/session_check.py's text screen of this dir's Mac / iPho
                 "runner text check: the reply proxies per run (run_rules, by record id; [] = passed), "
                 "read by scripts/build_summary.py into results/summary text_check (docs/session-check-v1.md)")
 PROTOCOL_TASK_PREFIX = "native-benchmark-"
-# the protocol (methodology/agreed-protocol-gemma4.md "The spec"): LiteRT-LM's benchmark() at
+# the protocol (methodology/protocol-gemma4.md "The spec"): LiteRT-LM's benchmark() at
 # exactly 1024 prefill and 256 decode tokens with the context forced to 2048, and the page's overview
 # workload, the cross-arm 1K task, at the same forced context (protocol-off)
 PROTOCOL_CELL = "native-benchmark-1024x256"
@@ -1437,7 +1437,7 @@ class Check:
                                       f"release's cell is no number of the page")
 
     def check_cell_protocol(self, cell, items, rt, task):
-        """protocol-off: a LiteRT-LM headline cell off the protocol (methodology/agreed-
+        """protocol-off: a LiteRT-LM headline cell off the protocol (methodology/
         protocol-gemma4.md "The spec"): every run's context 2048 (the summary's context_tokens:
         build_summary.context_tokens_of), and the protocol cell's runs 1024 prompt and 256 generated
         tokens. One finding per cell; a run without a context is off. Other arms (MLX sizes its KV
