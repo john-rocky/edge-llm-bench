@@ -1974,7 +1974,7 @@ ANDROID_QUANT_LABELS = {
     # the same graph with Qwen/Qwen3-0.6B's tokenizer.json as its tokenizer section; its card: the GPU path needs a
     # LiteRT-LM newer than 0.18.1
     "Qwen3-0.6B_dynamic_wi4b32_afp32_gpu_composites.litertlm": "INT4 (dynamic, block-32 weights, FP32 act; GPU-composite export 2026-10-13, prefill 128 + 1024)",
-    "Qwen3-0.6B.litertlm": "INT8 (dynamic weights, float KV; metadata for 0.18.0, 2026-10-12)",  # the iOS ModelCatalog string of litert-community/Qwen3-0.6B/dynamic_int8, the same Hub file (ios/BenchmarkApp/Sources/Models/ModelCatalog.swift); side-loaded by the lu1020 YNNPACK control cells (2026-10-21)
+    "Qwen3-0.6B.litertlm": "INT8 (dynamic weights, float KV; metadata for 0.18.0, 2026-10-12)",  # the iOS ModelCatalog string of litert-community/Qwen3-0.6B/dynamic_int8, the same Hub file (ios/BenchmarkApp/Sources/Models/ModelCatalog.swift); side-loaded by the oct20 YNNPACK control cells (2026-10-21)
     "Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm": "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build)",
     "Qwen3.5-0.8B_wi4b32_afp32_gpu_cpu.litertlm": "INT4 (dynamic_wi4b32_afp32: block-32 weights, FP32 act; GPU+CPU composite export, cache 32768)",
     # litert-community/Qwen3.5-0.8B's text file: the iOS ModelCatalog string of that id, the same Hub file

@@ -1337,16 +1337,16 @@ one CPU and one GPU sitting per phone; no page row moves.
   path in `file=` (pushed as they are, sha256-checked on the phone): the rows never share a cell with the page's
   v0.18.0 rows (`litert-community/Qwen3-0.6B` + `file=`), whose cells select by device, arm, model id, task and
   context, not by engine.
-- Cells: `matrices/lu1020-q06-gpu-a-android.cells` (the Hub file and E2 in pairs: the 1K task and the protocol, which
-  launch `litert_lm_advanced_main` only), `matrices/lu1020-q06-gpu-b-android.cells` (the same pairs on short-chat, which
-  launches `litert_lm_main`) and `matrices/lu1020-q06-cpu-android.cells` (the Hub file on the CPU: the protocol and the
+- Cells: `matrices/oct20-q06-gpu-a-android.cells` (the Hub file and E2 in pairs: the 1K task and the protocol, which
+  launch `litert_lm_advanced_main` only), `matrices/oct20-q06-gpu-b-android.cells` (the same pairs on short-chat, which
+  launches `litert_lm_main`) and `matrices/oct20-q06-cpu-android.cells` (the Hub file on the CPU: the protocol and the
   1K task, XNNPACK and `ynnpack=1` interleaved per round, one binary). The GPU side build's `litert_lm_advanced_main`
   is the one the T1b lane built at b7c40ea81 on 2026-10-14 (sha256 `ce1f25dc…5234`), the seven libraries the
   commit's prebuilt ones, byte for byte; its `litert_lm_main` (for part b) is built at the same commit. `ynnpack=1` is the arm `litert-lm-cpu-ynnpack` (android/README.md,
   "Side builds"): a toggle in the conditions only would pool the two into one cell.
 - Reading: E2 against the Hub file only within one sitting on one build; YNNPACK on against off only within one
   sitting on one binary, with YNNPACK's own lines in every on launch and none in an off one.
-- The control (the cells of 2026-10-21, the S26 sitting of 2026-10-22): `matrices/lu1020-q06-cpu-ctl-android.cells`, six arms in one Galaxy S26 sitting, the
+- The control (the cells of 2026-10-21, the S26 sitting of 2026-10-22): `matrices/oct20-q06-cpu-ctl-android.cells`, six arms in one Galaxy S26 sitting, the
   protocol only. HEAD = the CPU rows' build and file, XNNPACK and `ynnpack=1` (the CPU file's two protocol rows as they
   are, so the sitting is also their S26 retake); slinky = the same build with slinky left at what LiteRT-LM 2ef6baeb's
   workspace resolves (side build `head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly-slinkytf`: slinky a3eec6fc of
