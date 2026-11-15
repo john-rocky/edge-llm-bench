@@ -1029,7 +1029,7 @@ labels, regime, timing, memory and telemetry: [docs/ortgenai-arm-v1.md](ortgenai
 
 ## ONNX Runtime GenAI arm in the weekly set (2026-10-09)
 
-Since 2026-10-09 (owner GO) the Mac block of `dashboard-text-v1.cells` ends with the 12 Qwen3
+Since 2026-10-09 the Mac block of `dashboard-text-v1.cells` ends with the 12 Qwen3
 rows of `matrices/dashboard-ortgenai-v1.cells` (0.6B / 1.7B / 4B, short-chat and the 1K text
 task at `context-tokens=2048`, the CPU EP and the WebGPU plugin EP, the engine default; one
 engine process per cell, run 1 cold, runs 2-4 warm). The Galaxy S26 measures only the two
@@ -1057,7 +1057,7 @@ after its cooldown.
 
 ## NPU and Android GPU rows in the weekly set (2026-10-09)
 
-Since 2026-10-09 (owner GO) the Galaxy S26's weekly sitting ends with the short-chat rows of
+Since 2026-10-09 the Galaxy S26's weekly sitting ends with the short-chat rows of
 `matrices/dashboard-npu-v1-android-s26.cells`: `matrices/dashboard-npu-v1-android-s26-short.cells`
 holds the session anchor and those ten rows (five models × `llama.cpp-npu` / `llama.cpp-gpu`, the
 side build `b11469-snapdragon`), byte-identical to the plan file, which stays the file the rows
@@ -1100,7 +1100,7 @@ which the rotation leaves alone). A marker per build is the open fix.
 
 ## ExecuTorch arm in the weekly set, Mac leg (2026-10-08)
 
-Since 2026-10-08 (owner GO) the Mac blocks of `dashboard-text-v1.cells` and
+Since 2026-10-08 the Mac blocks of `dashboard-text-v1.cells` and
 `dashboard-longctx1024-v1.cells` end with the ExecuTorch rows of
 `matrices/dashboard-executorch-v1-mac.cells`: our own exports of the dashboard models with
 ExecuTorch v1.5.1's own exporters (not published artifacts; `docs/executorch-arm-v1.md`), the

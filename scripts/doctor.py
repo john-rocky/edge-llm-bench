@@ -8,7 +8,7 @@ runner silently picking up an out-of-repo yardstick, a bootstrap default tag
 three releases behind the published rows, and `bench matrix` "succeeding"
 with zero cells run.
 
-  ./bench doctor                       # common + mac; device lanes best-effort
+  ./bench doctor                       # common + mac; devices best-effort
   ./bench doctor --platform iphone     # device absence is then a failure
   ./bench doctor --platform ddp        # DDP lab phones: gcloud, huggingface_hub, the pinned engine files
 

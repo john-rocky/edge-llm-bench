@@ -547,8 +547,8 @@ OFF_TASK = ("Please share the document you want summarised and the questions you
             "it, and I will answer each of them in order with short explanations.")
 
 # A llama.cpp side build's consoles, the forms of the 2026-10-07 Galaxy S26 smoke of
-# b11469-snapdragon (Qwen3 0.6B Q4_K_M; the launch logs are outside this repo, in the lane's
-# round notes): llama-bench -o json on HTP0, verbatim from its first line to the JSON's
+# b11469-snapdragon (Qwen3 0.6B Q4_K_M; the launch logs are outside this repo, in the
+# run notes): llama-bench -o json on HTP0, verbatim from its first line to the JSON's
 # end — the Hexagon registry's "FASTRPC_GET_DOMAINS[0]" line comes before the array — and
 # the chat tool's device lines at -lv 4 per device, timestamp prefixes included.
 BENCH_HTP0 = """ggml_opencl: selected platform: 'QUALCOMM Snapdragon(TM)'
@@ -686,7 +686,7 @@ SIDE_LINES = {
 # litert_lm_advanced_main (LiteRT-LM main of 2026-08-21) on the Galaxy S26 — the settings echo
 # of its runs with the hardware KV-cache update off (2026-09-08), the registry, dispatch and
 # DispatchDelegate lines of its AOT benchmark runs (2026-08-23), both on Gemma 3 270M bundles
-# (the lane's logs, outside this repo) — with this model and the runner's engines dir in the
+# (logs outside this repo) — with this model and the runner's engines dir in the
 # paths. LiteRT logs the NPU's registration failure for every environment after the first
 # one: a healthy run has it.
 NPU_ENG = "/data/local/tmp/llmbench/engines/main-20260821-selfbuilt"

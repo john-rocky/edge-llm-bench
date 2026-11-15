@@ -491,7 +491,7 @@ def llama_backend_registered(lines, device, buffer, tool, bench_tests=None):
 # LiteRT-LM on the NPU (run_cell.engine_command, a side build with engine-build=): the
 # engine's own lines that say which backend a launch chose and registered and what the
 # Qualcomm dispatch took, in the forms of the self-built litert_lm_advanced_main of
-# 2026-08-21 on the Galaxy S26 (the lane's NPU logs of 2026-08-23 to 2026-10-03, outside this
+# 2026-08-21 on the Galaxy S26 (the NPU logs of 2026-08-23 to 2026-10-03, outside this
 # repo; LiteRT-LM main b12c62c7 runtime/engine/litert_lm_lib.cc for the settings echo):
 #   I0000 00:00:1787447197.028690   26280 litert_lm_lib.cc:499] Choose backend: npu
 #   I0000 00:00:1787447197.028842   26280 litert_lm_lib.cc:652] executor_settings: backend: NPU

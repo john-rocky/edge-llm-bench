@@ -450,7 +450,7 @@ the other halves' pushed copies are rotated out first, as between halves). An ex
 retake never fans out into them. First use: the ONNX Runtime GenAI short-chat cells on the
 Galaxy S26 (`docs/dashboard-cells-v1.md`, "ONNX Runtime GenAI arm in the weekly set").
 
-Second use (2026-10-09, owner GO): `matrices/dashboard-npu-v1-android-s26-short.cells`, the session
+Second use (2026-10-09): `matrices/dashboard-npu-v1-android-s26-short.cells`, the session
 anchor and the short-chat rows of the S26's NPU / GPU plan file (llama.cpp's Snapdragon side
 build), as the session `-npu` after the ONNX Runtime one: about 2.1 h, `timeout_hours` 4
 (`docs/dashboard-cells-v1.md`, "NPU and Android GPU rows in the weekly set", has the derivation).

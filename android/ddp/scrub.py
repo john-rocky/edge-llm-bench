@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""The lab network's identifiers out of the logcats a DDP job pulls (D12; design:
-results/raw/2026-10-15-ddp-backend-dev/LANE.md §1). android/ddp/run_ddp.py runs it on every
+"""The lab network's identifiers out of the logcats a DDP job pulls (D12).
+android/ddp/run_ddp.py runs it on every
 pulled logcat (the per-run run<i>_logcat.txt files and the execution's logcat.txt) right after
 the pull, keeps the original bytes in <campaign>/ddp-raw/ (gitignored) and the counts in
 <campaign>/ddp/scrub.json. No number is read from a logcat (android/ddp/record.py reads

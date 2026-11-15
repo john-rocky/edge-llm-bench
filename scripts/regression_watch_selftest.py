@@ -433,7 +433,7 @@ def main():
     # those anchor rows, and the job skips a file whose build the phone lacks (android_side_builds_missing)
     write(os.path.join(fstate, "engines.txt"), "\n".join(dj.side_build_tools("matrices/anchors.cells")) + "\n")
     real_pgrep = dj.pgrep
-    dj.pgrep = lambda pattern: []     # host drivers of other lanes are not this test's business
+    dj.pgrep = lambda pattern: []     # host drivers of other jobs are not this test's business
     jnow = datetime.datetime.now().astimezone().replace(hour=2, minute=0, second=0, microsecond=0)
 
     def jrow(camp, dev, **delta):

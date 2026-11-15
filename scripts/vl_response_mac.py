@@ -86,7 +86,7 @@ DISPLAY = {
 }
 
 
-# Files whose recipe the lane already states elsewhere (quant-label-rule): the
+# Files whose recipe this repo already states elsewhere (quant-label-rule): the
 # Gemma 4 .litertlm carries no recipe word and Google's repo ships no manifest;
 # ios/BenchmarkApp/Sources/Models/ModelCatalog.swift and docs/dashboard-cells-v1.md
 # name it. Non-transferable to any other bundle.

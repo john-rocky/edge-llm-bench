@@ -1967,7 +1967,7 @@ ANDROID_QUANT_LABELS = {
     # 2026-10-20 local export, side-loaded by a file= path (not on the Hub): litert-torch 0a81bf6f
     # export_hf --apply_gpu_composites=True (its GPU flag set: fused qkv / gate_up, qkv_norm_rope,
     # sdpa, swiglu, bool mask, dynamic cache), dynamic_wi4b32_afp32, prefill 128 + 1024, the official
-    # Qwen3 LlmMetadata (sha256 fbbf0657…5b79, 343,466,928 B; the lane's E2, named for its recipe)
+    # Qwen3 LlmMetadata (sha256 fbbf0657…5b79, 343,466,928 B; export E2, named for its recipe)
     "Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm": "INT4 (dynamic, block-32 weights, FP32 act; GPU-composite export 2026-10-13, prefill 128 + 1024, local candidate)",
     # the Hub file of that export (litert-community/Qwen3-0.6B commit e6bb3e4a, 2026-10-27 22:56 UTC; 343,466,928 B,
     # lfs 691ad7b8…):

@@ -82,7 +82,7 @@ CPU_CAP_EXEMPT_ARMS = frozenset({
 })
 # cold-warm-split, the headline regime per platform (moved here from render_dashboard on
 # 2026-11-06, so that arm_row reads prefill and TTFT by it as the surfaces read decode):
-# Apple lanes have in-process warm runs, the Android and Windows CLIs compare fresh-process cold
+# the Apple harnesses have in-process warm runs, the Android and Windows CLIs compare fresh-process cold
 # runs — the column header says which
 REGIME = {"ios": "warm", "mac": "warm", "android": "cold", "windows": "cold"}
 # the protocol task family (native-benchmark-<P>x<D>: one launch of an engine's own benchmark

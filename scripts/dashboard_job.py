@@ -390,9 +390,9 @@ def check_holds(dev, dry):
         # only a sibling file: the device's own hold file is this phone's whatever its device field
         # says (hold_cli.py writes "S26" into every hold it takes, the iPhone 18 Pro's too)
         if path != dev.get("hold") and other is not None and mine is not None and other != mine:
-            # the sibling lanes' .iphone_hold serves two phones and names its phone:
+            # the shared .iphone_hold serves two phones and names its phone:
             # a hold that names another device of the schedule is not
-            # this sitting's business (2026-10-19 12:3x: the 17 Pro's AA lane held it while the
+            # this sitting's business (2026-10-19 12:3x: another job held it for the 17 Pro while the
             # 18 Pro was free); a device string the schedule does not know stays busy
             log(f"hold at {path} names another device ({h.get('device')} = {other}, pid {h.get('pid')}, "
                 f"{h.get('script')}): not this phone's")
