@@ -306,8 +306,8 @@ public struct Metrics: Codable, Sendable {
     public let memoryMedianAcceleratorPresentMB: Double?
     public let memoryPeakAcceleratorAttributedMB: Double?
     public let memoryMedianAcceleratorAttributedMB: Double?
-    public let memoryPeakResidentInRAMMB: Double?
-    public let memoryMedianResidentInRAMMB: Double?
+    public let memoryPeakResidentInRAMRecomputedMB: Double?
+    public let memoryMedianResidentInRAMRecomputedMB: Double?
     public let memoryAtTotalPeak: MemoryBreakdown?
     public let memoryOverlapQueries: Int?
     public let memoryOverlapQueryMS: Double?
@@ -460,8 +460,8 @@ public struct Metrics: Codable, Sendable {
         self.memoryMedianAcceleratorPresentMB = memoryAccounting?.medianAcceleratorPresentMB
         self.memoryPeakAcceleratorAttributedMB = memoryAccounting?.peakAcceleratorAttributedMB
         self.memoryMedianAcceleratorAttributedMB = memoryAccounting?.medianAcceleratorAttributedMB
-        self.memoryPeakResidentInRAMMB = memoryAccounting?.peakResidentInRAMMB
-        self.memoryMedianResidentInRAMMB = memoryAccounting?.medianResidentInRAMMB
+        self.memoryPeakResidentInRAMRecomputedMB = memoryAccounting?.peakResidentInRAMMB
+        self.memoryMedianResidentInRAMRecomputedMB = memoryAccounting?.medianResidentInRAMMB
         self.memoryAtTotalPeak = memoryAccounting?.atTotalPeak
         self.memoryOverlapQueries = memoryAccounting?.overlapQueries
         self.memoryOverlapQueryMS = memoryAccounting?.overlapQueryMS
@@ -502,8 +502,8 @@ public struct NativeBenchmarkRecord: Encodable, Sendable {
         public let memoryMedianAcceleratorPresentMB: Double?
         public let memoryPeakAcceleratorAttributedMB: Double?
         public let memoryMedianAcceleratorAttributedMB: Double?
-        public let memoryPeakResidentInRAMMB: Double?
-        public let memoryMedianResidentInRAMMB: Double?
+        public let memoryPeakResidentInRAMRecomputedMB: Double?
+        public let memoryMedianResidentInRAMRecomputedMB: Double?
         public let memoryAtTotalPeak: MemoryBreakdown?
         public let memoryOverlapQueries: Int?
         public let memoryOverlapQueryMS: Double?
@@ -561,8 +561,8 @@ public struct NativeBenchmarkRecord: Encodable, Sendable {
             self.memoryMedianAcceleratorPresentMB = memoryAccounting?.medianAcceleratorPresentMB
             self.memoryPeakAcceleratorAttributedMB = memoryAccounting?.peakAcceleratorAttributedMB
             self.memoryMedianAcceleratorAttributedMB = memoryAccounting?.medianAcceleratorAttributedMB
-            self.memoryPeakResidentInRAMMB = memoryAccounting?.peakResidentInRAMMB
-            self.memoryMedianResidentInRAMMB = memoryAccounting?.medianResidentInRAMMB
+            self.memoryPeakResidentInRAMRecomputedMB = memoryAccounting?.peakResidentInRAMMB
+            self.memoryMedianResidentInRAMRecomputedMB = memoryAccounting?.medianResidentInRAMMB
             self.memoryAtTotalPeak = memoryAccounting?.atTotalPeak
             self.memoryOverlapQueries = memoryAccounting?.overlapQueries
             self.memoryOverlapQueryMS = memoryAccounting?.overlapQueryMS

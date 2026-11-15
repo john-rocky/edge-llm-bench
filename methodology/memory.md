@@ -76,6 +76,9 @@ outside / inside), so no peak compares across platforms.
 
 ## Three places and a total (Apple, 2026-11-14)
 
+macOS only for now: on iOS the sampler keeps its earlier reads (`task_info` alone, no Metal figure,
+no region query) and the records carry none of the fields below, until this has run on an iPhone.
+
 A run's memory can sit in three places, and which ones depends on the runtime:
 
 | place | what is in it | read from |
@@ -135,15 +138,17 @@ counters). A measurement takes about 0.7 ms per 600 regions plus 0.7-0.8 ms
 per 512 MB walked, twice per wrapped region; the record carries the count and
 the time (`memoryOverlapQueries`, `memoryOverlapQueryMS`).
 
-LiteRT's profiler estimates place 3 from Metal instead: `MTLDevice.currentAllocatedSize`
-(macOS: summed over every device) beyond the whole kernel ledger
-(`mappedWeightsMB`, kept beside the measured place 3, `wrappedResidentMB`). That
-estimate counts a wrapped buffer at its length whether or not its pages are in
-RAM, counts an allocated resource before its pages are charged to the ledger, and
-falls short by any graphics memory the ledger holds outside Metal's figure (the
-GPU driver's own: 161 MB after the first GPU command of the test above). It
-cannot give the overlaps either: they are pages of the wrapped part only, and
-the VM query does not see which part of a mapping a GPU buffer covers.
+LiteRT's profiler (google-ai-edge/LiteRT at 056f841,
+`litert/core/util/memory_profiling/accelerator_memory_apple.mm`) takes place 3 from
+Metal instead: `MTLDevice.currentAllocatedSize` (macOS: summed over every device)
+beyond the whole kernel ledger. The bench keeps that figure as `mappedWeightsMB`,
+beside its measured place 3 (`wrappedResidentMB`). The two are different measures:
+Metal's figure is the size of what is allocated, whether or not its pages are in
+RAM, and the measured place 3 counts the pages in RAM. The ledger also holds memory
+that is not in Metal's figure (in the test above, the GPU driver's 161 MB after
+the first GPU command). The overlaps come from the page walk; Metal's figure is one
+number per device. None of the bench's fields has been compared with the library's
+own output yet.
 
 The same readings give the figures of LiteRT's memory profiler
 (google-ai-edge/LiteRT `litert/core/util/memory_profiling/`), under its names:
@@ -154,7 +159,7 @@ The same readings give the figures of LiteRT's memory profiler
 | `memoryPeakDuringDecodeMB` | host `platform_attributed_bytes` | `phys_footprint` |
 | `memory{Peak,Median}AcceleratorAttributedMB` | accelerator `attributed_bytes` | the ledger's graphics and neural parts, compressed included |
 | `memory{Peak,Median}AcceleratorPresentMB` | accelerator `total_bytes` | the ledger's graphics and neural pages in RAM, plus Metal's figure beyond the whole ledger |
-| `memory{Peak,Median}ResidentInRAMMB` | `MemorySnapshot.resident_in_ram` | host resident + accelerator present |
+| `memory{Peak,Median}ResidentInRAMRecomputedMB` | `MemorySnapshot.resident_in_ram`, recomputed by the bench from its own samples (not compared with the library's output) | host resident + accelerator present |
 
 Resident in RAM counts a page twice when it is both in the page table and
 accelerator memory: a Metal buffer the CPU has written (in the test, writing a
@@ -173,7 +178,7 @@ the whole native call, and LiteRT-LM's `benchmark()` builds its engine inside it
 | `memory{Median,Peak}ExternalMB` | `mem_external_{median,peak}_mb` |
 | `memory{Median,Peak}AcceleratorPresentMB` | `mem_accel_present_{median,peak}_mb` |
 | `memory{Median,Peak}AcceleratorAttributedMB` | `mem_accel_attributed_{median,peak}_mb` |
-| `memory{Median,Peak}ResidentInRAMMB` | `mem_resident_in_ram_{median,peak}_mb` |
+| `memory{Median,Peak}ResidentInRAMRecomputedMB` | `mem_resident_in_ram_recomputed_{median,peak}_mb` |
 | `memoryAtTotalPeak.overlapMB` (both overlaps) | `mem_overlap_at_total_peak_mb` |
 
 `memoryAtTotalPeak` holds the whole reading at the total's peak, every part in

@@ -319,7 +319,7 @@ DEVICE_FIELDS = [
     "backend_registered", "cpu_cap_drop_pct", "mem_total_median_mb", "mem_total_peak_mb",
     "mem_external_median_mb", "mem_external_peak_mb", "mem_accel_present_median_mb",
     "mem_accel_present_peak_mb", "mem_accel_attributed_median_mb", "mem_accel_attributed_peak_mb",
-    "mem_resident_in_ram_median_mb", "mem_resident_in_ram_peak_mb", "mem_overlap_at_total_peak_mb",
+    "mem_resident_in_ram_recomputed_median_mb", "mem_resident_in_ram_recomputed_peak_mb", "mem_overlap_at_total_peak_mb",
 ]
 
 
@@ -516,8 +516,8 @@ def device_row(f, d, screens, campaign=None, raw_dirs=None):
         "mem_accel_present_peak_mb": m.get("memoryPeakAcceleratorPresentMB"),
         "mem_accel_attributed_median_mb": m.get("memoryMedianAcceleratorAttributedMB"),
         "mem_accel_attributed_peak_mb": m.get("memoryPeakAcceleratorAttributedMB"),
-        "mem_resident_in_ram_median_mb": m.get("memoryMedianResidentInRAMMB"),
-        "mem_resident_in_ram_peak_mb": m.get("memoryPeakResidentInRAMMB"),
+        "mem_resident_in_ram_recomputed_median_mb": m.get("memoryMedianResidentInRAMRecomputedMB"),
+        "mem_resident_in_ram_recomputed_peak_mb": m.get("memoryPeakResidentInRAMRecomputedMB"),
         "mem_overlap_at_total_peak_mb": (m.get("memoryAtTotalPeak") or {}).get("overlapMB"),
     }
 
@@ -678,7 +678,7 @@ def main(argv=None):
             "total that counts each page once (phys_footprint + mapped file pages in the page table + the\n"
             "pages in RAM of the memory the GPU wraps without a copy, minus their measured overlaps with the\n"
             "first two); `mem_external_*` = the mapped file pages in the page table; `mem_accel_present_*` /\n"
-            "`mem_accel_attributed_*` / `mem_resident_in_ram_*` = LiteRT memory_profiling's accelerator\n"
+            "`mem_accel_attributed_*` / `mem_resident_in_ram_recomputed_*` = LiteRT memory_profiling's accelerator\n"
             "present / attributed and resident-in-RAM figures over the same window;\n"
             "`mem_overlap_at_total_peak_mb` = the overlaps subtracted at the total's peak\n"
             "(`memoryAtTotalPeak.overlapMB`). Definitions: `methodology/memory.md` \"Three places\".\n\n"

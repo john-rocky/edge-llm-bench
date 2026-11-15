@@ -479,7 +479,7 @@ public struct MemoryBreakdown: Codable, Sendable {
     public let wrappedLocatedMB: Double?
     public let acceleratorPresentMB: Double?
     public let acceleratorAttributedMB: Double?
-    public let residentInRAMMB: Double?
+    public let residentInRAMRecomputedMB: Double?
     public let totalMB: Double?
 
     public init(_ r: MemoryMonitor.Reading) {
@@ -504,7 +504,7 @@ public struct MemoryBreakdown: Codable, Sendable {
         wrappedLocatedMB = r.overlap.map { mb($0.locatedBytes) }
         acceleratorPresentMB = accelerator ? mb(r.acceleratorPresentBytes) : nil
         acceleratorAttributedMB = r.hasLedger ? mb(r.acceleratorAttributedBytes) : nil
-        residentInRAMMB = accelerator ? mb(r.residentInRAMBytes) : nil
+        residentInRAMRecomputedMB = accelerator ? mb(r.residentInRAMBytes) : nil
         totalMB = r.totalBytes.map(mb)
     }
 }
@@ -578,6 +578,11 @@ public actor MemorySampler {
 
     /// Every place over the window (`MemoryMonitor`), or nil before the first sample.
     public var accounting: MemoryAccounting? {
+        #if !os(macOS)
+        // The three places and the total are macOS only until they have run on an iPhone:
+        // an iOS record keeps the fields it had before them.
+        return nil
+        #else
         guard !footprintSamples.isEmpty else { return nil }
         let total = !totalMissing && !totalSamples.isEmpty
         return MemoryAccounting(
@@ -594,6 +599,7 @@ public actor MemorySampler {
             atTotalPeak: total ? totalPeakReading.map(MemoryBreakdown.init) : nil,
             overlapQueries: overlapQueries,
             overlapQueryMS: Double(overlapQueryNS) / 1e6)
+        #endif
     }
 
     public func start(intervalMS: Int = 100) {
@@ -625,10 +631,10 @@ public actor MemorySampler {
         trace = MemoryTrace.fromEnvironment()
         traceRegionsAtNS = 0
         // The reading at the start seeds the peaks without counting as a sample.
-        if let r = MemoryMonitor.read() { note(withOverlap(r), asSample: false) }
+        if let r = MemoryMonitor.read(includeMetal: Self.readsMetal) { note(withOverlap(r), asSample: false) }
         task = Task { [weak self] in
             while !Task.isCancelled {
-                if let r = MemoryMonitor.read() { await self?.sample(r) }
+                if let r = MemoryMonitor.read(includeMetal: Self.readsMetal) { await self?.sample(r) }
                 try? await Task.sleep(nanoseconds: UInt64(intervalMS) * 1_000_000)
             }
         }
@@ -644,9 +650,21 @@ public actor MemorySampler {
         note(withOverlap(r), asSample: true)
     }
 
+    /// macOS reads Metal's figure every tick (place 3); iOS reads `task_info` alone, as the sampler did before
+    /// the three places (then two calls: `TASK_VM_INFO` and `MACH_TASK_BASIC_INFO`; now the one `TASK_VM_INFO`).
+    #if os(macOS)
+    private static let readsMetal = true
+    #else
+    private static let readsMetal = false
+    #endif
+
     /// The reading with place 3 and the overlaps filled in from the last measurement,
     /// taken again when due (see the type's note).
     private func withOverlap(_ reading: MemoryMonitor.Reading) -> MemoryMonitor.Reading {
+        #if !os(macOS)
+        // No region query on iOS until it has run on an iPhone (its cost there is unmeasured).
+        return reading
+        #else
         var r = reading
         let mapped = r.mappedWeightsBytes
         let now = DispatchTime.now().uptimeNanoseconds
@@ -680,6 +698,7 @@ public actor MemorySampler {
         }
         r.overlap = overlapUnavailable ? nil : overlapCache
         return r
+        #endif
     }
 
     private static let overlapMove: UInt64 = 16 * 1024 * 1024
