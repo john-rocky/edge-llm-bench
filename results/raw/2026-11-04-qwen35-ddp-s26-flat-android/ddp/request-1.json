@@ -1,6 +1,6 @@
 {
   "sessionConfig": {
-    "displayName": "elb-2026-11-04-d552-qwen35-ddp-s26-public-android-s1",
+    "displayName": "elb-2026-11-04-qwen35-ddp-s26-flat-android-s1",
     "outputDirectoryConfig": {
       "gcsOutputDirectory": {
         "path": "gs://litert-edge-portal-devicerun/automation/sessions"
@@ -8,7 +8,7 @@
     },
     "jobConfigs": [
       {
-        "displayName": "j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256",
+        "displayName": "j01-gpu-Qwen3-5-0-8B-native-benchmark-1024x256",
         "action": {
           "androidNativeBinary": {
             "androidNativeBinary": {
@@ -20,7 +20,7 @@
               "--runs=3",
               "--cooldown=120",
               "--mask=none",
-              "--env=LD_LIBRARY_PATH=/data/local/tmp/llmbench/engines/public-0.19.0-20261029",
+              "--env=LD_LIBRARY_PATH=.",
               "--binname=litert_lm_advanced_main",
               "--dir=/data/local/tmp/llmbench",
               "--output_dir=/data/local/tmp/llmbench/ddp-out",
@@ -29,7 +29,7 @@
               "--cpucap_wait=0",
               "--budget=3480",
               "--cell=litert-lm-gpu_litert-community_Qwen3.5-0.8B_native-benchmark-1024x256",
-              "--command=/data/local/tmp/llmbench/engines/public-0.19.0-20261029/litert_lm_advanced_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3.5-0.8B_Qwen3.5-0.8B_int8.litertlm --benchmark --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --async=false --max_num_tokens=2048"
+              "--command=./litert_lm_advanced_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3.5-0.8B_Qwen3.5-0.8B_int8.litertlm --benchmark --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --async=false --max_num_tokens=2048"
             ],
             "executionTimeout": "3600s"
           }
@@ -47,50 +47,58 @@
                       {
                         "sourceFile": {
                           "gcsInputFile": {
-                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/public-0.19.0-20261029/6d4a117dd3053e62b4576bce17c6c1d8e7b65adf067ed90a1bf10e4d20eea0ef/litert_lm_main"
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/de8c840290ff971aef6142287216478bded351f23d175414856ea21f7825e3d4/litert_lm_main"
                           }
                         },
-                        "destinationPath": "/data/local/tmp/llmbench/engines/public-0.19.0-20261029/litert_lm_main"
+                        "destinationPath": "/data/local/tmp/llmbench/litert_lm_main"
                       },
                       {
                         "sourceFile": {
                           "gcsInputFile": {
-                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/public-0.19.0-20261029/8e199c6b3fb438cb94943567a279f9e1f994d57c3e1f4667084fc8ae2d06a6eb/litert_lm_advanced_main"
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/2e0b50979206be39f00d676ec1363546fdfe6ae95eec5d4dff074617448b7937/litert_lm_advanced_main"
                           }
                         },
-                        "destinationPath": "/data/local/tmp/llmbench/engines/public-0.19.0-20261029/litert_lm_advanced_main"
+                        "destinationPath": "/data/local/tmp/llmbench/litert_lm_advanced_main"
                       },
                       {
                         "sourceFile": {
                           "gcsInputFile": {
-                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/public-0.19.0-20261029/c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783/libGemmaModelConstraintProvider.so"
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783/libGemmaModelConstraintProvider.so"
                           }
                         },
-                        "destinationPath": "/data/local/tmp/llmbench/engines/public-0.19.0-20261029/libGemmaModelConstraintProvider.so"
+                        "destinationPath": "/data/local/tmp/llmbench/libGemmaModelConstraintProvider.so"
                       },
                       {
                         "sourceFile": {
                           "gcsInputFile": {
-                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/public-0.19.0-20261029/fb440b72c045f9e1f804dee4eab66446fe5076a25d9621dcff4f1fceb6e31c95/libLiteRtDispatch_MediaTek.so"
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/49055120bddce4f4bfb681ae1b929094ef22b238b5d9b91e8e57aeddcd58f8c8/libLiteRtGpuAccelerator.so"
                           }
                         },
-                        "destinationPath": "/data/local/tmp/llmbench/engines/public-0.19.0-20261029/libLiteRtDispatch_MediaTek.so"
+                        "destinationPath": "/data/local/tmp/llmbench/libLiteRtGpuAccelerator.so"
                       },
                       {
                         "sourceFile": {
                           "gcsInputFile": {
-                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/public-0.19.0-20261029/5aef1c5d1e5476d10bc3ff7685cd65852bb7ae26ce76cade50b98c3b8755efb9/libLiteRtDispatch_Qualcomm.so"
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/ef9776d87b0a4fe4793e8fa3f325dd9fecca4a2faaace14973bae6c6be2698a5/libLiteRtOpenClAccelerator.so"
                           }
                         },
-                        "destinationPath": "/data/local/tmp/llmbench/engines/public-0.19.0-20261029/libLiteRtDispatch_Qualcomm.so"
+                        "destinationPath": "/data/local/tmp/llmbench/libLiteRtOpenClAccelerator.so"
                       },
                       {
                         "sourceFile": {
                           "gcsInputFile": {
-                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/public-0.19.0-20261029/bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9/libwebgpu_dawn.so"
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/5952041260e13c719754903c95d2400c813785b1f7d0de6495f401b2d0ef956c/libLiteRtWebGpuAccelerator.so"
                           }
                         },
-                        "destinationPath": "/data/local/tmp/llmbench/engines/public-0.19.0-20261029/libwebgpu_dawn.so"
+                        "destinationPath": "/data/local/tmp/llmbench/libLiteRtWebGpuAccelerator.so"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9/libwebgpu_dawn.so"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/llmbench/libwebgpu_dawn.so"
                       },
                       {
                         "sourceFile": {
@@ -119,7 +127,7 @@
         },
         "labels": {
           "harness": "edge-llm-bench",
-          "campaign": "2026-11-04-d552-qwen35-ddp-s26-public-android",
+          "campaign": "2026-11-04-qwen35-ddp-s26-flat-android",
           "cell": "litert-lm-gpu_litert-community_qwen3-5-0-8b_native-benchmark-10",
           "runtime": "litert-lm-gpu",
           "model": "litert-community--qwen3-5-0-8b",
@@ -127,7 +135,7 @@
           "backend": "gpu",
           "devicekey": "s26",
           "deviceid": "m1q-36",
-          "engine": "public-0-19-0-20261029"
+          "engine": "v0-19-0"
         }
       }
     ]
