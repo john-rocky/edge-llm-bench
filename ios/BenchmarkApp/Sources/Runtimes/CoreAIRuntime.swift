@@ -171,8 +171,8 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
         // engine variant (static-shape / coreai-pipelined / nil=auto all fail EngineFactory POSIX Code=2 "No such file"):
         // the GPU compile emits an `mpsExecutable.mpsgraphpackage` (original_model/specialized_model/resources.bin) that
         // lacks the per-bucket `binary_0.llir.bundle/.../extend_*` artifacts the static engine needs. Needs an export-side
-        // re-compile (full GPU bucket specialization / gemma4-bucketed port) — deferred to a separate session. Entries
-        // kept wired so that session only needs to drop in loadable bundles. (nil = let the factory auto-resolve.)
+        // re-compile (full GPU bucket specialization / gemma4-bucketed port) — not done yet. Entries
+        // kept wired so loadable bundles only need to be dropped in. (nil = let the factory auto-resolve.)
         case "core-ai/deepseek-r1-1.5b-static-gpu": return ("deepseek_r1_1_5b_static_gpu", nil)
         case "core-ai/tinyswallow-1.5b-static-gpu": return ("tinyswallow_1_5b_static_gpu", nil)
         case "core-ai/vibethinker-1.5b-static-gpu": return ("vibethinker_1_5b_static_gpu", nil)

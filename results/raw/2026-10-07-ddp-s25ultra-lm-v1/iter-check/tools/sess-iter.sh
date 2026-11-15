@@ -9,7 +9,7 @@ n="$1"; label="gemma-4-e2b-gpu-iter$n"
 wr=""; [ "$n" = 1 ] && wr=" --warmup-runs 0"
 out="$S/sessions/$label.out"
 RL_TAIL=400 "$S/tools/rl-iter.sh" "billed DDP session: Gemma 4 E2B gpu, --num-iterations $n (prefill 1024, decode 256, max 1280 at the defaults${wr:+;$wr for the printed medians only})" \
-  "source $V/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '$M' --ddp --device pa3q-35 --gpu --num-iterations $n$wr" > "$out" 2>&1
+  "source $V/bin/activate && LITERT_GCP_PROJECT='<project>' litert benchmark '$M' --ddp --device pa3q-35 --gpu --num-iterations $n$wr" > "$out" 2>&1
 rc=$(grep -o '^exit=[0-9]*' "$out" | tail -1 | cut -d= -f2)
 sid=$(grep -o "session-[0-9a-f]\{8\}" "$out" | head -1)
 name=$(grep -o "litert-cli-benchmark-[0-9a-f]\{8\}" "$out" | head -1)

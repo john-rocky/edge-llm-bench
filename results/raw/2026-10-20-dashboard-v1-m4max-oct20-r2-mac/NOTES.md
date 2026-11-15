@@ -42,6 +42,6 @@ every launch's console). The CPU arm runs the engine's default thread count, 4: 
 settings dump. The Mac CLI's native line carries no memory field (`apple/YardstickCLI/Sources/Yardstick.swift`), so
 these records have no memory reading. Speculative decoding is off (the engine's default).
 
-Host load (5 s samples during the window, kept with the lane's notes): a `du` scan of another session ran during the
+Host load (5 s samples during the window, kept in notes outside this repo): a `du` scan of another session ran during the
 anchor phase and ended before the payload; during the GPU cell (15:18:10–20) a Chrome renderer read 82.9 % CPU,
 during the CPU cell Chrome renderers 75–78 % twice; no builder passed 100 %, no cell was retaken.

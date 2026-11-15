@@ -1,14 +1,14 @@
 # 2026-09-17 — LiteRT-LM `litert_lm_advanced_main --benchmark` on `caiman-35` (Pixel 9 Pro) through Device Run, CPU and GPU, two runs each
 
-Session `session-944b220b`, project `litert-edge-portal`, location `global`, created by
-`POST https://devicerun.googleapis.com/v1alpha/projects/litert-edge-portal/locations/global/sessions`
+Session `session-944b220b`, project `<project>`, location `global`, created by
+`POST https://devicerun.googleapis.com/v1alpha/projects/<project>/locations/global/sessions`
 with `request.json` as the body. Submitted 2026-09-17 15:10:38 JST by the Mac's clock (run log; the operation's
 `createTime` is 06:10:39.88Z = 15:10:39.9 JST) and its `endTime` is 228 s later; the 30-second poll reported "not
 done" eight times and saw `done: true` on its ninth call (15:14:51 JST); result **PASSED**, every run's exit code 0.
 Session 06:10:42–06:14:16 UTC (214 s); job 06:10:44–06:14:15 (211 s, the leading 56 s before the execution hold the
 pushes); execution 06:11:40–06:14:12 (152 s = 4 s before the first run's first log line + 130 s of runs and cooldowns,
 of which the four binary invocations took 38.6 s and the three cooldowns 30 s each + 18 s of logcat and pull). Console:
-https://console.cloud.google.com/storage/browser/litert-edge-portal-devicerun/automation/sessions/session-944b220b/
+https://console.cloud.google.com/storage/browser/<bucket>/automation/sessions/session-944b220b/
 Commands and observed output: a run log not in this repo.
 
 ## What ran

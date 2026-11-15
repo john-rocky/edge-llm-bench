@@ -48,7 +48,7 @@ BEGIN = "<!-- BEGIN GENERATED: scripts/render_leaderboard.py -->"
 END = "<!-- END GENERATED: scripts/render_leaderboard.py -->"
 HEADLINE_TASK = "short-chat"
 SPREAD_FLAG = 5.0  # % — same bar the regression differ uses
-# cpu-cap-rule line (owner decision 2026-10-08, methodology/fairness-rules.md §13): a run
+# cpu-cap-rule line (2026-10-08, methodology/fairness-rules.md §13): a run
 # flagged cpu-capped still pools, counted and marked, while the clock ceiling of the CPUs
 # the engine ran on fell by at most this many percent (summary cpu_cap_drop_pct: the
 # largest (1 - min / hw) x 100 over their cpufreq policies); a deeper cap keeps it out of
@@ -58,7 +58,7 @@ SPREAD_FLAG = 5.0  # % — same bar the regression differ uses
 # short-chat runs and 49-58 % in every 1K launch (the prime cluster, policy6, fell
 # furthest in each).
 CPU_CAP_MAX_DROP_PCT = 15
-# cpu-cap-rule, the accelerator arms (owner decision 2026-10-08, methodology/fairness-rules.md
+# cpu-cap-rule, the accelerator arms (2026-10-08, methodology/fairness-rules.md
 # §13): the Android arms whose engine places the model on the NPU or the GPU. A run of theirs
 # flagged cpu-capped pools, counted and marked with its fall, whatever the fall; the line above
 # holds for every other arm (the CPU arms llama.cpp, litert-lm-cpu, executorch-xnnpack,

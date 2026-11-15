@@ -1,11 +1,11 @@
 # 2026-09-13 — the DDP HTTP example, run as written: `benchmark_model` on `pa3q-35`
 
-Session `session-e1d64576`, project `litert-edge-portal`, location `global`, created by a plain
-`POST https://devicerun.googleapis.com/v1alpha/projects/litert-edge-portal/locations/global/sessions`
+Session `session-e1d64576`, project `<project>`, location `global`, created by a plain
+`POST https://devicerun.googleapis.com/v1alpha/projects/<project>/locations/global/sessions`
 with `request.json` as the body (the only gcloud involvement: `gcloud auth print-access-token`).
 Submitted 2026-09-13 15:40:19 JST; the operation's `endTime` is 60 s later (06:41:18.9 UTC), and the
 30-second poll saw `done: true` on its third call at 15:41:44 JST; result **PASSED**. Console:
-https://console.cloud.google.com/storage/browser/litert-edge-portal-devicerun/automation/sessions/session-e1d64576/
+https://console.cloud.google.com/storage/browser/<bucket>/automation/sessions/session-e1d64576/
 The exact commands, their observed output and the reading: `docs/ddp-integration.md`, section
 "Route C".
 
@@ -15,7 +15,7 @@ The exact commands, their observed output and the reading: `docs/ddp-integration
   (8,020,656 bytes, the release-pinned copy of the LiteRT benchmark tool) with the example's five
   flags; device action `androidPushFiles` for `mobilenet_v2.tflite` (`litert-community/MobileNet-v2`,
   Hub commit `a847f8dd`, sha256 `9e3d5575…b09e6dd`, 14,079,072 bytes, from
-  `gs://litert-edge-portal-devicerun/automation/inputs/2026-09-13_http-route/`), `androidPullFiles`
+  `gs://<bucket>/automation/inputs/2026-09-13_http-route/`), `androidPullFiles`
   for `/data/local/tmp/runtime_info.pb` and `/data/local/tmp/results.pb`, `androidLogcat`.
 - Device `pa3q-35`: Galaxy S25 Ultra, OS version 35 (`device-pa3q-35.json`, the catalog entry read the
   same day); model code `SM-S938UZKAXAA` in the device log (`device-identity.txt`). Session

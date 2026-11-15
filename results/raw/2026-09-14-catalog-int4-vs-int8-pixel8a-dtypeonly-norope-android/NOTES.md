@@ -55,7 +55,7 @@ composite graph's 795; attention/KV 3.6–4.9 ms). Sitting 1's rope-composite gr
    fused, the published wi4b32 build included, so no unfused int4 file has been measured (corrected 2026-09-15; the
    earlier wording "the same fused or not" claimed a pair that does not exist).
    So "int4 GEMV loses in absolute time on Mali" was the fusion, not the dtype; the dtype-only answer on Mali is
-   the same as on Adreno: int4 ahead, small per-byte penalty. The prediction in the handoff (int8 ~12 % faster
+   the same as on Adreno: int4 ahead, small per-byte penalty. The earlier prediction (int8 ~12 % faster
    once the graph is equal) fails, and K1's "Metal magnitude on Mali" line is withdrawn for the Pixel 8a.
 3. **Fusion costs int8 on this delegate.** Between the published unfused int8 file and this fused int8 file the
    GEMV family goes 44.9 → 79.6 ms/step for the same 1720.9 MB — an unfused int8 export would very likely be the

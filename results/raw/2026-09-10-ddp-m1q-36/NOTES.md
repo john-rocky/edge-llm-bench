@@ -1,9 +1,9 @@
 # 2026-09-10 — first Developer Device Platform (DDP) session of the Route B APK: Galaxy S26 `m1q-36`
 
-Session `session-cc6509d5`, location `global`, project `litert-edge-portal`, submitted 11:05:21 JST
+Session `session-cc6509d5`, location `global`, project `<project>`, submitted 11:05:21 JST
 with `gcloud beta device-run sessions submit instrumentation … --async`, finished `PASSED` at
 11:11:28 JST (job-000 / execution-000, one device). Console:
-https://console.cloud.google.com/storage/browser/litert-edge-portal-devicerun/automation/sessions/session-cc6509d5/
+https://console.cloud.google.com/storage/browser/<bucket>/automation/sessions/session-cc6509d5/
 The exact command and the transcript: `docs/ddp-integration.md`. Labels on the session:
 `harness=edge-llm-bench, repo=litert-community--gemma-3-270m-it, device=m1q-36`.
 

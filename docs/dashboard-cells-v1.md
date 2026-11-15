@@ -380,7 +380,7 @@ at its next sitting.
 
 Retakes of the lost cells on 2026-09-09 (campaigns
 `…-iphone17pro-retake-*` 13:47–14:33 and `…-retake2-*` 16:13–17:17, both
-stopped by hand at a cell boundary when the owner went out; both admitted on
+stopped by hand at a cell boundary; both admitted on
 their anchor) recorded the Core AI 0.6B (the new id) with coherent output at
 169 tok/s warm, and found two things: the published 1.7B phone bundle
 (`mlboydaisuke/qwen3-1.7b-CoreAI-official` `ios-gpu/`) fails to load with
@@ -567,7 +567,7 @@ two LiteRT-LM cells open; both were measured on 2026-10-12 with v0.16.0
 
 Open question 3 is answered for the weekly job: since 2026-10-06 every sitting
 measures the protocol cell `long-context-1024-gen256` beside `short-chat`
-(owner decision 2026-10-06; the device time it adds was accepted the same
+(since 2026-10-06; the device time it adds was accepted the same
 morning).
 
 Rows. Every active `short-chat` row on LiteRT-LM, llama.cpp and MLX has one
@@ -699,7 +699,7 @@ non-Android row (the Mac and iPhone runners do not read the option), an anchor
 row and a row that also carries `exclude=`. The Pixel 8a's Qwen3-4B and Gemma 4
 E4B rows carry `exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash`
 on every arm and task (short-chat, `long-context-1024-gen256`,
-`native-benchmark-1024x256`; owner decision 2026-10-07): in the 2026-10-07 b1r2
+`native-benchmark-1024x256`; since 2026-10-07): in the 2026-10-07 b1r2
 sitting the LiteRT-LM CPU Qwen3-4B 1K launch held 3.26 GB in swap beside 3.9 GB
 resident, the phone's 3.9 GB zram was full (44 kB free) with 1.6 GB available,
 and in the 52 minutes since its boot the phone had read 34.6 GB from flash and
@@ -720,7 +720,7 @@ every row keeps running on the Galaxy S26. Source: notes outside this repo and t
 
 A cell's runs on Android carry `cpu-capped` when the clock ceiling of a CPU the engine ran on
 fell below its hardware maximum during the run (since 2026-10-07,
-`methodology/fairness-rules.md` §13 cpu-cap-rule). Since 2026-10-08 (owner decision) the depth
+`methodology/fairness-rules.md` §13 cpu-cap-rule). Since 2026-10-08 the depth
 decides the pool: a run whose ceiling fell at most 15 % (summary `cpu_cap_drop_pct`, the line
 `render_leaderboard.CPU_CAP_MAX_DROP_PCT`) pools, and the cell's number carries
 `◇ cpu-capped ≤15 % (k of N runs)`; a run past it stays out, and a cell left with no other
@@ -810,7 +810,7 @@ not text-checked, as before.
 Memory. `memoryMedianResidentMB` / `memoryPeakResidentMB` are the host
 process's VmRSS / VmHWM; the device's buffers (weights, KV cache and compute
 in HTP0 or OpenCL memory) are outside them, and the records' `rssBasis` says
-so. On the 2026-10-07 smoke (Qwen3 0.6B short-chat, lane notes outside this
+so. On the 2026-10-07 smoke (Qwen3 0.6B short-chat, notes outside this
 repo) the NPU launch's VmHWM was 217 MiB while llama.cpp's own breakdown put
 880 MiB in HTP0 (406 weights, 448 KV, 26 compute).
 
@@ -823,7 +823,7 @@ llama-bench compiles at load as well but times after its own warmup run, so
 its launches are not labelled. The NPU keeps no compile cache.
 
 CPU cap. The 15 % line of the cpu-cap-rule does not apply to these arms
-(owner decision 2026-10-08, `methodology/fairness-rules.md` §13, "The
+(2026-10-08, `methodology/fairness-rules.md` §13, "The
 accelerator arms"): `render_leaderboard.CPU_CAP_EXEMPT_ARMS` = `llama.cpp-npu`,
 `llama.cpp-gpu`, `litert-lm-npu`, `litert-lm-gpu`, `executorch-vulkan`,
 `executorch-qnn`, the arms whose engine places the model on the NPU or the GPU.
@@ -1110,7 +1110,7 @@ text task at `context-tokens=2048`, the Mac runner's regime (run 1 cold, runs 2-
 `llama_main --warmup`). 12 rows run; the 8 Gemma 4 rows are `exclude=` with their reasons
 (the XNNPACK runner `gemma4_e2e_runner` has no warm regime; the exporter has no MLX path).
 The Mac sitting grows by about one hour (`expected_hours` 2.2 → 3.2, `timeout_hours` 4 → 5,
-`ops/dashboard-v1/schedule.json`; derivation in the lane's round record, two measured sittings
+`ops/dashboard-v1/schedule.json`; derivation in notes outside this repo, two measured sittings
 of 36 and 22 minutes). The Android and iPhone ExecuTorch rows are not in the weekly set: the
 Android rows wait on the Galaxy S26's CPU cap line and on keeping the runner directory on the
 phones; the iPhone rows need the ExecuTorch build of the app, which replaces the Core AI build
@@ -1153,7 +1153,7 @@ app's memory stays as that cell's record.
 
 ## llama.cpp on b11721 (2026-10-19)
 
-The llama.cpp pin moved from b8999 to b11721 on every platform (owner decision 2026-10-19: the
+The llama.cpp pin moved from b8999 to b11721 on every platform (2026-10-19: the
 comparison arms are measured on their current release too; `environment.lock.json` `arms.llama.cpp`,
 `android/engine-pins.json`). The re-measure runs from three cells files, each holding its platform's
 session anchor row and the weekly set's ten llama.cpp rows (short-chat and the 1K text task of the five
@@ -1246,7 +1246,7 @@ turn arrives; moving back is the same edit in reverse and a re-measurement.
 On the iPhone 18 Pro the dynamic INT4 bundle fails at engine creation on the Metal GPU under LiteRT-LM v0.18.0
 (`Failed to create engine … Failed to modify graph with delegate`, 4 of 4 launches in three tasks,
 `results/raw/2026-10-19-dashboard-v1-iphone18pro-q06-dynamic-ios/`; the same bytes load on the Mac's Metal GPU and on
-Android's OpenCL GPU the same day; hazard `ios-metal-dynamic-int4-engine-fails`, issue draft pending the owner's GO). With
+Android's OpenCL GPU the same day; hazard `ios-metal-dynamic-int4-engine-fails`). With
 the mixed-INT4 bundle dropping the user turn on 0.18.0 (#3688), no INT4 Qwen3 0.6B bundle runs on the iPhone's GPU. Smokes
 of 12:22 (short-chat, 19 prompt tokens, one launch each): the repo's dynamic INT8 bundle `Qwen3-0.6B.litertlm`
 (`dynamic_int8`, LlmMetadata for 0.18.0 since 2026-10-12) on the GPU 46.5 tok/s decode, 158 prefill, 1,515 MB peak; the
@@ -1258,13 +1258,13 @@ shows; the recipe label says INT8), and the weekly set gains a `backend=cpu` pai
 `litert-lm-cpu`, as Android shows its CPU arm) so the 4-bit class stays measurable on the phone. Neither row claims the
 other's class: the quantization travels in the row (quant-per-arm-rule). The Mac and Android rows keep the INT4 bundle.
 First values: `matrices/dashboard-q06-int8-ios.cells`, one sitting on 2026-10-19. Revert = the ios rows back to
-`dynamic_wi4b32_afp32`, the cpu pair out. Owner's items: whether the iPhone page should carry the INT8 row at all while
+`dynamic_wi4b32_afp32`, the cpu pair out. Open items: whether the iPhone page should carry the INT8 row at all while
 the other arms are 4-bit, and the upstream issue.
 
 ## Qwen3 0.6B candidate (2026-10-19)
 
-A local candidate for the iPhone Metal failure above, measured beside the current file in one sitting per device (owner
-decision 2026-10-19). Nothing is uploaded and no page row moves: the candidate's rows live in their own cells
+A local candidate for the iPhone Metal failure above, measured beside the current file in one sitting per device
+(2026-10-19). Nothing is uploaded and no page row moves: the candidate's rows live in their own cells
 files, under their own model id.
 
 - The candidate = the dynamic INT4 file's 2026-08-05 revision (litert-community/Qwen3-0.6B at 8414150f, hvt4's export,
@@ -1301,9 +1301,9 @@ files, under their own model id.
   sitting stays within an hour (the morning's six-row file of the same model took 57 min on the S26 and 63 min on the
   Pixel 8a); each pair sits in one sitting. The Mac sitting runs the yardstick built with the entry
   (`DD_MAC=.build/dd-mac-q06cand`).
-- Reading (owner's rule): the candidate replaces the Hub file only if it is not slower anywhere (same-sitting warm decode
+- Reading: the candidate replaces the Hub file only if it is not slower anywhere (same-sitting warm decode
   and prefill within −3 % of the current file on every device and backend) and both pass the text check; then a Hub PR
-  goes to a GO request. If it is slower somewhere it does not replace the file: an iOS-only file or a card note instead.
+  follows. If it is slower somewhere it does not replace the file: an iOS-only file or a card note instead.
   On the iPhone GPU the first question is whether the engine builds at all.
 
 ## Qwen3 0.6B on LiteRT-LM main@b7c40ea81: a GPU-composite export, and YNNPACK on the CPU (2026-10-20)
@@ -1515,9 +1515,9 @@ this paragraph first said "the rule keeps them off the page"). If a newer mlx-sw
 `matrices/mlx-gemma4-file-mac.cells` lose their `exclude=` and run as candidates of the QAT class, in the
 schema of the LiteRT-LM file. The iPhone leg is the same procedure in its own sitting.
 
-### 2 rows from 2026-10-19 (owner decision)
+### 2 rows from 2026-10-19
 
-Decision (2026-10-19 11:4x, the owner's): the page's MLX Gemma 4 has two rows per model and platform, the
+Decision (2026-10-19): the page's MLX Gemma 4 has two rows per model and platform, the
 QAT OptiQ row the rule above picks and the PTQ row `mlx-community/gemma-4-{e2b,e4b}-it-4bit`, each with its class in
 its name. Why:
 

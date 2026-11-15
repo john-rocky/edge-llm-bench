@@ -1,6 +1,6 @@
 # T1c on LiteRT-LM 0.19.0 — Galaxy S26 column (2026-10-29)
 
-**Terms.** T1c = a lane (2026-10-15) that exported Qwen3-1.7B with int8 channelwise weights (`dynamic_wi8_afp32`) and Qwen3-4B with int4 block-32 weights (`dynamic_wi4b32_afp32`) through litert-torch's GPU-composite path (`--apply_gpu_composites=True`, the flag of the Qwen3-0.6B export E2 in `results/raw/2026-10-26-t1b-qwen3-0181-s26-android/`) and compared them with the Hugging Face files of the time on early runtimes (the nightly wheel 0.19.0.dev20261013 and LiteRT-LM main@b7c40ea81). The same comparison on a released LiteRT-LM was left open. The lane's own files (device scripts, plans, tables) are in a private lane repo; the lines this README relies on are restated here. The files of this column:
+**Terms.** T1c = a series of runs (2026-10-15) that exported Qwen3-1.7B with int8 channelwise weights (`dynamic_wi8_afp32`) and Qwen3-4B with int4 block-32 weights (`dynamic_wi4b32_afp32`) through litert-torch's GPU-composite path (`--apply_gpu_composites=True`, the flag of the Qwen3-0.6B export E2 in `results/raw/2026-10-26-t1b-qwen3-0181-s26-android/`) and compared them with the Hugging Face files of the time on early runtimes (the nightly wheel 0.19.0.dev20261013 and LiteRT-LM main@b7c40ea81). The same comparison on a released LiteRT-LM was left open. T1c's own files are in notes outside this repo; the lines this README relies on are restated here. The files of this column:
 
 | label | file (litert-community repo) | role |
 |---|---|---|

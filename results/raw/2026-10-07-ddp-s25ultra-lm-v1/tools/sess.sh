@@ -5,7 +5,7 @@ label="$1"; backend="$2"; model="$3"; attempt="${4:-1}"
 out="$S/sessions/$label-$backend-a$attempt.out"
 mkdir -p "$S/sessions"
 RL_TAIL=400 "$S/tools/rl.sh" "billed DDP session: $label $backend attempt $attempt, CLI defaults (prefill 1024, decode 256, max 1280, 5 iterations)" \
-  "source $S/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '$model' --ddp --device pa3q-35 --$backend" > "$out" 2>&1
+  "source $S/.venv-nightly/bin/activate && LITERT_GCP_PROJECT='<project>' litert benchmark '$model' --ddp --device pa3q-35 --$backend" > "$out" 2>&1
 rc=$(grep -o '^exit=[0-9]*' "$out" | tail -1 | cut -d= -f2)
 sid=$(grep -o "session-[0-9a-f]\{8\}" "$out" | head -1)
 name=$(grep -o "litert-cli-benchmark-[0-9a-f]\{8\}" "$out" | head -1)

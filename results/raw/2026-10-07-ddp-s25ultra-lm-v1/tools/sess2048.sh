@@ -4,7 +4,7 @@ S=<work>
 label="$1"; model="$2"
 out="$S/sessions/$label-cpu-n2048.out"
 RL_TAIL=400 "$S/tools/rl.sh" "billed DDP session: $label cpu, --max-num-tokens 2048 (prefill 1024, decode 256, 5 iterations at the defaults); the 1280 default fails to allocate on this bundle" \
-  "source $S/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '$model' --ddp --device pa3q-35 --cpu --max-num-tokens 2048" > "$out" 2>&1
+  "source $S/.venv-nightly/bin/activate && LITERT_GCP_PROJECT='<project>' litert benchmark '$model' --ddp --device pa3q-35 --cpu --max-num-tokens 2048" > "$out" 2>&1
 rc=$(grep -o '^exit=[0-9]*' "$out" | tail -1 | cut -d= -f2)
 sid=$(grep -o "session-[0-9a-f]\{8\}" "$out" | head -1)
 name=$(grep -o "litert-cli-benchmark-[0-9a-f]\{8\}" "$out" | head -1)

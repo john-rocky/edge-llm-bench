@@ -18,7 +18,7 @@ this sitting the S26 leg covers all five dashboard models; instrument, protocol 
   records); the no-new-round cutoff (minute 100 of a 120-minute cap) stopped round 6 before it started — nothing incomplete.
   Each control launch ran ≈260 s (4B Q4_K_M prefill of 1,986 tokens at ≈9 tok/s); 14 of 20 launches ended at thermal status 2,
   every launch started at status 0 after the gate; battery 34.1–41.9 °C. Screen on at round 1, off (`Dozing`) from round 2 —
-  the owner's "stay awake" setting was off this time.
+  the "stay awake" setting was off this time.
 - Admission: anchor 107.5 / 106.8 / 104.7 / 108.3 / 108.9 tok/s — median 107.5, 1.018 of the 2026-09-14 S26 reference (105.6)
   — admitted under the 5 % rule. All five rounds kept; no cell above 10 % spread.
 

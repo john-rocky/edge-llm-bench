@@ -16,7 +16,7 @@ console is the one the Android route reads: android/bench/parsers.py parse_liter
 litert_side_lines (the build's lines), ynnpack_counts (YNNPACK's per-op lines and partitions) and
 litert_side_off_device (on the CPU, YNNPACK's lines absent when --enable_ynnpack=true asked for it or present when it
 did not: protocolFlags backend-not-registered, a row and never a measurement, as on Android). Here those consoles
-become the same records, so the context ladder's Mac numbers are records and not a table in a lane's notes.
+become the same records, so the context ladder's Mac numbers are records and not a table in notes outside this repo.
 
 What a record says
 ------------------

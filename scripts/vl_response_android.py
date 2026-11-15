@@ -114,7 +114,7 @@ def phone_state(serial):
     temp = int(m.group(1)) / 10.0 if m else None
     caps = sh(serial, "for c in /sys/devices/system/cpu/cpufreq/policy*; do echo $(cat $c/scaling_max_freq) $(cat $c/cpuinfo_max_freq); done").split()
     capped = any(caps[i] != caps[i + 1] for i in range(0, len(caps) - 1, 2))
-    # the owner's hand settings can change mid-session (developer option "stay
+    # settings made by hand can change mid-session (developer option "stay
     # awake"); record them beside every launch so a change sits next to the numbers
     pw = sh(serial, "dumpsys power 2>/dev/null | grep -E 'mWakefulness=' | head -1")
     wm = re.search(r"mWakefulness=(\w+)", pw)

@@ -1238,8 +1238,8 @@ def quiet_lock_others(path):
     A registration counts while its process lives, is not stopped (SIGSTOP from outside: it cannot take
     its turn) and started before the file was written (else the pid was reused); a slot's job counts
     stopped too (it keeps the slot); the lock line's holder and this process's ancestors never count.
-    Every such job counts: the user's Mac priority (the machine's priority file, 2026-10-28)
-    ranks the nightly dashboard last, with the other bench work (bench goes last, user 2026-10-22), so
+    Every such job counts: the Mac priority (the machine's priority file, 2026-10-28)
+    ranks the nightly dashboard last, with the other bench work (bench goes last), so
     the job reads no ranks, and it lets the bench-rank jobs go first too, where quiet_hold orders them by
     waiting time. The one exception is a sitting by hand whose env QUIET_LANE names a key of that table
     (priority_rank): it counts only the jobs ranked as good as its key or better. quiet_rank's scan for quiet_yield waiters from before the registry (2026-10-28 09:05)
@@ -1356,8 +1356,8 @@ def quiet_rank_tool():
 
 def priority_rank():
     """(quiet_rank, rank, key) when env QUIET_LANE names a key of the Mac priority table, else None.
-    The nightly sitting carries no QUIET_LANE and gives way to every other job (bench goes last, user
-    2026-10-22); a sitting by hand under a key added to the table for it gives way only to the jobs ranked
+    The nightly sitting carries no QUIET_LANE and gives way to every other job (bench goes
+    last); a sitting by hand under a key added to the table for it gives way only to the jobs ranked
     as good as that key or better (first used 2026-11-14: one Mac sitting)."""
     wanted = os.environ.get("QUIET_LANE", "").strip()
     if not wanted:
@@ -2202,14 +2202,14 @@ def retake_sitting(schedule, key, dev, args, weekly_follows=False):
 
 # ---------------------------------------------------------------- DDP lab units (docs/dashboard-autopilot-v1.md §9)
 
-# the autopilot's switch: ddp_weekly turns the lab-unit slot on (user 2026-10-16: no per-session GO;
+# the autopilot's switch: ddp_weekly turns the lab-unit slot on (it goes
 # off when another host runs the weekly DDP set), ddp_max_sessions caps the Device Run
 # sessions one sitting may start (the plan's count, read before any is billed)
 SWITCH = os.path.join(ROOT, "ops", "autopilot", "switch.json")
 DDP_REASON = "ddp lab unit: no session anchor; each run carries its cap marks and the text check"
 # a lab unit's sitting is due when no admitted session of it ended in this many days before the firing
 # (schedule.json interval_days overrides): a rolling window, not the attached devices' Monday week, so a
-# Sunday-night sitting is not repeated by the Monday 02:00 firing (supervisor, 2026-10-18 r5)
+# Sunday-night sitting is not repeated by the Monday 02:00 firing (2026-10-18)
 DDP_INTERVAL_DAYS = 6
 
 

@@ -241,7 +241,7 @@ headlines its cold median. One rule for both arms and every platform:
   iPhone figure is the same `phys_footprint` window as every Apple arm's and ranks with them.
 - The phones run beta builds of iOS 27: their numbers stay on the dashboard page, never in a
   public repo, card or post.
-- The weekly job does not run these cells yet (an owner decision; the arm joins a weekly file
+- The weekly job does not run these cells yet (the arm joins a weekly file
   only after its first sittings).
 - Name a sitting `<date>-dashboard-coreai-v1-<device>`: the dashboard page reads only campaigns
   whose name contains `dashboard`.

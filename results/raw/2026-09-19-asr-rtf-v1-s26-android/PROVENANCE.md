@@ -18,7 +18,7 @@ sample app force-stopped): battery 32.6 °C, thermal status 0. Gate before every
 thermal status 0 and battery ≤ 36.0 °C (`dumpsys thermalservice` / `dumpsys battery`), waits
 logged; the temperatures before and after each launch are in `metrics.batteryTemp{Initial,Final}C`
 and `provenance.deviceBefore/After`. No other adb client used the phone (checked before the
-session; the sibling session confirmed by message it would not touch it).
+session).
 
 ## Instrument
 

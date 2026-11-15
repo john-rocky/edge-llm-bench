@@ -617,8 +617,8 @@ def litert_side_lines(text):
 #                                (main@b7c40ea81 2026-10-20, v0.18.0 2026-10-26, v0.19.0-pregpu 2026-11-03)
 # The Android engines here are android/bin builds of android/scripts/build_litert_lm_main.sh: a
 # statically linked accelerator is the one bazel compiled from the open-source tree (its default
-# since 2026-10-23; GPU prefill 0.3-0.6x of Google's on the same phone and file, d449_work/ROUND1.md
-# in the bench checkout), a dynamically loaded libLiteRtGpuAccelerator.so is the tag's
+# since 2026-10-23; GPU prefill 0.3-0.6x of Google's on the same phone and file), a dynamically
+# loaded libLiteRtGpuAccelerator.so is the tag's
 # prebuilt/android_arm64 file (Google's build; the witness checks its sha against the pins entry's
 # so_files). Google's PyPI wheel prints the static line too: the value names this harness's builds,
 # not what the line means everywhere.

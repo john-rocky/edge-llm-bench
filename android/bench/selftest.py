@@ -1603,7 +1603,7 @@ def main():
                r["conditions"].get("cpuMaxFreqMHz", {}).get("policy8")) for _, r in lit_h3]
     ok(got_h3 == [("4-8", ["cpu-capped"], {"min": 2000, "hw": 2914, "cpus": "8"})],
        f"LiteRT-LM: cpusAllowedList 4-8 (the last read), policy8 capped -> cpu-capped (got {got_h3})")
-    # H4: the line (owner decision 2026-10-08, render_leaderboard.CPU_CAP_MAX_DROP_PCT = 15).
+    # H4: the line (2026-10-08, render_leaderboard.CPU_CAP_MAX_DROP_PCT = 15).
     # Run 2's policy4 ceiling falls 10 % (2367 -> 2130 MHz), run 3's 30 % (-> 1657 MHz): the
     # runner flags both, as it flags any fall (the flag is the fact); below, the summary's
     # cpu_cap_drop_pct reads 10.0 and 30.0, and arm_row pools run 2, counted, and keeps run 3 out
@@ -1830,7 +1830,7 @@ def main():
     ok([r["cpu_capped"] for r in rows_h4] == ["false", "true", "true"] and got_a4 == (2, 19.5, 1, 1, 3),
        f"arm_row: the 10 % run pools, counted, the 30 % run stays out; both stay true in the summary "
        f"(cold_n, cold_median, cpu_capped_n, cpu_capped_counted_n, cpu_read_n = {got_a4})")
-    # an accelerator arm (render_leaderboard.CPU_CAP_EXEMPT_ARMS, owner decision 2026-10-08):
+    # an accelerator arm (render_leaderboard.CPU_CAP_EXEMPT_ARMS, 2026-10-08):
     # H3's LiteRT-LM GPU run, its ceiling 31.4 % down (past the line), pools, counted, its fall kept
     a3 = arm_row([r for r in rows_all if r["campaign"] == "results/raw/selftest-h3"])
     got_a3 = (a3["cold_n"], a3["cold_median"], a3["cpu_capped_n"], a3["cpu_capped_counted_n"],

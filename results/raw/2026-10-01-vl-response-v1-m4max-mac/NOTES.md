@@ -78,5 +78,5 @@ other launch saw no foreign process ≥ 20 %. Thermal nominal and no CPU speed l
    that built it).
 
 Not run this sitting: MiniCPM-V-4 (not downloaded), the Metal accelerator as a separate GPU arm
-(a runner dir without the WebGPU dylibs — the S26 leg handoff's item 9), the `int8` recipes,
+(a runner dir without the WebGPU dylibs), the `int8` recipes,
 multi-image.

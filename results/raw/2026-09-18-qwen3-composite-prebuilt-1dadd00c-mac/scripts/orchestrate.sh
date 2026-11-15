@@ -1,5 +1,5 @@
 #!/bin/zsh
-# 2026-09-18 one-shot orchestration for the host gap (after user GO): 12-flag exports + inventories -> APFS clones into the
+# 2026-09-18 one-shot orchestration for the host gap: 12-flag exports + inventories -> APFS clones into the
 # run tree -> sha256 of everything -> run_all.sh (compatibility leg, text runs, the two configs A/B, 8Q gates).
 # Idempotent: exports are skipped when their bundles already exist. Usage: (S=<scratchpad> nohup ./orchestrate.sh > <S>/legs/orchestrate.log 2>&1 &)
 set -u
