@@ -38,8 +38,8 @@ Full text: `methodology/fairness-rules.md`. The six working rules:
 `stored-report-rule`,
 `cpu-cap-rule` (an Android run whose engine CPUs' clock ceiling fell more
 than 15 % pools into no number; ≤15 % pools, marked ◇ and `cpu_capped`
-`true`; the line is `render_leaderboard.CPU_CAP_MAX_DROP_PCT` only, owner
-decision 2026-10-08 on `results/raw/2026-10-08-dashboard-ortgenai-v1-s26-*`;
+`true`; the line is `render_leaderboard.CPU_CAP_MAX_DROP_PCT` only, decided
+2026-10-08 on `results/raw/2026-10-08-dashboard-ortgenai-v1-s26-*`;
 an NPU / GPU arm's capped run pools at any fall, marked with it:
 `render_leaderboard.CPU_CAP_EXEMPT_ARMS`).
 
