@@ -278,6 +278,7 @@ class LongContextTests(unittest.TestCase):
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["conditions"]["regime"], "cold-process")
         self.assertNotIn("generatedTokenCount", rows[0]["metrics"])
+        self.assertEqual(rows[0]["metrics"]["harnessStamp"], "2026-08-android-cli-v1")   # not a llama-bench run
 
     def test_llama_bench_two_launch_commands(self):
         # a llama.cpp native-benchmark run = the prefill launch, then the decode launch at the
@@ -372,8 +373,9 @@ class LongContextTests(unittest.TestCase):
 
     def test_llama_bench_run_is_two_launches_flat(self):
         # the flat build: prefill rate from the prefill launch, decode rate from the decode launch
-        # at depth 1024; both commands and each launch's cap reads in the record; the decode
-        # launch's capped policy flags the run; its start off nominal makes the run's start state
+        # at depth 1024, named in the harness stamp; both commands and each launch's cap reads in
+        # the record; the decode launch's capped policy flags the run; its start off nominal makes
+        # the run's start state
         consoles = {"prefill": self.bench_console([self.bench_test(1024, 0, 0, 495.5)]),
                     "decode": self.bench_console([self.bench_test(0, 256, 1024, 151.25)], policy6_khz=4000000)}
         rc, row, cmds, log = self.run_mocked_bench(consoles, thermal=[(0, "nominal"), (1, "light"), (1, "light")])
@@ -383,6 +385,7 @@ class LongContextTests(unittest.TestCase):
         m, c = row["metrics"], row["conditions"]
         self.assertEqual((m["promptTokensPerSecond"], m["promptTokenCount"], m["decodeTokensPerSecond"],
                           m["generatedTokenCount"], m["coldRun"]), (495.5, 1024, 151.25, 256, False))
+        self.assertEqual(m["harnessStamp"], "2026-08-android-cli-v1+llama-bench-d1024")
         self.assertEqual([(x["phase"], x["engineCommand"]) for x in c["launches"]], list(zip(("prefill", "decode"), cmds)))
         self.assertEqual(c["launches"][1]["cooldownBeforeSeconds"], 120)
         self.assertNotIn("cooldownBeforeSeconds", c["launches"][0])
@@ -418,6 +421,7 @@ class LongContextTests(unittest.TestCase):
         self.assertEqual(len(c["backendRegistered"]), 1)
         self.assertNotIn("protocolFlags", c)
         self.assertEqual((row["metrics"]["promptTokensPerSecond"], row["metrics"]["decodeTokensPerSecond"]), (900.0, 40.0))
+        self.assertEqual(row["metrics"]["harnessStamp"], "2026-08-android-cli-v1+llama-bench-d1024")
 
     def test_llama_bench_decode_off_its_depth_gives_no_decode_rate(self):
         consoles = {"prefill": self.bench_console([self.bench_test(1024, 0, 0, 495.5)]),

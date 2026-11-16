@@ -2009,8 +2009,9 @@ def main():
     # check 1b: the flat pinned build's llama-bench row (the CPU arm, cooldown=1): one run = the
     # prefill launch, the row's cooldown, the decode launch at depth 1024 (run_cell.LLAMA_BENCH_PHASES).
     # The record's prefill rate is the first launch's, its decode rate the second's (the fake's
-    # generation rate is 60.0 at depth 0 and 45.0 at 1024); each launch's command, cooldown and cap
-    # reads in conditions.launches; both consoles in its log, each under its launch line.
+    # generation rate is 60.0 at depth 0 and 45.0 at 1024), its harness stamp names the form
+    # (+llama-bench-d1024); each launch's command, cooldown and cap reads in conditions.launches; both
+    # consoles in its log, each under its launch line.
     with open(os.path.join(dev, "llama-bench"), "w") as fh:
         fh.write("fake llama-bench")
     cells_lb = os.path.join(tmp, "lb.cells")
@@ -2036,6 +2037,8 @@ def main():
             m.get("generatedTokenCount"), m.get("coldRun")) == (500.0, 1024, 45.0, 256, False),
            f"flat llama-bench: prefill from the prefill launch, decode from the decode launch at depth 1024 "
            f"(45.0, not depth 0's 60.0) (got {m})")
+        ok(m.get("harnessStamp") == "2026-08-android-cli-v1+llama-bench-d1024",
+           f"flat llama-bench: the record's harnessStamp names the two-launch form (got {m.get('harnessStamp')})")
         ok([(x.get("phase"), x.get("engineCommand"), x.get("cooldownBeforeSeconds")) for x in c.get("launches", [])]
            == [("prefill", want_lb[0], None), ("decode", want_lb[1], 1)]
            and all("cpuMaxFreqMHz" in x and x.get("cpuCapped") == [] and x.get("cpuCappedAtStart") is False

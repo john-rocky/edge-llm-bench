@@ -260,6 +260,9 @@ ANDROID_BIN_DIR = os.environ.get("BENCH_ANDROID_BIN_DIR", os.path.join(ROOT, "an
 EXECUTORCH_STDERR = f"{DEV_DIR}/run_err.txt"
 # harnessStamp suffix: run_cell's launch protocol, the runner's own stats read by parsers
 EXECUTORCH_STAMP = "+executorch-runner-stats"
+# harnessStamp suffix of a llama.cpp native-benchmark-<P>x<D> run (two launches, main): its decode
+# rate is timed at depth P, after the row's prefill (in one process, -p P -n D, it was timed at depth 0)
+LLAMA_BENCH_STAMP = "+llama-bench-d{depth}"
 # appended to rssBasis: the runner's own peak beside the sampler's VmHWM reads
 EXECUTORCH_RSS_NOTE = {
     "llama_main": ("; executorch: memoryPeakResidentMB = the larger of that and the runner's own "
@@ -1849,7 +1852,7 @@ def main():
             launch_checks.setdefault("protocolFlags", []).append("end-state-unavailable")
         metrics.update({
             "coldRun": cold,
-            "harnessStamp": HARNESS_STAMP,
+            "harnessStamp": HARNESS_STAMP + (LLAMA_BENCH_STAMP.format(depth=native[0]) if two_launch else ""),
             "initialThermalState": thermal_name,
             "finalThermalState": end_name,
         })
