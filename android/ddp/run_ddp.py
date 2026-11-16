@@ -8,8 +8,9 @@ the static wrapper android/ddp/ddp_cell.sh, our own LiteRT-LM build; docs/ddp-in
   android/ddp/run_ddp.py --records-only results/raw/<campaign>     # records again from the pulled output
 
 (a) rows: run_campaign.parse_cells, android only; skipped with a reason (printed, SKIPPED.txt):
-    a runtime other than litert-lm, exclude= / manual=, a side build (backend=npu / engine-build=),
-    anchor=1 (no session anchor on DDP), exclude-on= naming the id's schedule key
+    a runtime other than litert-lm, exclude= / manual=, a llama.cpp native-benchmark row (the
+    attached runner times it in two launches; a job runs one command per run), a side build
+    (backend=npu / engine-build=), anchor=1 (no session anchor on DDP), exclude-on= naming the id's schedule key
     (android/ddp/devices.json -> ops/dashboard-v1/schedule.json), any exclude-on= on an id with
     no schedule key.
 (b) one job per row = runs= launches of run_campaign.planned_command's engine command on one
@@ -136,6 +137,11 @@ def select_cells(cells_file, device_id, key, all_runtimes=False):
         opts = cell["opts"]
         if cell["runtime"] not in wired:
             skips.append((cell, "runtime-not-wired-on-ddp", None))
+        elif run_cell.llama_bench_two_launch(cell["runtime"], cell["task"]):
+            # the attached runner times a llama-bench run in two launches (run_cell.py: the
+            # prefill launch, then the decode launch at the prefill's depth); a job here runs one
+            # command per run (run_campaign.planned_command's one-process form)
+            skips.append((cell, "llama-bench-two-launch-not-wired-on-ddp", None))
         elif opts.get("backend") == "npu" or (not all_runtimes and opts.get("engine-build")):
             skips.append((cell, "side-build-not-wired-on-ddp", None))
         elif opts.get("anchor"):

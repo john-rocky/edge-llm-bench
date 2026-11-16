@@ -68,6 +68,13 @@ Design decisions (methodology/android.md):
     run during which a policy of the engine's CPUs sat below its hardware
     maximum carries protocolFlags cpu-capped (conditions.cpuMaxFreqMHz). The
     run stays a record and pools into no number (render_leaderboard.arm_row).
+  - llama.cpp native-benchmark-<P>x<D> (llama-bench): one run = two launches, the
+    prefill launch (-p P -n 0) and, --launch-cooldown s later, the decode launch at
+    depth P (-p 0 -n D -d P: llama-bench fills a P-token context before its timer
+    and times D tokens on top of it). Each launch waits for the CPU cap and has its
+    caps read, as any launch. One record per run: the prefill rate from the first
+    launch's JSON, the decode rate from the second's, both launches' commands and
+    reads in conditions.launches, both consoles in its log (LLAMA_BENCH_PHASES).
   - engine sockets (onnxruntime-genai launches): the sampler lists the engine's
     socket fds every tick and classifies each new one once against the engine's
     /proc/<pid>/net tables (conditions.engineSockets = {"unix": n, "inet": m},
@@ -765,13 +772,48 @@ def capture_stem(runtime, backend, model_id, task, file_hint=None,
     return stem
 
 
+# A llama.cpp native-benchmark-<P>x<D> run on this runner = two llama-bench launches, in this
+# order (main): the prefill launch times P prompt tokens (-p P -n 0); the decode launch times D
+# generated tokens at depth P (-p 0 -n D -d P: llama-bench fills a P-token context before each
+# repetition's timer starts — tools/llama-bench, b10015 source; the b11721 build carries the same
+# depth-run strings), so the decode it times runs on a P-token context: a decode after the row's
+# prefill. In one process (-p P -n D, engine_command's default) the decode test runs on an empty
+# context (n_depth 0). The default stays for the callers that run one command
+# per run: run_campaign.planned_command for DDP (android/ddp/run_ddp.py skips these rows,
+# llama-bench-two-launch-not-wired-on-ddp) and the Windows lab (scripts/run_windows_matrix.py).
+LLAMA_BENCH_PHASES = ("prefill", "decode")
+# seconds between a run's two launches when the caller names none (--launch-cooldown): the
+# campaign runner's COOLDOWN, its env and its default (run_campaign.py passes the row's own)
+LAUNCH_COOLDOWN = int(os.environ.get("COOLDOWN", "120"))
+
+
+def llama_bench_two_launch(runtime, task):
+    """A run of this row = the two llama-bench launches of LLAMA_BENCH_PHASES."""
+    return runtime == "llama.cpp" and task.startswith("native-benchmark-")
+
+
+def llama_bench_counts(task, phase=None):
+    """llama-bench's count flags for a native-benchmark-<P>x<D> task: phase None = both tests in
+    one process (-p P -n D), "prefill" = -p P -n 0, "decode" = -p 0 -n D -d P."""
+    p, d = task[len("native-benchmark-"):].split("x")
+    if phase is None:
+        return f"-p {p} -n {d}"
+    if phase == "prefill":
+        return f"-p {p} -n 0"
+    if phase == "decode":
+        return f"-p 0 -n {d} -d {p}"
+    raise ValueError(f"llama-bench launch {phase!r}: one of {LLAMA_BENCH_PHASES}")
+
+
 def engine_command(runtime, backend, model_dev, task, prompt_dev, budget, max_tokens,
-                   context_tokens, engine_dir=None, ynnpack=False, engine_build=None):
+                   context_tokens, engine_dir=None, ynnpack=False, engine_build=None, bench_phase=None):
     """The on-device command line for one run. Returns (cmd, binname, sampler, ctx_note).
     engine_dir = a side build ({ENGINES_DIR}/<tag>): the tool by absolute path; llama.cpp
     with every layer on the backend's device, LiteRT-LM on the NPU, or LiteRT-LM on cpu / gpu
     with the flat build's commands; its env comes from launch_env. ynnpack = LiteRT-LM on the
-    CPU with --enable_ynnpack=true."""
+    CPU with --enable_ynnpack=true. bench_phase = one launch of a llama-bench run
+    (LLAMA_BENCH_PHASES: its count flags, llama_bench_counts; a side build's flags on both);
+    None = the one-process form."""
     if runtime.startswith("litert-lm") and engine_dir and backend == "npu":
         # The NPU side build runs on the bundle's own KV cache: an AOT bundle's cache length is
         # fixed at export (no --max_num_tokens; main() names it from the bundle, ctx_note here
@@ -851,9 +893,8 @@ def engine_command(runtime, backend, model_dev, task, prompt_dev, budget, max_to
             # the tools' path and the libraries' dir (launch_env) differ.
             tool_dir = f"{engine_dir}/bin"
             if task.startswith("native-benchmark-"):
-                p, d = task[len("native-benchmark-"):].split("x")
-                return (f"{tool_dir}/llama-bench -m {model_dev} -t 4 -p {p} -n {d} -o json"), \
-                    "llama-bench", "n/a (llama-bench)", "llama-bench-managed"
+                return (f"{tool_dir}/llama-bench -m {model_dev} -t 4 {llama_bench_counts(task, bench_phase)} "
+                        "-o json"), "llama-bench", "n/a (llama-bench)", "llama-bench-managed"
             think = f" {LLAMA_THINKING_OFF_FLAGS}" if llama_thinking_off(model_dev) else ""
             return (f"{tool_dir}/llama-cli -m {model_dev} -t 4 -c {ctx} -f {prompt_dev} "
                     f"-n {max_tokens or budget} --temp 0 --top-p 1 -st{think}"), \
@@ -868,18 +909,17 @@ def engine_command(runtime, backend, model_dev, task, prompt_dev, budget, max_to
             # its flags: its records carry the JSON's devices / backends fields instead.
             tool_dir, device = f"{engine_dir}/bin", LLAMA_DEVICES[backend]
             if task.startswith("native-benchmark-"):
-                p, d = task[len("native-benchmark-"):].split("x")
                 ub = f" -ub {SIDE_UBATCH}" if backend == "npu" else ""
-                return (f"{tool_dir}/llama-bench -m {model_dev} -t {SIDE_THREADS} -p {p} -n {d} -o json "
-                        f"-ngl 99{ub} --device {device}"), "llama-bench", "n/a (llama-bench)", "llama-bench-managed"
+                return (f"{tool_dir}/llama-bench -m {model_dev} -t {SIDE_THREADS} "
+                        f"{llama_bench_counts(task, bench_phase)} -o json -ngl 99{ub} --device {device}"), \
+                    "llama-bench", "n/a (llama-bench)", "llama-bench-managed"
             flags = f" {SNAPDRAGON_CHAT_FLAGS}" if SNAPDRAGON_CHAT_FLAGS else ""
             think = f" {LLAMA_THINKING_OFF_FLAGS}" if llama_thinking_off(model_dev) else ""
             return (f"{tool_dir}/{SNAPDRAGON_CHAT_TOOL} -lv 4{flags} -m {model_dev} -t {SIDE_THREADS} "
                     f"-c {ctx} -f {prompt_dev} -n {max_tokens or budget} --temp 0 --top-p 1 -st{think} "
                     f"-ngl 99 -fa on -ub {SIDE_UBATCH} --device {device}"), SNAPDRAGON_CHAT_TOOL, "greedy", ctx
         if task.startswith("native-benchmark-"):
-            p, d = task[len("native-benchmark-"):].split("x")
-            return (f"./llama-bench -m {model_dev} -t 4 -p {p} -n {d} -o json"), \
+            return (f"./llama-bench -m {model_dev} -t 4 {llama_bench_counts(task, bench_phase)} -o json"), \
                 "llama-bench", "n/a (llama-bench)", "llama-bench-managed"
         # -st (single-turn): b8999's llama-cli REJECTS --no-conversation ("not
         # supported") and then loops forever echoing "> " on stdin EOF —
@@ -1018,8 +1058,9 @@ def executorch_fields(console, et, budget, declared_context):
 
 def dry_run(args, arm, engine_dir):
     """--dry-run: the launch this invocation would make, with no device call — one JSON line
-    with the on-device command as run_once starts it, the engine binary and, for executorch,
-    the inputs it would push (checked as for a launch)."""
+    with the on-device command as run_once starts it (a llama-bench row: each run's two in
+    launches, with the cooldown between them; command = the first), the engine binary and,
+    for executorch, the inputs it would push (checked as for a launch)."""
     with open(os.path.join(ROOT, "prompts", "text", "budgets.tsv")) as fh:
         budgets = dict(line.strip().split("\t") for line in fh if line.strip())
     budget = int(budgets[args.task]) if args.task in budgets else None
@@ -1045,10 +1086,23 @@ def dry_run(args, arm, engine_dir):
                                               engine_dir=engine_dir, ynnpack=args.ynnpack,
                                               engine_build=args.engine_build)
     affinity = f"taskset {CPU_MASK} " if CPU_MASK else ""
-    plan.update(command=f"cd {DEV_DIR} && {launch_env(engine_dir, args.backend, args.runtime)} {affinity}{cmd} "
-                        f">{DEV_DIR}/run_out.txt 2>&1 </dev/null",
+    env = launch_env(engine_dir, args.backend, args.runtime)
+
+    def shell(command):
+        return f"cd {DEV_DIR} && {env} {affinity}{command} >{DEV_DIR}/run_out.txt 2>&1 </dev/null"
+
+    launches = []
+    if llama_bench_two_launch(args.runtime, args.task):
+        # a run's two launches (LLAMA_BENCH_PHASES); command = the first one run_once starts
+        launches = [{"phase": phase, "command": shell(engine_command(
+            args.runtime, args.backend, model_cmd, args.task, prompt_dev, budget, args.max_tokens,
+            args.context_tokens, engine_dir=engine_dir, ynnpack=args.ynnpack, engine_build=args.engine_build,
+            bench_phase=phase)[0])} for phase in LLAMA_BENCH_PHASES]
+    plan.update(command=launches[0]["command"] if launches else shell(cmd),
                 binary=(side_path(engine_dir, SIDE_DIRS[args.runtime][0], binname) if engine_dir
                         else f"{DEV_DIR}/{binname}"), sampler=sampler)
+    if launches:
+        plan.update(launches=launches, launchCooldownSeconds=args.launch_cooldown)
     if args.runtime == "executorch":
         tokenizer_dev, rendered_dev = executorch_device_paths(model_dev, args.task)
         host_bin = os.path.join(ANDROID_BIN_DIR, binname)
@@ -1299,6 +1353,46 @@ def cpu_conditions(console, mask=None):
     return conditions, capped
 
 
+def two_launch_run(launches):
+    """A llama-bench run's reads from its launches (main: the prefill launch, then the decode
+    launch), for its one record:
+      console    both consoles in order, each under a "===LAUNCH k/n <phase>===" line (the log);
+      exitCode   the first launch's exit code that is not 0, else 0;
+      rssMB      the median of every VmRSS read of both launches (run_once's rule over both);
+      elapsed    from the first launch's start to the last one's end, the cooldown between
+                 included (the record's timestamp less elapsedSeconds stays the run's start);
+      thermal    the start state of the first launch that started off nominal, else the first
+                 launch's (scripts/cell_gate.py reads initialThermalState: a decode launch that
+                 starts hot makes the run HOT);
+      cpu-cap-rule over both launches: startCapped = either launch's wait ran out; cpuCond =
+      per policy the lowest cap either launch read, and every CPU either engine was allowed on
+      (cpusAllowedList); cpuCapped = each launch's capped policies under its phase. Each
+      launch's own reads stay in the record's conditions.launches."""
+    rss = [int(line.split()[1]) for launch in launches for line in launch["console"].splitlines()
+           if line.startswith("VmRSS")]
+    freq, allowed = {}, set()
+    for launch in launches:
+        for name, value in launch["cpuCond"].get("cpuMaxFreqMHz", {}).items():
+            if name not in freq or value["min"] < freq[name]["min"]:
+                freq[name] = dict(value)
+        allowed |= cpu_set(launch["cpuCond"].get("cpusAllowedList") or "")
+    cond = {"cpusAllowedList": cpu_list(allowed)} if allowed else {}
+    if freq:
+        cond["cpuMaxFreqMHz"] = freq
+    first, last = launches[0], launches[-1]
+    return {
+        "console": "\n".join(f"===LAUNCH {k}/{len(launches)} {launch['phase']}===\n{launch['console']}"
+                             for k, launch in enumerate(launches, 1)),
+        "exitCode": next((launch["exitCode"] for launch in launches if launch["exitCode"] != 0), 0),
+        "rssMB": statistics.median(rss) / 1024 if rss else None,
+        "elapsed": last["started"] + last["elapsed"] - first["started"],
+        "thermal": next((launch["thermal"] for launch in launches if launch["thermal"][0] != 0), first["thermal"]),
+        "startCapped": any(launch["startCapped"] for launch in launches),
+        "cpuCond": cond,
+        "cpuCapped": [f"{launch['phase']}: {c}" for launch in launches for c in launch["cpuCapped"]],
+    }
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--runtime", required=True, choices=["litert-lm", "llama.cpp", "onnxruntime-genai"])
@@ -1330,6 +1424,10 @@ def main():
     ap.add_argument("--cooldown", type=int, default=0,
                     help="seconds to sleep between runs 2..N (the campaign "
                          "runner passes COOLDOWN; bare CLI smoke runs default 0)")
+    ap.add_argument("--launch-cooldown", type=int, default=LAUNCH_COOLDOWN,
+                    help="llama.cpp native-benchmark-<P>x<D>: seconds between a run's prefill launch "
+                         "and its decode launch (the campaign runner passes the row's own cooldown; "
+                         f"default COOLDOWN from the env, else 120: {LAUNCH_COOLDOWN})")
     ap.add_argument("--timeout", type=int, default=1800)
     ap.add_argument("--round-index", type=int)
     ap.add_argument("--launch-index", type=int)
@@ -1365,6 +1463,8 @@ def main():
     if args.runtime == "llama.cpp" and args.backend and not args.engine_build:
         ap.error("llama.cpp on npu|gpu is a side build: pass --backend and --engine-build together "
                  "(--engine-build alone is a CPU side build of the `llama.cpp` arm)")
+    if args.launch_cooldown < 0:
+        ap.error("--launch-cooldown takes seconds >= 0")
     ort = args.runtime == "onnxruntime-genai"
     if ort and (args.backend != "cpu" or args.engine_build):
         ap.error("onnxruntime-genai on Android takes --backend cpu (the official AAR is CPU-only) "
@@ -1467,11 +1567,20 @@ def main():
         args.runtime, args.backend, model_cmd, args.task,
         prompt_dev, budget, args.max_tokens, args.context_tokens, engine_dir=engine_dir,
         ynnpack=args.ynnpack, engine_build=args.engine_build)
+    # the launches of one run: one, or a llama-bench row's two (LLAMA_BENCH_PHASES)
+    two_launch = llama_bench_two_launch(args.runtime, args.task)
+    phase_cmds = ([(phase, engine_command(
+        args.runtime, args.backend, model_cmd, args.task, prompt_dev, budget, args.max_tokens,
+        args.context_tokens, engine_dir=engine_dir, ynnpack=args.ynnpack, engine_build=args.engine_build,
+        bench_phase=phase)[0]) for phase in LLAMA_BENCH_PHASES] if two_launch else [(None, cmd)])
     litert_npu = args.runtime == "litert-lm" and bool(engine_dir) and args.backend == "npu"
     quantization = None
     if litert_npu:  # the label and the KV cache of an own NPU export, by its sha256
         quantization, ctx_note = own_npu_bundle(model_sha)
     env = launch_env(engine_dir, args.backend, args.runtime)
+    # conditions.engineCommand of a run: its launches' commands in order, "; " between them
+    shown_cmd = " ; ".join(f"{env} {c}" for _, c in phase_cmds)
+    shown_bare = " ; ".join(c for _, c in phase_cmds)
     if et:
         tokenizer_dev, rendered_dev = executorch_device_paths(model_dev, args.task)
         push_exact(et["tokenizer"], tokenizer_dev, args.serial)
@@ -1548,22 +1657,44 @@ def main():
     for i in range(1, args.runs + 1):
         if i > 1 and args.cooldown:
             time.sleep(args.cooldown)
-        start_capped = wait_cpu_uncapped(args.serial, args.out)
-        raw_status, thermal_name = thermal_status(args.serial)
-        batt = battery(args.serial)
-        screen = screen_conditions(args.serial)
-        t0 = time.time()
-        console, exit_code, rss_mb = run_once(cmd, binname, args.serial, args.timeout, env, sockets=ort)
-        elapsed = time.time() - t0
-        if et:
-            console += "\n===ENGINE_STDERR===\n" + executorch_stderr(args.serial)
-        cpu_cond, cpu_capped = cpu_conditions(console)
+        launches = []
+        for k, (phase, launch_cmd) in enumerate(phase_cmds):
+            pause = 0
+            if k:
+                # between a llama-bench run's two launches: the row's cooldown (run_campaign.py
+                # passes it), within the sitting's deadline
+                pause = max(0, min(args.launch_cooldown,
+                                   float(os.environ.get("BENCH_SESSION_DEADLINE", "inf")) - time.time()))
+                time.sleep(pause)
+            start_capped = wait_cpu_uncapped(args.serial, args.out)
+            raw_status, thermal_name = thermal_status(args.serial)
+            batt = battery(args.serial)
+            screen = screen_conditions(args.serial)
+            t0 = time.time()
+            console, exit_code, rss_mb = run_once(launch_cmd, binname, args.serial, args.timeout, env, sockets=ort)
+            elapsed = time.time() - t0
+            if et:
+                console += "\n===ENGINE_STDERR===\n" + executorch_stderr(args.serial)
+            cpu_cond, cpu_capped = cpu_conditions(console)
+            launches.append({"phase": phase, "command": launch_cmd, "pauseBefore": pause,
+                             "startCapped": start_capped, "thermal": (raw_status, thermal_name),
+                             "battery": batt, "screen": screen, "started": t0, "elapsed": elapsed,
+                             "console": console, "exitCode": exit_code, "cpuCond": cpu_cond,
+                             "cpuCapped": cpu_capped})
+        if two_launch:
+            # the run's reads from both launches (two_launch_run); battery and screen = the first's
+            run = two_launch_run(launches)
+            console, exit_code, rss_mb, elapsed = run["console"], run["exitCode"], run["rssMB"], run["elapsed"]
+            (raw_status, thermal_name), start_capped = run["thermal"], run["startCapped"]
+            cpu_cond, cpu_capped = run["cpuCond"], run["cpuCapped"]
+            batt, screen = launches[0]["battery"], launches[0]["screen"]
         # a measurement condition, not an engine failure: kept out of launch_checks, so
         # the run's OK / exit code / firstEver marker stay what the engine made them
         cpu_flags = (["cpu-capped"] if cpu_capped else []) + (["cpu-capped-at-start"] if start_capped else [])
         launch_id = str(uuid.uuid4()) if extended else None
         launch_checks = {}
         tests = None
+        bench_flags, bench_cond = [], {}
 
         if paired:
             iteration_metrics, launch_checks = parsers.context_prompt_results(
@@ -1575,16 +1706,36 @@ def main():
             iteration_metrics += [{} for _ in range(max(0, 2 - len(iteration_metrics)))]
             cold = True
             metrics = iteration_metrics[0]
-        elif args.runtime == "llama.cpp" and args.task.startswith("native-benchmark-"):
-            tests = parsers.parse_llama_bench_json(console)
-            metrics = {}
-            for t in tests:
-                if t["kind"] == "prefill":
-                    metrics["promptTokensPerSecond"] = t["avg_ts"]
-                    metrics["promptTokenCount"] = t["n_prompt"]
-                else:
-                    metrics["decodeTokensPerSecond"] = t["avg_ts"]
-                    metrics["generatedTokenCount"] = t["n_gen"]
+        elif two_launch:
+            # the prefill rate from the prefill launch's own JSON, the decode rate from the decode
+            # launch's; a launch whose JSON is not the one test it was started for (P prompt
+            # tokens; D generated at depth P) gives no rate and flags the run
+            # (parsers.llama_bench_launch_test)
+            metrics, tests = {}, []
+            for launch in launches:
+                launch["tests"] = parsers.parse_llama_bench_json(launch["console"])
+                tests += launch["tests"]
+                test, flags = parsers.llama_bench_launch_test(launch["tests"], launch["phase"], *native)
+                bench_flags += flags
+                if test and launch["phase"] == "prefill":
+                    metrics["promptTokensPerSecond"] = test["avg_ts"]
+                    metrics["promptTokenCount"] = test["n_prompt"]
+                elif test:
+                    metrics["decodeTokensPerSecond"] = test["avg_ts"]
+                    metrics["generatedTokenCount"] = test["n_gen"]
+            bench_cond = {"launches": [{
+                "phase": launch["phase"],
+                "engineCommand": f"{env} {launch['command']}" if engine_dir else launch["command"],
+                **({"cooldownBeforeSeconds": round(launch["pauseBefore"], 1)} if n else {}),
+                "startedAt": datetime.datetime.fromtimestamp(launch["started"], datetime.timezone.utc)
+                .strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "elapsedSeconds": round(launch["elapsed"], 1), "exitCode": launch["exitCode"],
+                "thermalRawStatus": launch["thermal"][0], "initialThermalState": launch["thermal"][1],
+                **launch["screen"], "batteryLevel": launch["battery"]["batteryLevel"],
+                "cpuCappedAtStart": launch["startCapped"], **launch["cpuCond"], "cpuCapped": launch["cpuCapped"],
+                "llamaBenchTests": [{f: t.get(f) for f in ("n_prompt", "n_gen", "n_depth", "avg_ts", "stddev_ts")}
+                                    for t in launch["tests"]],
+            } for n, launch in enumerate(launches)]}
             cold = False  # llama-bench repeats in-process (warm-ish regime)
         elif args.runtime == "llama.cpp":
             metrics = parsers.parse_llama_cli(console)
@@ -1652,9 +1803,9 @@ def main():
             # an ExecuTorch build other than the pinned tag (its runner dirs carry the label)
             side_cond = {"engineBuild": args.engine_build}
         elif engine_dir and not args.backend:
-            # a llama.cpp CPU side build: the build and the exact command; it runs on the CPU
+            # a llama.cpp CPU side build: the build and the exact command(s); it runs on the CPU
             # as the flat build does, so there is no device to witness
-            side_cond = {"engineBuild": args.engine_build, "engineCommand": f"{env} {cmd}"}
+            side_cond = {"engineBuild": args.engine_build, "engineCommand": shown_cmd}
         elif engine_dir:
             device = LLAMA_DEVICES[args.backend]
             bench = binname == "llama-bench"
@@ -1665,7 +1816,7 @@ def main():
                          "flashAttn": "auto (llama-bench default)" if bench else "on",
                          "ubatch": SIDE_UBATCH if not bench or args.backend == "npu"
                          else "512 (llama-bench default)",
-                         "hexagonOpPoll": 1, "engineCommand": f"{env} {cmd}",
+                         "hexagonOpPoll": 1, "engineCommand": shown_cmd,
                          "backendRegistered": lines}
             if not parsers.llama_backend_registered(lines, device, LLAMA_DEVICE_BUFFERS[device],
                                                     binname, tests):
@@ -1758,7 +1909,7 @@ def main():
                            "thermalRawStatus": raw_status,
                            "thermalRawStatusFinal": end_status,
                            **screen, "elapsedSeconds": round(elapsed, 1),
-                           "exitCode": exit_code, **side_cond, **accel_cond},
+                           "exitCode": exit_code, **side_cond, **accel_cond, **bench_cond},
             "metrics": metrics,
             "provenance": {"rawLog": console_name, "harness": "android/bench/run_cell.py",
                            "rssBasis": RSS_BASIS + (LITERT_NPU_RSS_NOTE if litert_npu
@@ -1837,8 +1988,9 @@ def main():
         if extended:
             rec["conditions"].update({
                 "roundIndex": args.round_index, "launchIndex": args.launch_index,
-                "launchID": launch_id, "elapsedScope": "whole-launch",
-                "stateAndMemoryScope": "whole-launch",
+                "launchID": launch_id,
+                "elapsedScope": "both-launches-and-the-cooldown-between" if two_launch else "whole-launch",
+                "stateAndMemoryScope": "both-launches" if two_launch else "whole-launch",
                 "batteryTemperatureInitialC": batt.get("temperatureC"),
                 "batteryTemperatureFinalC": end_batt.get("temperatureC"),
                 "batteryLevelFinal": end_batt.get("batteryLevel"),
@@ -1846,7 +1998,7 @@ def main():
                 "thermalGateTimeoutNonNominal": args.gate_timed_out and thermal_name != "nominal",
                 "initialThermalNonNominal": thermal_name != "nominal",
                 "outputTokenBudget": args.max_tokens or budget,
-                "engineCommand": f"{env} {cmd}" if engine_dir else cmd, **launch_checks,
+                "engineCommand": shown_cmd if engine_dir else shown_bare, **launch_checks,
             })
         # Legacy paths retain their one-record shape. Context prompt iterations
         # share a launch/log/state sample, but never share token counters.
@@ -1914,21 +2066,25 @@ def main():
                 row["conditions"]["textCheck"] = verdict
                 row["conditions"]["textOutputSHA256"] = hashlib.sha256((ort_text or "").encode()).hexdigest()
                 any_text_failure |= bool(verdict["flags"])
-            if cpu_flags or backend_flags:
+            if cpu_flags or backend_flags or bench_flags:
                 # cpu-cap-rule / a side build off its device: the record stays, arm_row
-                # keeps it out of every pool
+                # keeps it out of every pool; a llama-bench launch off its counts: the
+                # record stays without that launch's rate
                 row["conditions"]["protocolFlags"] = (list(row["conditions"].get("protocolFlags", []))
-                                                      + cpu_flags + backend_flags)
+                                                      + cpu_flags + backend_flags + bench_flags)
             name = f"{stem}_{stamp}_run{i}{'_iter' + str(iteration) if paired else ''}.json"
             with open(os.path.join(args.out, name), "w") as fh:
                 json.dump(row, fh, indent=2)
         d = metrics.get("decodeTokensPerSecond")
         clean = (exit_code == 0 and d and not launch_checks.get("protocolFlags") and not any_text_failure
-                 and not backend_flags)
+                 and not backend_flags and not bench_flags)
         status = "OK" if clean else f"FAIL(exit={exit_code})"
         print(f"run {i}/{args.runs} {status} decode={d} thermal={thermal_name}->{end_name}")
         if launch_checks.get("protocolFlags"):
             print("protocol flags: " + ", ".join(launch_checks["protocolFlags"]))
+        if bench_flags:
+            print(f"llama-bench counts {stem}_{stamp}_run{i}: " + ", ".join(bench_flags)
+                  + " — the record stays, without that launch's rate")
         if backend_flags:
             shown = ("the NPU dispatch" if litert_npu
                      else f"the {arm} launch it asked for ({side_cond.get('backendOffReason')})" if litert_side

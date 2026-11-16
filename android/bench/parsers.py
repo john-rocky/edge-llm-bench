@@ -380,8 +380,10 @@ def parse_ortgenai_model_benchmark(text, want_prefill, want_decode):
 
 
 def parse_llama_bench_json(text):
-    """llama-bench -o json -> list of per-test dicts {kind, avg_ts, n_prompt, n_gen,
-    stddev_ts} plus the fields that say where the tests ran (BENCH_DEVICE_FIELDS).
+    """llama-bench -o json -> list of per-test dicts {kind, avg_ts, n_prompt, n_gen, n_depth,
+    stddev_ts} plus the fields that say where the tests ran (BENCH_DEVICE_FIELDS). n_depth =
+    the context llama-bench filled before the test's timer (-d; 0 without it, None from a
+    build whose JSON has no such field).
 
     The array is the block from the first line that is exactly "[" to the last line that
     is exactly "]" — llama-bench's json printer writes both alone. A side build's backend
@@ -400,9 +402,31 @@ def parse_llama_bench_json(text):
         kind = "prefill" if t.get("n_prompt", 0) > 0 and t.get("n_gen", 0) == 0 else "decode"
         out.append({"kind": kind, "avg_ts": t.get("avg_ts"),
                     "n_prompt": t.get("n_prompt"), "n_gen": t.get("n_gen"),
-                    "stddev_ts": t.get("stddev_ts"),
+                    "n_depth": t.get("n_depth"), "stddev_ts": t.get("stddev_ts"),
                     **{k: t.get(k) for k in BENCH_DEVICE_FIELDS}})
     return out
+
+
+def llama_bench_launch_test(tests, phase, want_prefill, want_decode):
+    """One launch of a llama.cpp native-benchmark-<P>x<D> run (android/bench/run_cell.py: the
+    prefill launch -p P -n 0, the decode launch -p 0 -n D -d P), read against its own JSON tests
+    (parse_llama_bench_json) -> (the test the launch was started for, or None; flags). The
+    prefill launch: one test of P prompt tokens, none generated, at depth 0 (or no depth field);
+    else prompt-token-count-mismatch. The decode launch: one test of D generated tokens and no
+    prompt ones, else decode-token-count-mismatch; at depth P, else decode-depth-mismatch (a
+    decode timed on another context than the prefill's)."""
+    if phase == "prefill":
+        hit = [t for t in tests if t.get("n_prompt") == want_prefill and t.get("n_gen") == 0
+               and not t.get("n_depth")]
+        flags = [] if len(tests) == 1 and hit else ["prompt-token-count-mismatch"]
+    elif phase == "decode":
+        hit = [t for t in tests if t.get("n_prompt") == 0 and t.get("n_gen") == want_decode]
+        flags = ([] if len(tests) == 1 and hit else ["decode-token-count-mismatch"])
+        if not flags and hit[0].get("n_depth") != want_prefill:
+            flags = ["decode-depth-mismatch"]
+    else:
+        raise ValueError(f"llama-bench launch {phase!r}: prefill or decode")
+    return (hit[0] if hit and not flags else None), flags
 
 
 # llama-bench's JSON fields that say where its tests ran: `devices` = the device the tests
