@@ -60,14 +60,14 @@ an NPU / GPU arm's capped run pools at any fall, marked with it:
   `git diff --cached --name-only` lists only your paths, then
   `d=$(mktemp -d) && git checkout-index -a --prefix="$d/" && python3 "$d/scripts/build_summary.py" && cp "$d"/results/summary/* results/summary/ && rm -rf "$d"`
   and commit the summary with those dirs.
-- **Cross-runtime standings stay LOCAL (2026-08-27, owner decision).** The
+- **Cross-runtime standings stay LOCAL (2026-08-27).** The
   public repo is shared as a harness only: LEADERBOARD.md and the comparison
   charts (crossarm_table / demo_models_table / pixel8a_model_demo) are
   gitignored — render locally, never commit or re-add them. Single-runtime
   regression charts (v0160_regression_verdicts.png) are the committed
   exception. Cross-runtime speed comparison is published for Gemma-4 only,
   and in the archive repo, not here.
-  Exception (2026-10-06, owner decision 2026-09-29 plan 5(a)): a private dashboard repo renders the comparison page from this repo's summary and registries; nothing cross-runtime is added here.
+  Exception (2026-10-06, decided 2026-09-29): a private dashboard repo renders the comparison page from this repo's summary and registries; nothing cross-runtime is added here.
 - **Quarantined captures stay on disk.** `*.jsonl.attempt1` /
   `*.json.attempt1` / `device-jsonl-flagged/` are audit trail, not garbage.
 - **Builds**: `bootstrap.sh` then `build_yardstick_mac.sh`; derived data is
