@@ -26,8 +26,20 @@ Vulkan and the Intel NPU all work from it, and a process started through WMI out
 build and the job run. By default the job sets each engine process it starts to High QoS, the level Windows gives an
 app in the foreground and in focus, so its runs are measured with Windows' power throttling off for the engine; what
 the job did for each run is in its record (Run, `conditions.engineQos`; records from before `-EngineQos` lack the
-key). The job runs from an SSH session while the PC's desktop is locked; an engine started from the desktop has not
-been measured.
+key). The job runs from an SSH session while the PC's desktop is locked.
+
+In the one measurement of an engine started from the desktop (2026-11-16,
+[`results/raw/2026-11-16-windows-desktop-start`](../results/raw/2026-11-16-windows-desktop-start)), its medians lay
+within 1 % of those of the same start with High QoS set (0.993 to 1.006 times, on cold and warm decode and cold and warm
+prefill). A script in a console window in the foreground started the engine with the flags of Gemma 4 E2B's
+`litert-lm-cpu` row: one warm-up run, then six runs with nothing set and six with High QoS set, in a mixed order.
+
+Six more runs with nothing set, interleaved with those, went through the same chain as a job's engine (WMI, a
+PowerShell, a hidden `cmd.exe`), called from that console in the desktop's session and not, as the job's is, from SSH's
+session 0. Their medians were 0.978 to 0.994 times those of the runs with High QoS, so this measurement shows neither
+what High QoS changes nor how a job's engine, started from session 0, runs without it. Windows' lock state was not read
+during the measurement; each read of the foreground window, before and after every run, gave the script's console. An
+engine a person starts by hand has not been measured.
 
 For the build, the host needs what the build script's header lists: Visual Studio 2022 or its Build Tools with the C++
 workload, Git for Windows with LFS, Python 3.13 for all users, Bazelisk, a JDK with `JAVA_HOME`, LongPathsEnabled, and an
