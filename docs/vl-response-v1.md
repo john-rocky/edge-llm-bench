@@ -36,8 +36,8 @@ The response seconds contain all three stages: on the Galaxy S26,
 latency from the request marker to the first reply byte; like the response
 seconds it includes the vision encoder.
 
-**Text check.** A rate whose reply nobody read is not a measurement
-(benchmark-mode-needs-a-text-check): every record carries the reply and
+**Text check.** A rate whose reply nobody read is not a measurement:
+every record carries the reply and
 `vlTextCheck` — the manifest's keyword rule (any of `cat` / `kitten` / `feline`
 in the reply, case-insensitive). It is a coherence gate, not a caption-quality
 score: a model that names the animal passes; a stream of `!` or end-of-text
@@ -65,7 +65,7 @@ image in the prompt as `[image:<path>]`, built from `main` at `1dadd00c`
 binaries (`litert_lm_main.macos_arm64`) carry only the four basic flags and no
 image path, so this is a bump for measurement; the pin in
 `environment.lock.json` (v0.16.0 Swift package for the yardstick's text cells)
-is untouched (bump-engine-for-comparison). `engineVersion: main@1dadd00c`.
+is untouched. `engineVersion: main@1dadd00c`.
 
 Build and stage (Mac, ~3 min with the asr-rtf-v1 worktree's bazel cache; the
 first build of a clean worktree is longer):

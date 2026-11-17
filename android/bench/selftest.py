@@ -59,6 +59,14 @@ ON_TASK = %(on_task)r
 OFF_TASK = %(off_task)r
 # a llama.cpp side build's llama-bench console on -dev HTP0 (the S26 smoke's, verbatim)
 BENCH_HTP0 = %(bench_htp0)r
+# the flat build's llama-bench on the CPU (b11721's form: its two backend lines, then the array):
+# BENCH_HTP0's tests with the CPU build's fields, prefill at 500.0 t/s, generation by depth
+BENCH_CPU_HEAD = ("load_backend: loaded RPC backend from " + DEV + "/libggml-rpc.so\\n"
+                  "load_backend: loaded CPU backend from " + DEV + "/libggml-cpu-android_armv9.2_2.so\\n")
+BENCH_CPU_FIELDS = {"build_commit": "ff5a23376", "build_number": 11721, "gpu_info": "", "backends": "CPU",
+                    "devices": "auto", "n_gpu_layers": -1, "n_threads": 4}
+BENCH_CPU_PP = 500.0
+BENCH_CPU_TG = {0: 60.0, 1024: 45.0}
 # a side build's device lines per --device, the forms of the S26 smoke's -lv 4 launches
 SIDE_LINES = %(side_lines)r
 # the LiteRT-LM NPU build's lines before its reply (the forms of its S26 runs)
@@ -185,6 +193,34 @@ def et_engine(cmd):
     return 0
 
 
+def llama_bench(cmd, side):
+    """llama-bench -o json as the phone prints it for this command's counts: the build's lines,
+    then the array, one test per count the command asks for (-p P: P prompt tokens, -n D: D
+    generated), each at -d's depth (0 without it). A side build answers with the S26 smoke's
+    tests (BENCH_HTP0, their rates at any depth); the flat build with the same tests in the CPU
+    build's form (BENCH_CPU_*), its generation rate BENCH_CPU_TG's for the depth."""
+    i = BENCH_HTP0.index("\\n[\\n")
+    head, tests = BENCH_HTP0[:i + 1], json.loads(BENCH_HTP0[i + 1:])
+    if not side:
+        head, tests = BENCH_CPU_HEAD, [dict(t, **BENCH_CPU_FIELDS) for t in tests]
+    p = int(re.search(r" -p (\\d+)", cmd).group(1))
+    n = int(re.search(r" -n (\\d+)", cmd).group(1))
+    m = re.search(r" -d (\\d+)", cmd)
+    depth = int(m.group(1)) if m else 0
+    out = []
+    if p:
+        pp = dict(next(t for t in tests if t["n_gen"] == 0), n_prompt=p, n_depth=depth)
+        if not side:
+            pp["avg_ts"] = BENCH_CPU_PP
+        out.append(pp)
+    if n:
+        tg = dict(next(t for t in tests if t["n_prompt"] == 0), n_gen=n, n_depth=depth)
+        if not side:
+            tg["avg_ts"] = BENCH_CPU_TG[depth]
+        out.append(tg)
+    sys.stdout.write(head + json.dumps(out, indent=2) + "\\n")
+
+
 def engine(cmd):
     with open(os.path.join(STATE, "engine_cmds"), "a") as fh:
         fh.write(cmd.split(" >", 1)[0] + "\\n")
@@ -223,8 +259,8 @@ def engine(cmd):
         if "--backend=gpu" in cmd and mpath:
             # as the engine does: the GPU program cache beside the model path it was given
             open(mp(mpath.group(1)) + "_1700000000_27_mldrift_program_cache.bin", "a").close()
-    if side and "/bin/llama-bench " in cmd:
-        sys.stdout.write(BENCH_HTP0)
+    if (side and "/bin/llama-bench " in cmd) or "./llama-bench " in cmd:
+        llama_bench(cmd, side)
     elif "./llama-cli" in cmd or (side and "/bin/llama-cli " in cmd):
         if side:
             for line in side_build_lines(cmd) + side_chat_reply(cmd):
@@ -547,8 +583,8 @@ OFF_TASK = ("Please share the document you want summarised and the questions you
             "it, and I will answer each of them in order with short explanations.")
 
 # A llama.cpp side build's consoles, the forms of the 2026-10-07 Galaxy S26 smoke of
-# b11469-snapdragon (Qwen3 0.6B Q4_K_M; the launch logs are outside this repo, in the lane's
-# round notes): llama-bench -o json on HTP0, verbatim from its first line to the JSON's
+# b11469-snapdragon (Qwen3 0.6B Q4_K_M; the launch logs are outside this repo, in the
+# run notes): llama-bench -o json on HTP0, verbatim from its first line to the JSON's
 # end — the Hexagon registry's "FASTRPC_GET_DOMAINS[0]" line comes before the array — and
 # the chat tool's device lines at -lv 4 per device, timestamp prefixes included.
 BENCH_HTP0 = """ggml_opencl: selected platform: 'QUALCOMM Snapdragon(TM)'
@@ -686,7 +722,7 @@ SIDE_LINES = {
 # litert_lm_advanced_main (LiteRT-LM main of 2026-08-21) on the Galaxy S26 — the settings echo
 # of its runs with the hardware KV-cache update off (2026-09-08), the registry, dispatch and
 # DispatchDelegate lines of its AOT benchmark runs (2026-08-23), both on Gemma 3 270M bundles
-# (the lane's logs, outside this repo) — with this model and the runner's engines dir in the
+# (logs outside this repo) — with this model and the runner's engines dir in the
 # paths. LiteRT logs the NPU's registration failure for every environment after the first
 # one: a healthy run has it.
 NPU_ENG = "/data/local/tmp/llmbench/engines/main-20260821-selfbuilt"
@@ -1603,7 +1639,7 @@ def main():
                r["conditions"].get("cpuMaxFreqMHz", {}).get("policy8")) for _, r in lit_h3]
     ok(got_h3 == [("4-8", ["cpu-capped"], {"min": 2000, "hw": 2914, "cpus": "8"})],
        f"LiteRT-LM: cpusAllowedList 4-8 (the last read), policy8 capped -> cpu-capped (got {got_h3})")
-    # H4: the line (owner decision 2026-10-08, render_leaderboard.CPU_CAP_MAX_DROP_PCT = 15).
+    # H4: the line (2026-10-08, render_leaderboard.CPU_CAP_MAX_DROP_PCT = 15).
     # Run 2's policy4 ceiling falls 10 % (2367 -> 2130 MHz), run 3's 30 % (-> 1657 MHz): the
     # runner flags both, as it flags any fall (the flag is the fact); below, the summary's
     # cpu_cap_drop_pct reads 10.0 and 30.0, and arm_row pools run 2, counted, and keeps run 3 out
@@ -1830,7 +1866,7 @@ def main():
     ok([r["cpu_capped"] for r in rows_h4] == ["false", "true", "true"] and got_a4 == (2, 19.5, 1, 1, 3),
        f"arm_row: the 10 % run pools, counted, the 30 % run stays out; both stay true in the summary "
        f"(cold_n, cold_median, cpu_capped_n, cpu_capped_counted_n, cpu_read_n = {got_a4})")
-    # an accelerator arm (render_leaderboard.CPU_CAP_EXEMPT_ARMS, owner decision 2026-10-08):
+    # an accelerator arm (render_leaderboard.CPU_CAP_EXEMPT_ARMS, 2026-10-08):
     # H3's LiteRT-LM GPU run, its ceiling 31.4 % down (past the line), pools, counted, its fall kept
     a3 = arm_row([r for r in rows_all if r["campaign"] == "results/raw/selftest-h3"])
     got_a3 = (a3["cold_n"], a3["cold_median"], a3["cpu_capped_n"], a3["cpu_capped_counted_n"],
@@ -1941,18 +1977,101 @@ def main():
            and "protocolFlags" not in c and "textCheck" not in c,
            f"npu llama-bench: backendRegistered = its JSON's device fields, not flagged, no text check "
            f"(got {c.get('backendRegistered')})")
-        ok(c.get("engineCommand", "").startswith(env_npu + f" {eng_dev}/bin/llama-bench -m ")
-           and c["engineCommand"].endswith(" -t 6 -p 1024 -n 256 -o json -ngl 99 -ub 1024 --device HTP0")
+        # a llama-bench run = two launches (run_cell.LLAMA_BENCH_PHASES), the wrapper's flags on both
+        want_ends = (" -t 6 -p 1024 -n 0 -o json -ngl 99 -ub 1024 --device HTP0",
+                     " -t 6 -p 0 -n 256 -d 1024 -o json -ngl 99 -ub 1024 --device HTP0")
+        got = [(x.get("phase"), x.get("engineCommand", "")) for x in c.get("launches", [])]
+        ok([p for p, _ in got] == ["prefill", "decode"]
+           and all(cmd_l.startswith(env_npu + f" {eng_dev}/bin/llama-bench -m ") and cmd_l.endswith(end)
+                   for (_, cmd_l), end in zip(got, want_ends))
+           and c.get("engineCommand") == " ; ".join(cmd_l for _, cmd_l in got)
            and (c.get("flashAttn"), c.get("ubatch")) == ("auto (llama-bench default)", 1024),
-           f"npu llama-bench: the wrapper's bench flags (-t 6, -ub 1024 on HTP, no -fa): {c.get('engineCommand')!r}")
+           f"npu llama-bench: two launches, the wrapper's bench flags on both (-t 6, -ub 1024 on HTP, no -fa), "
+           f"engineCommand = both in order: {c.get('engineCommand')!r}")
+        ok([x.get("llamaBenchTests") and (x["llamaBenchTests"][0]["n_prompt"], x["llamaBenchTests"][0]["n_gen"],
+                                           x["llamaBenchTests"][0]["n_depth"]) for x in c.get("launches", [])]
+           == [(1024, 0, 0), (0, 256, 1024)]
+           and all("cpuMaxFreqMHz" in x and "cpuCapped" in x and "cpuCappedAtStart" in x for x in c["launches"]),
+           f"npu llama-bench: each launch's own test (prefill 1024; decode 256 at depth 1024) and cap reads "
+           f"(got {[x.get('llamaBenchTests') for x in c.get('launches', [])]})")
     else:
         ok(False, f"one npu llama-bench record (got {len(bench)})")
     shells = open(cmds).read().splitlines() if os.path.exists(cmds) else []
     cpu_n = records(out_n, "llama.cpp_")
-    ok(len(shells) == 3 and shells[0].startswith("cd /data/local/tmp/llmbench && LD_LIBRARY_PATH=. taskset f0 ./llama-cli -m ")
+    ok(len(shells) == 4 and shells[0].startswith("cd /data/local/tmp/llmbench && LD_LIBRARY_PATH=. taskset f0 ./llama-cli -m ")
        and " -t 4 " in shells[0] and all(s.startswith(f"cd /data/local/tmp/llmbench && {env_npu} taskset f0 {eng_dev}/bin/")
-                                       for s in shells[1:]),
-       f"the CPU anchor still runs the flat pinned build (-t 4), the side build its own dir: {shells}")
+                                       for s in shells[1:])
+       and shells[2].endswith(" -p 1024 -n 0 -o json -ngl 99 -ub 1024 --device HTP0")
+       and shells[3].endswith(" -p 0 -n 256 -d 1024 -o json -ngl 99 -ub 1024 --device HTP0"),
+       f"the CPU anchor still runs the flat pinned build (-t 4), the side build its own dir, its llama-bench "
+       f"run in two launches: {shells}")
+
+    # check 1b: the flat pinned build's llama-bench row (the CPU arm, cooldown=1): one run = the
+    # prefill launch, the row's cooldown, the decode launch at depth 1024 (run_cell.LLAMA_BENCH_PHASES).
+    # The record's prefill rate is the first launch's, its decode rate the second's (the fake's
+    # generation rate is 60.0 at depth 0 and 45.0 at 1024), its harness stamp names the form
+    # (+llama-bench-d1024); each launch's command, cooldown and cap reads in conditions.launches; both
+    # consoles in its log, each under its launch line.
+    with open(os.path.join(dev, "llama-bench"), "w") as fh:
+        fh.write("fake llama-bench")
+    cells_lb = os.path.join(tmp, "lb.cells")
+    with open(cells_lb, "w") as fh:
+        fh.write(f"android llama.cpp fake/gguf native-benchmark-1024x256 runs=1 cooldown=1 file={gguf_model}\n")
+    if os.path.exists(cmds):
+        os.remove(cmds)
+    print("--- campaign LB (llama.cpp flat build: a llama-bench run in two launches)")
+    rc = run_campaign(dict(env, CAMPAIGN="selftest-lb", BENCH_RAW_ROOT=side_raw), cells_lb)
+    ok(rc == 0, f"campaign LB exits 0 (got {rc})")
+    out_lb = os.path.join(side_raw, "selftest-lb", "app-path-android")
+    lb = [r for _, r in records(out_lb, "llama.cpp_")]
+    shells_lb = open(cmds).read().splitlines() if os.path.exists(cmds) else []
+    bench_dev = f"/data/local/tmp/llmbench/models/fake_gguf_{os.path.basename(gguf_model)}"
+    want_lb = [f"./llama-bench -m {bench_dev} -t 4 -p 1024 -n 0 -o json",
+               f"./llama-bench -m {bench_dev} -t 4 -p 0 -n 256 -d 1024 -o json"]
+    ok(shells_lb == [f"cd /data/local/tmp/llmbench && LD_LIBRARY_PATH=. taskset f0 {w}" for w in want_lb],
+       f"flat llama-bench: the prefill launch, then the decode launch at depth 1024, -t 4 under the mask: {shells_lb}")
+    if len(lb) == 1:
+        r = lb[0]
+        c, m = r["conditions"], r["metrics"]
+        ok((m.get("promptTokensPerSecond"), m.get("promptTokenCount"), m.get("decodeTokensPerSecond"),
+            m.get("generatedTokenCount"), m.get("coldRun")) == (500.0, 1024, 45.0, 256, False),
+           f"flat llama-bench: prefill from the prefill launch, decode from the decode launch at depth 1024 "
+           f"(45.0, not depth 0's 60.0) (got {m})")
+        ok(m.get("harnessStamp") == "2026-08-android-cli-v1+llama-bench-d1024",
+           f"flat llama-bench: the record's harnessStamp names the two-launch form (got {m.get('harnessStamp')})")
+        ok([(x.get("phase"), x.get("engineCommand"), x.get("cooldownBeforeSeconds")) for x in c.get("launches", [])]
+           == [("prefill", want_lb[0], None), ("decode", want_lb[1], 1)]
+           and all("cpuMaxFreqMHz" in x and x.get("cpuCapped") == [] and x.get("cpuCappedAtStart") is False
+                   and x.get("exitCode") == 0 for x in c["launches"])
+           and "engineCommand" not in c and not c.get("protocolFlags"),
+           f"flat llama-bench: conditions.launches = both commands in order, the row's cooldown=1 before the "
+           f"decode launch, each launch's cap reads (got {c.get('launches')})")
+        log = open(os.path.join(out_lb, r["provenance"]["rawLog"])).read()
+        ok(log.startswith("===LAUNCH 1/2 prefill===\n") and "\n===LAUNCH 2/2 decode===\n" in log
+           and log.count("===ENGINE_OUTPUT===") == 2 and log.count("EXIT_CODE=0") == 2,
+           "flat llama-bench: the record's log holds both consoles, each under its launch line")
+    else:
+        ok(False, f"one flat llama-bench record (got {len(lb)})")
+    p = subprocess.run([sys.executable, os.path.join(ROOT, "android", "bench", "run_campaign.py"), cells_lb,
+                        "--dry-run"], env=dict(env, ROUNDS="1"), capture_output=True, text=True)
+    plan = [json.loads(line) for line in p.stdout.splitlines() if line.startswith("{")]
+    shell_lb = "cd /data/local/tmp/llmbench && LD_LIBRARY_PATH=. taskset f0 "
+    ok(p.returncode == 0 and len(plan) == 1
+       and [(x["phase"], x["command"]) for x in plan[0].get("launches", [])]
+       == [("prefill", shell_lb + want_lb[0]), ("decode", shell_lb + want_lb[1])]
+       and plan[0]["command"] == shell_lb + want_lb[0] and plan[0].get("launchCooldownSeconds") == 0,
+       f"--dry-run plans a llama-bench row's two launches (command = the first; round mode: COOLDOWN between "
+       f"them): {plan}")
+    p = subprocess.run([sys.executable, os.path.join(ROOT, "android", "bench", "run_cell.py"), "--runtime",
+                        "llama.cpp", "--model-id", "fake/gguf", "--file", gguf_model, "--task",
+                        "native-benchmark-1024x256", "--runs", "1", "--out", os.path.join(tmp, "unused"),
+                        "--launch-cooldown", "7", "--dry-run"], env=env, capture_output=True, text=True)
+    plan = json.loads(p.stdout) if p.returncode == 0 and p.stdout.startswith("{") else {}
+    ok([(x["phase"], x["command"]) for x in plan.get("launches", [])]
+       == [("prefill", shell_lb + want_lb[0] + " >/data/local/tmp/llmbench/run_out.txt 2>&1 </dev/null"),
+           ("decode", shell_lb + want_lb[1] + " >/data/local/tmp/llmbench/run_out.txt 2>&1 </dev/null")]
+       and plan.get("command") == plan["launches"][0]["command"] and plan.get("launchCooldownSeconds") == 7,
+       f"run_cell --dry-run plans the two launches and the cooldown between them: {p.stdout.strip()[:300]!r}")
 
     # check 2: a launch whose console does not show the cell's device — none of the device
     # lines (the b11469 chat tool at its default verbosity), another device's lines, or a

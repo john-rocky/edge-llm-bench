@@ -172,7 +172,7 @@ engine clock against the app's), and so does each against the text task: compare
 with a protocol row, and read the definitions with the number.
 
 **Which regime a protocol cell headlines.** Both arms' protocol cells read the protocol's
-regime (`methodology/agreed-protocol-gemma4.md`: warm for the side-by-side, cold reported
+regime (`methodology/protocol-gemma4.md`: warm for the side-by-side, cold reported
 separately as first use): the warm median — Core AI trials 1..N, LiteRT-LM `benchmark()` calls
 2..N — wherever the session has warm runs, with the cold first call's median beside it (the dashboard
 page's tooltip and inspector, `cold_tps`; the detail table of `scripts/render_dashboard.py`); a
@@ -241,7 +241,7 @@ headlines its cold median. One rule for both arms and every platform:
   iPhone figure is the same `phys_footprint` window as every Apple arm's and ranks with them.
 - The phones run beta builds of iOS 27: their numbers stay on the dashboard page, never in a
   public repo, card or post.
-- The weekly job does not run these cells yet (an owner decision; the arm joins a weekly file
+- The weekly job does not run these cells yet (the arm joins a weekly file
   only after its first sittings).
 - Name a sitting `<date>-dashboard-coreai-v1-<device>`: the dashboard page reads only campaigns
   whose name contains `dashboard`.

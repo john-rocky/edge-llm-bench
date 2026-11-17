@@ -380,8 +380,10 @@ def parse_ortgenai_model_benchmark(text, want_prefill, want_decode):
 
 
 def parse_llama_bench_json(text):
-    """llama-bench -o json -> list of per-test dicts {kind, avg_ts, n_prompt, n_gen,
-    stddev_ts} plus the fields that say where the tests ran (BENCH_DEVICE_FIELDS).
+    """llama-bench -o json -> list of per-test dicts {kind, avg_ts, n_prompt, n_gen, n_depth,
+    stddev_ts} plus the fields that say where the tests ran (BENCH_DEVICE_FIELDS). n_depth =
+    the context llama-bench filled before the test's timer (-d; 0 without it, None from a
+    build whose JSON has no such field).
 
     The array is the block from the first line that is exactly "[" to the last line that
     is exactly "]" — llama-bench's json printer writes both alone. A side build's backend
@@ -400,9 +402,31 @@ def parse_llama_bench_json(text):
         kind = "prefill" if t.get("n_prompt", 0) > 0 and t.get("n_gen", 0) == 0 else "decode"
         out.append({"kind": kind, "avg_ts": t.get("avg_ts"),
                     "n_prompt": t.get("n_prompt"), "n_gen": t.get("n_gen"),
-                    "stddev_ts": t.get("stddev_ts"),
+                    "n_depth": t.get("n_depth"), "stddev_ts": t.get("stddev_ts"),
                     **{k: t.get(k) for k in BENCH_DEVICE_FIELDS}})
     return out
+
+
+def llama_bench_launch_test(tests, phase, want_prefill, want_decode):
+    """One launch of a llama.cpp native-benchmark-<P>x<D> run (android/bench/run_cell.py: the
+    prefill launch -p P -n 0, the decode launch -p 0 -n D -d P), read against its own JSON tests
+    (parse_llama_bench_json) -> (the test the launch was started for, or None; flags). The
+    prefill launch: one test of P prompt tokens, none generated, at depth 0 (or no depth field);
+    else prompt-token-count-mismatch. The decode launch: one test of D generated tokens and no
+    prompt ones, else decode-token-count-mismatch; at depth P, else decode-depth-mismatch (a
+    decode timed on another context than the prefill's)."""
+    if phase == "prefill":
+        hit = [t for t in tests if t.get("n_prompt") == want_prefill and t.get("n_gen") == 0
+               and not t.get("n_depth")]
+        flags = [] if len(tests) == 1 and hit else ["prompt-token-count-mismatch"]
+    elif phase == "decode":
+        hit = [t for t in tests if t.get("n_prompt") == 0 and t.get("n_gen") == want_decode]
+        flags = ([] if len(tests) == 1 and hit else ["decode-token-count-mismatch"])
+        if not flags and hit[0].get("n_depth") != want_prefill:
+            flags = ["decode-depth-mismatch"]
+    else:
+        raise ValueError(f"llama-bench launch {phase!r}: prefill or decode")
+    return (hit[0] if hit and not flags else None), flags
 
 
 # llama-bench's JSON fields that say where its tests ran: `devices` = the device the tests
@@ -491,7 +515,7 @@ def llama_backend_registered(lines, device, buffer, tool, bench_tests=None):
 # LiteRT-LM on the NPU (run_cell.engine_command, a side build with engine-build=): the
 # engine's own lines that say which backend a launch chose and registered and what the
 # Qualcomm dispatch took, in the forms of the self-built litert_lm_advanced_main of
-# 2026-08-21 on the Galaxy S26 (the lane's NPU logs of 2026-08-23 to 2026-10-03, outside this
+# 2026-08-21 on the Galaxy S26 (the NPU logs of 2026-08-23 to 2026-10-03, outside this
 # repo; LiteRT-LM main b12c62c7 runtime/engine/litert_lm_lib.cc for the settings echo):
 #   I0000 00:00:1787447197.028690   26280 litert_lm_lib.cc:499] Choose backend: npu
 #   I0000 00:00:1787447197.028842   26280 litert_lm_lib.cc:652] executor_settings: backend: NPU
@@ -617,8 +641,8 @@ def litert_side_lines(text):
 #                                (main@b7c40ea81 2026-10-20, v0.18.0 2026-10-26, v0.19.0-pregpu 2026-11-03)
 # The Android engines here are android/bin builds of android/scripts/build_litert_lm_main.sh: a
 # statically linked accelerator is the one bazel compiled from the open-source tree (its default
-# since 2026-10-23; GPU prefill 0.3-0.6x of Google's on the same phone and file, d449_work/ROUND1.md
-# in the bench checkout), a dynamically loaded libLiteRtGpuAccelerator.so is the tag's
+# since 2026-10-23; GPU prefill 0.3-0.6x of Google's on the same phone and file), a dynamically
+# loaded libLiteRtGpuAccelerator.so is the tag's
 # prebuilt/android_arm64 file (Google's build; the witness checks its sha against the pins entry's
 # so_files). Google's PyPI wheel prints the static line too: the value names this harness's builds,
 # not what the line means everywhere.

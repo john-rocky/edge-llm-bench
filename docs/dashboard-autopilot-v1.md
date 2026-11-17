@@ -173,9 +173,9 @@ dashboard_post.py main()                       one at a time (logs/dashboard-job
 
 Off is the default. Turning a key on is a person's decision (the owner's), one key at a time;
 the ledger's `would …` lines are what each key would have done on the nights before. `push_bench`
-is on since 2026-10-19 (the owner's GO, b70e4f6f) and `push_page` since 2026-11-06
+is on since 2026-10-19 (b70e4f6f) and `push_page` since 2026-11-06
 (b94541d3); `publish` is off. `ddp_weekly`
-is on since 2026-10-18 on the user's word of 2026-10-16 (DDP sessions need no GO each); it goes
+is on since 2026-10-18; it goes
 off when another host runs the weekly DDP set (§9).
 
 ## 4. The ledger
@@ -365,14 +365,14 @@ is `<date>-s26-ddp.log`). At most once in the entry's `interval_days` (6): an ad
 unit that ended in the last 6 days means not due, and so does a sitting in them that ran Device Run
 sessions and was not admitted (one billed attempt a window; the next is a person's, by hand). A
 rolling window, not the attached devices' Monday week: a sitting on a Sunday night is not repeated
-by the Monday 02:00 firing (the supervisor's change of 2026-10-18; the first real sitting ran on a
+by the Monday 02:00 firing (changed 2026-10-18; the first real sitting ran on a
 Sunday night); the next one comes at the first firing at least six days after it, after that
 firing's attached sitting, so the slot recurs every six to seven days. `--no-ddp` skips it at a firing;
 `dashboard_job.py s26-ddp` runs it by hand (no week check, as for any explicit key; a second sitting
 the same day takes `--suffix`).
 
-**The switch.** `ddp_weekly` true turns the slot on (the user's word of 2026-10-16: the DDP sessions
-need no GO each). When another host runs the weekly DDP set (stage 5's one command), set
+**The switch.** `ddp_weekly` true turns the slot on.
+When another host runs the weekly DDP set (stage 5's one command), set
 it false: the slot stops, by `auto` and by hand. `ddp_max_sessions` (16) caps the sitting: the plan
 of `bench matrix --ddp --dry-run` (no gcloud, no network) counts the Device Run sessions before
 anything is billed, and a plan over the cap starts nothing (exit 2).
@@ -537,7 +537,7 @@ reaches the page through this step.
   S26 Gemma 4 E2B GPU protocol cell at 25.9 tok/s decode on v0.16.0 and 44–47 on 0.18-era builds,
   same phone and file.
 - **`protocol-off`**: a LiteRT-LM headline cell off the protocol
-  (`methodology/agreed-protocol-gemma4.md`, "The spec"): the protocol cell
+  (`methodology/protocol-gemma4.md`, "The spec"): the protocol cell
   `native-benchmark-1024x256` with a context other than 2048, a prompt other than 1024 or a decode
   other than 256 tokens, or the overview workload `long-context-1024-gen256` with a context other
   than 2048; a run with no recorded context counts as off.

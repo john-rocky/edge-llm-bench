@@ -48,7 +48,7 @@ PROPS = ("ro.product.model", "ro.product.device", "ro.build.fingerprint", "ro.se
          "ro.build.version.release", "ro.build.version.security_patch", "ro.soc.model")
 # D13: the cache lines of a LiteRT-LM raw log. A CPU run after the first may rebuild the XNNPACK weight
 # cache (its file name carries the pushed model's mtime second, which can differ by one between two
-# processes: lane memory litertlm-xnnpack-cache-name-jitter), so firstEver (run 1, D10) does not say it
+# processes), so firstEver (run 1, D10) does not say it
 XNNPACK_BUILT = "weight cache build for"
 XNNPACK_LOADED = "weight cache loaded from"
 GPU_LOADED = "Initialized InferenceContext from serialized data"

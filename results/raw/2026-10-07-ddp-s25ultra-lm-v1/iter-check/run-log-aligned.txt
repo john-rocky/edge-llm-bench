@@ -1,11 +1,11 @@
-# run-log (aligned): DDP Galaxy S25 Ultra (pa3q-35), Gemma 4 E2B gpu and cpu at --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096, 2026-10-08 02:36 JST; billed sessions, owner GO 2026-10-08 02:3x JST; gcloud account ACCOUNT, project litert-edge-portal
+# run-log (aligned): DDP Galaxy S25 Ultra (pa3q-35), Gemma 4 E2B gpu and cpu at --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096, 2026-10-08 02:36 JST; billed sessions; gcloud account ACCOUNT, project <project>
 
 ### CMD: gcloud config list 2>&1 | sed 's/^account = .*/account = ACCOUNT/'  (account and project, read only)
 ### START 2026-10-08 02:36:08 JST
 [core]
 account = ACCOUNT
 disable_usage_reporting = True
-project = litert-edge-portal
+project = <project>
 
 Your active configuration is: [default]
 exit=0
@@ -18,7 +18,7 @@ TOTAL: 1 objects, 40382152 bytes (38.51MiB)
 exit=0
 ### END 02:36:10 JST
 
-### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && pip show litert-cli-nightly 2>/dev/null | head -2  (the venv and its CLI version)
+### CMD: source <work>/.venv-nightly/bin/activate && pip show litert-cli-nightly 2>/dev/null | head -2  (the venv and its CLI version)
 ### START 2026-10-08 02:36:10 JST
 Name: litert-cli-nightly
 Version: 0.3.0.dev20261006
@@ -37,23 +37,23 @@ exit=0
 exit=0
 ### END 02:36:15 JST
 
-### CMD: gcloud storage du -s gs://litert-edge-portal-devicerun/litert-cli/inputs/  (bucket inputs size before this round)
+### CMD: gcloud storage du -s gs://<bucket>/litert-cli/inputs/  (bucket inputs size before this round)
 ### START 2026-10-08 02:36:15 JST
-11680278877  gs://litert-edge-portal-devicerun/litert-cli/inputs/
+11680278877  gs://<bucket>/litert-cli/inputs/
 exit=0
 ### END 02:37:02 JST
 
-### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --gpu --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096  (billed DDP session: Gemma 4 E2B gpu, --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096 (prefill 1024 / decode 256 at the defaults))
+### CMD: source <work>/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=<project> litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --gpu --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096  (billed DDP session: Gemma 4 E2B gpu, --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096 (prefill 1024 / decode 256 at the defaults))
 ### START 2026-10-08 02:37:02 JST
-Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
-Ensuring GCS bucket 'gs://litert-edge-portal-devicerun' exists for project 'litert-edge-portal'...
-Uploading local model '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' to gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-bbfa0a00/...
+Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://<bucket>'.
+Ensuring GCS bucket 'gs://<bucket>' exists for project '<project>'...
+Uploading local model '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' to gs://<bucket>/litert-cli/inputs/litert-cli-benchmark-bbfa0a00/...
 Fetching GCP access token...
-Uploading run script '/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/tmpiuoc_8h3/litert_lm_run.sh' to gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-bbfa0a00/...
-Submitting 'gpu' benchmark session 'litert-cli-benchmark-bbfa0a00' to DDP (Project: litert-edge-portal, Devices: pa3q-35, Binary: gs://litert/binaries/latest/android_arm64/litert_lm/litert_lm_advanced_main)...
+Uploading run script '/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/tmpiuoc_8h3/litert_lm_run.sh' to gs://<bucket>/litert-cli/inputs/litert-cli-benchmark-bbfa0a00/...
+Submitting 'gpu' benchmark session 'litert-cli-benchmark-bbfa0a00' to DDP (Project: <project>, Devices: pa3q-35, Binary: gs://litert/binaries/latest/android_arm64/litert_lm/litert_lm_advanced_main)...
 Benchmark session submitted successfully!
-Waiting for session 'session-e60522b0' to complete (Operation: projects/litert-edge-portal/locations/global/operations/operation-1791394995303-65d43a658f63a-d161894e-f887fec2, timeout: 2400 s). This may take a few minutes...
-View the outputs on the Cloud Console: https://console.cloud.google.com/storage/browser/litert-edge-portal-devicerun/litert-cli/sessions/session-e60522b0
+Waiting for session 'session-e60522b0' to complete (Operation: projects/<project>/locations/global/operations/operation-1791394995303-65d43a658f63a-d161894e-f887fec2, timeout: 2400 s). This may take a few minutes...
+View the outputs on the Cloud Console: https://console.cloud.google.com/storage/browser/<bucket>/litert-cli/sessions/session-e60522b0
 ..................
 Session 'session-e60522b0' finished: PASSED
 
@@ -136,23 +136,23 @@ LiteRT-LM benchmark: second process, 1 iteration(s), 0 warm-up; median of the ot
 exit=0
 ### END 02:47:54 JST
 
-### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --cpu --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096  (billed DDP session: Gemma 4 E2B cpu, --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096 (prefill 1024 / decode 256 at the defaults))
+### CMD: source <work>/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=<project> litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --cpu --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096  (billed DDP session: Gemma 4 E2B cpu, --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096 (prefill 1024 / decode 256 at the defaults))
 ### START 2026-10-08 02:48:28 JST
 
-### CMD: python3 -I /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/d21f53ca-5923-4da1-b5fc-7e34ecbf7034/scratchpad/r5/tools/gather.py /Users/USER/code/edge-llm-bench/results/raw/2026-10-07-ddp-s25ultra-lm-v1/iter-check session-e60522b0  (copy the gpu session into the campaign dir and read its first process)
+### CMD: python3 -I <work>/r5/tools/gather.py /Users/USER/code/edge-llm-bench/results/raw/2026-10-07-ddp-s25ultra-lm-v1/iter-check session-e60522b0  (copy the gpu session into the campaign dir and read its first process)
 ### START 2026-10-08 02:48:39 JST
 {"session": "session-e60522b0", "job": "gpu-pa3q-35", "pids": ["7374", "7407"], "process_lines": 395, "logcat_lines": 5337, "cold_init_total_ms": 5720.3, "first_prefill_tok_s": 2710.01, "first_decode_tok_s": 45.11, "first_ttft_s": 0.4, "first_peak_private_mb": 746.617, "errors": []}
 exit=0
 ### END 02:48:40 JST
-Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
-Ensuring GCS bucket 'gs://litert-edge-portal-devicerun' exists for project 'litert-edge-portal'...
-Uploading local model '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' to gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-10639898/...
+Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://<bucket>'.
+Ensuring GCS bucket 'gs://<bucket>' exists for project '<project>'...
+Uploading local model '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' to gs://<bucket>/litert-cli/inputs/litert-cli-benchmark-10639898/...
 Fetching GCP access token...
-Uploading run script '/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/tmpx0ak1a7m/litert_lm_run.sh' to gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-10639898/...
-Submitting 'cpu' benchmark session 'litert-cli-benchmark-10639898' to DDP (Project: litert-edge-portal, Devices: pa3q-35, Binary: gs://litert/binaries/latest/android_arm64/litert_lm/litert_lm_advanced_main)...
+Uploading run script '/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/tmpx0ak1a7m/litert_lm_run.sh' to gs://<bucket>/litert-cli/inputs/litert-cli-benchmark-10639898/...
+Submitting 'cpu' benchmark session 'litert-cli-benchmark-10639898' to DDP (Project: <project>, Devices: pa3q-35, Binary: gs://litert/binaries/latest/android_arm64/litert_lm/litert_lm_advanced_main)...
 Benchmark session submitted successfully!
-Waiting for session 'session-c3c1094e' to complete (Operation: projects/litert-edge-portal/locations/global/operations/operation-1791395433499-65d43c0774cab-a91b2720-7ca05246, timeout: 2400 s). This may take a few minutes...
-View the outputs on the Cloud Console: https://console.cloud.google.com/storage/browser/litert-edge-portal-devicerun/litert-cli/sessions/session-c3c1094e
+Waiting for session 'session-c3c1094e' to complete (Operation: projects/<project>/locations/global/operations/operation-1791395433499-65d43c0774cab-a91b2720-7ca05246, timeout: 2400 s). This may take a few minutes...
+View the outputs on the Cloud Console: https://console.cloud.google.com/storage/browser/<bucket>/litert-cli/sessions/session-c3c1094e
 ...........................
 Session 'session-c3c1094e' finished: PASSED
 
@@ -228,29 +228,29 @@ LiteRT-LM benchmark: second process, 1 iteration(s), 0 warm-up; median of the ot
 exit=0
 ### END 02:57:33 JST
 
-### CMD: python3 -I /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/d21f53ca-5923-4da1-b5fc-7e34ecbf7034/scratchpad/r5/tools/gather.py /Users/USER/code/edge-llm-bench/results/raw/2026-10-07-ddp-s25ultra-lm-v1/iter-check session-c3c1094e  (copy the cpu session into the campaign dir and read its first process)
+### CMD: python3 -I <work>/r5/tools/gather.py /Users/USER/code/edge-llm-bench/results/raw/2026-10-07-ddp-s25ultra-lm-v1/iter-check session-c3c1094e  (copy the cpu session into the campaign dir and read its first process)
 ### START 2026-10-08 02:57:59 JST
 {"session": "session-c3c1094e", "job": "cpu-pa3q-35", "pids": ["17565", "17618"], "process_lines": 2410, "logcat_lines": 2814, "cold_init_total_ms": 2413.41, "first_prefill_tok_s": 339.05, "first_decode_tok_s": 35.36, "first_ttft_s": 3.05, "first_peak_private_mb": 2606.22, "errors": []}
 exit=0
 ### END 02:57:59 JST
 
-### CMD: gcloud storage rm -r gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-bbfa0a00 gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-10639898 2>&1 | tail -2; gcloud storage du -s gs://litert-edge-portal-devicerun/litert-cli/inputs/; gcloud storage ls gs://litert-edge-portal-devicerun/litert-cli/sessions/ | grep -c -E 'session-e60522b0|session-c3c1094e'  (remove this round's two uploaded input dirs from the project bucket; session outputs stay)
+### CMD: gcloud storage rm -r gs://<bucket>/litert-cli/inputs/litert-cli-benchmark-bbfa0a00 gs://<bucket>/litert-cli/inputs/litert-cli-benchmark-10639898 2>&1 | tail -2; gcloud storage du -s gs://<bucket>/litert-cli/inputs/; gcloud storage ls gs://<bucket>/litert-cli/sessions/ | grep -c -E 'session-e60522b0|session-c3c1094e'  (remove this round's two uploaded input dirs from the project bucket; session outputs stay)
 ### START 2026-10-08 02:58:23 JST
-Removing gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-10639898/litert_lm_run.sh#1791395431836686...
+Removing gs://<bucket>/litert-cli/inputs/litert-cli-benchmark-10639898/litert_lm_run.sh#1791395431836686...
 .......
-11680278877  gs://litert-edge-portal-devicerun/litert-cli/inputs/
+11680278877  gs://<bucket>/litert-cli/inputs/
 2
 exit=0
 ### END 02:58:55 JST
 
-# round 6 (2026-10-08 03:19 JST, owner GO 03:2x): two more gpu and two more cpu sessions at the same arguments, gpu -> cpu -> gpu -> cpu, one at a time
+# round 6 (2026-10-08 03:19 JST): two more gpu and two more cpu sessions at the same arguments, gpu -> cpu -> gpu -> cpu, one at a time
 
 ### CMD: gcloud config list 2>&1 | sed 's/^account = .*/account = ACCOUNT/'  (account and project, read only)
 ### START 2026-10-08 03:19:35 JST
 [core]
 account = ACCOUNT
 disable_usage_reporting = True
-project = litert-edge-portal
+project = <project>
 
 Your active configuration is: [default]
 exit=0
@@ -263,7 +263,7 @@ TOTAL: 1 objects, 40382152 bytes (38.51MiB)
 exit=0
 ### END 03:19:37 JST
 
-### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && pip show litert-cli-nightly 2>/dev/null | head -2  (the venv and its CLI version)
+### CMD: source <work>/.venv-nightly/bin/activate && pip show litert-cli-nightly 2>/dev/null | head -2  (the venv and its CLI version)
 ### START 2026-10-08 03:19:37 JST
 Name: litert-cli-nightly
 Version: 0.3.0.dev20261006
@@ -288,17 +288,17 @@ exit=0
 exit=0
 ### END 03:19:43 JST
 
-### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --gpu --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096  (billed DDP session: Gemma 4 E2B gpu, --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096 (prefill 1024 / decode 256 at the defaults))
+### CMD: source <work>/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=<project> litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --gpu --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096  (billed DDP session: Gemma 4 E2B gpu, --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096 (prefill 1024 / decode 256 at the defaults))
 ### START 2026-10-08 03:19:43 JST
-Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
-Ensuring GCS bucket 'gs://litert-edge-portal-devicerun' exists for project 'litert-edge-portal'...
-Uploading local model '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' to gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-d6b49c2b/...
+Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://<bucket>'.
+Ensuring GCS bucket 'gs://<bucket>' exists for project '<project>'...
+Uploading local model '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' to gs://<bucket>/litert-cli/inputs/litert-cli-benchmark-d6b49c2b/...
 Fetching GCP access token...
-Uploading run script '/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/tmpohohup49/litert_lm_run.sh' to gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-d6b49c2b/...
-Submitting 'gpu' benchmark session 'litert-cli-benchmark-d6b49c2b' to DDP (Project: litert-edge-portal, Devices: pa3q-35, Binary: gs://litert/binaries/latest/android_arm64/litert_lm/litert_lm_advanced_main)...
+Uploading run script '/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/tmpohohup49/litert_lm_run.sh' to gs://<bucket>/litert-cli/inputs/litert-cli-benchmark-d6b49c2b/...
+Submitting 'gpu' benchmark session 'litert-cli-benchmark-d6b49c2b' to DDP (Project: <project>, Devices: pa3q-35, Binary: gs://litert/binaries/latest/android_arm64/litert_lm/litert_lm_advanced_main)...
 Benchmark session submitted successfully!
-Waiting for session 'session-76bb31e7' to complete (Operation: projects/litert-edge-portal/locations/global/operations/operation-1791397333694-65d4431b9f80d-52ad6ee9-cb63e7ed, timeout: 2400 s). This may take a few minutes...
-View the outputs on the Cloud Console: https://console.cloud.google.com/storage/browser/litert-edge-portal-devicerun/litert-cli/sessions/session-76bb31e7
+Waiting for session 'session-76bb31e7' to complete (Operation: projects/<project>/locations/global/operations/operation-1791397333694-65d4431b9f80d-52ad6ee9-cb63e7ed, timeout: 2400 s). This may take a few minutes...
+View the outputs on the Cloud Console: https://console.cloud.google.com/storage/browser/<bucket>/litert-cli/sessions/session-76bb31e7
 ..................
 Session 'session-76bb31e7' finished: PASSED
 
@@ -381,17 +381,17 @@ LiteRT-LM benchmark: second process, 1 iteration(s), 0 warm-up; median of the ot
 exit=0
 ### END 03:26:53 JST
 
-### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --cpu --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096  (billed DDP session: Gemma 4 E2B cpu, --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096 (prefill 1024 / decode 256 at the defaults))
+### CMD: source <work>/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=<project> litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --cpu --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096  (billed DDP session: Gemma 4 E2B cpu, --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096 (prefill 1024 / decode 256 at the defaults))
 ### START 2026-10-08 03:26:53 JST
-Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
-Ensuring GCS bucket 'gs://litert-edge-portal-devicerun' exists for project 'litert-edge-portal'...
-Uploading local model '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' to gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-4a2460a2/...
+Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://<bucket>'.
+Ensuring GCS bucket 'gs://<bucket>' exists for project '<project>'...
+Uploading local model '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' to gs://<bucket>/litert-cli/inputs/litert-cli-benchmark-4a2460a2/...
 Fetching GCP access token...
-Uploading run script '/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/tmpdobsfh4g/litert_lm_run.sh' to gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-4a2460a2/...
-Submitting 'cpu' benchmark session 'litert-cli-benchmark-4a2460a2' to DDP (Project: litert-edge-portal, Devices: pa3q-35, Binary: gs://litert/binaries/latest/android_arm64/litert_lm/litert_lm_advanced_main)...
+Uploading run script '/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/tmpdobsfh4g/litert_lm_run.sh' to gs://<bucket>/litert-cli/inputs/litert-cli-benchmark-4a2460a2/...
+Submitting 'cpu' benchmark session 'litert-cli-benchmark-4a2460a2' to DDP (Project: <project>, Devices: pa3q-35, Binary: gs://litert/binaries/latest/android_arm64/litert_lm/litert_lm_advanced_main)...
 Benchmark session submitted successfully!
-Waiting for session 'session-20550b6d' to complete (Operation: projects/litert-edge-portal/locations/global/operations/operation-1791397800146-65d444d8777ac-02370c5f-8c1280f4, timeout: 2400 s). This may take a few minutes...
-View the outputs on the Cloud Console: https://console.cloud.google.com/storage/browser/litert-edge-portal-devicerun/litert-cli/sessions/session-20550b6d
+Waiting for session 'session-20550b6d' to complete (Operation: projects/<project>/locations/global/operations/operation-1791397800146-65d444d8777ac-02370c5f-8c1280f4, timeout: 2400 s). This may take a few minutes...
+View the outputs on the Cloud Console: https://console.cloud.google.com/storage/browser/<bucket>/litert-cli/sessions/session-20550b6d
 ........................
 Session 'session-20550b6d' finished: PASSED
 
@@ -467,17 +467,17 @@ LiteRT-LM benchmark: second process, 1 iteration(s), 0 warm-up; median of the ot
 exit=0
 ### END 03:36:17 JST
 
-### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --gpu --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096  (billed DDP session: Gemma 4 E2B gpu, --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096 (prefill 1024 / decode 256 at the defaults))
+### CMD: source <work>/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=<project> litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --gpu --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096  (billed DDP session: Gemma 4 E2B gpu, --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096 (prefill 1024 / decode 256 at the defaults))
 ### START 2026-10-08 03:36:17 JST
-Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
-Ensuring GCS bucket 'gs://litert-edge-portal-devicerun' exists for project 'litert-edge-portal'...
-Uploading local model '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' to gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-3c28cac7/...
+Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://<bucket>'.
+Ensuring GCS bucket 'gs://<bucket>' exists for project '<project>'...
+Uploading local model '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' to gs://<bucket>/litert-cli/inputs/litert-cli-benchmark-3c28cac7/...
 Fetching GCP access token...
-Uploading run script '/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/tmpgtu4gbgt/litert_lm_run.sh' to gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-3c28cac7/...
-Submitting 'gpu' benchmark session 'litert-cli-benchmark-3c28cac7' to DDP (Project: litert-edge-portal, Devices: pa3q-35, Binary: gs://litert/binaries/latest/android_arm64/litert_lm/litert_lm_advanced_main)...
+Uploading run script '/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/tmpgtu4gbgt/litert_lm_run.sh' to gs://<bucket>/litert-cli/inputs/litert-cli-benchmark-3c28cac7/...
+Submitting 'gpu' benchmark session 'litert-cli-benchmark-3c28cac7' to DDP (Project: <project>, Devices: pa3q-35, Binary: gs://litert/binaries/latest/android_arm64/litert_lm/litert_lm_advanced_main)...
 Benchmark session submitted successfully!
-Waiting for session 'session-93c1148a' to complete (Operation: projects/litert-edge-portal/locations/global/operations/operation-1791398363724-65d446f1efc98-950dc942-ed5cab9c, timeout: 2400 s). This may take a few minutes...
-View the outputs on the Cloud Console: https://console.cloud.google.com/storage/browser/litert-edge-portal-devicerun/litert-cli/sessions/session-93c1148a
+Waiting for session 'session-93c1148a' to complete (Operation: projects/<project>/locations/global/operations/operation-1791398363724-65d446f1efc98-950dc942-ed5cab9c, timeout: 2400 s). This may take a few minutes...
+View the outputs on the Cloud Console: https://console.cloud.google.com/storage/browser/<bucket>/litert-cli/sessions/session-93c1148a
 ..................
 Session 'session-93c1148a' finished: PASSED
 
@@ -560,17 +560,17 @@ LiteRT-LM benchmark: second process, 1 iteration(s), 0 warm-up; median of the ot
 exit=0
 ### END 03:44:03 JST
 
-### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --cpu --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096  (billed DDP session: Gemma 4 E2B cpu, --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096 (prefill 1024 / decode 256 at the defaults))
+### CMD: source <work>/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=<project> litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --cpu --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096  (billed DDP session: Gemma 4 E2B cpu, --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096 (prefill 1024 / decode 256 at the defaults))
 ### START 2026-10-08 03:44:03 JST
-Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
-Ensuring GCS bucket 'gs://litert-edge-portal-devicerun' exists for project 'litert-edge-portal'...
-Uploading local model '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' to gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-872ceabd/...
+Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://<bucket>'.
+Ensuring GCS bucket 'gs://<bucket>' exists for project '<project>'...
+Uploading local model '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' to gs://<bucket>/litert-cli/inputs/litert-cli-benchmark-872ceabd/...
 Fetching GCP access token...
-Uploading run script '/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/tmp7gp92zpx/litert_lm_run.sh' to gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-872ceabd/...
-Submitting 'cpu' benchmark session 'litert-cli-benchmark-872ceabd' to DDP (Project: litert-edge-portal, Devices: pa3q-35, Binary: gs://litert/binaries/latest/android_arm64/litert_lm/litert_lm_advanced_main)...
+Uploading run script '/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/tmp7gp92zpx/litert_lm_run.sh' to gs://<bucket>/litert-cli/inputs/litert-cli-benchmark-872ceabd/...
+Submitting 'cpu' benchmark session 'litert-cli-benchmark-872ceabd' to DDP (Project: <project>, Devices: pa3q-35, Binary: gs://litert/binaries/latest/android_arm64/litert_lm/litert_lm_advanced_main)...
 Benchmark session submitted successfully!
-Waiting for session 'session-ca7670c5' to complete (Operation: projects/litert-edge-portal/locations/global/operations/operation-1791398830067-65d448aeacea2-03a2f12d-f030ef5f, timeout: 2400 s). This may take a few minutes...
-View the outputs on the Cloud Console: https://console.cloud.google.com/storage/browser/litert-edge-portal-devicerun/litert-cli/sessions/session-ca7670c5
+Waiting for session 'session-ca7670c5' to complete (Operation: projects/<project>/locations/global/operations/operation-1791398830067-65d448aeacea2-03a2f12d-f030ef5f, timeout: 2400 s). This may take a few minutes...
+View the outputs on the Cloud Console: https://console.cloud.google.com/storage/browser/<bucket>/litert-cli/sessions/session-ca7670c5
 .......................
 Session 'session-ca7670c5' finished: PASSED
 
@@ -646,7 +646,7 @@ LiteRT-LM benchmark: second process, 1 iteration(s), 0 warm-up; median of the ot
 exit=0
 ### END 03:53:07 JST
 
-### CMD: python3 -I /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/d21f53ca-5923-4da1-b5fc-7e34ecbf7034/scratchpad/r5/tools/gather.py /Users/USER/code/edge-llm-bench/results/raw/2026-10-07-ddp-s25ultra-lm-v1/iter-check session-76bb31e7 session-20550b6d session-93c1148a session-ca7670c5  (copy round 6's four sessions into the campaign dir and read their first processes)
+### CMD: python3 -I <work>/r5/tools/gather.py /Users/USER/code/edge-llm-bench/results/raw/2026-10-07-ddp-s25ultra-lm-v1/iter-check session-76bb31e7 session-20550b6d session-93c1148a session-ca7670c5  (copy round 6's four sessions into the campaign dir and read their first processes)
 ### START 2026-10-08 03:53:43 JST
 {"session": "session-76bb31e7", "job": "gpu-pa3q-35", "pids": ["3733", "3796"], "process_lines": 395, "logcat_lines": 994, "cold_init_total_ms": 5710.85, "first_prefill_tok_s": 2937.28, "first_decode_tok_s": 45.57, "first_ttft_s": 0.37, "first_peak_private_mb": 747.684, "errors": []}
 {"session": "session-20550b6d", "job": "cpu-pa3q-35", "pids": ["14091", "14139"], "process_lines": 2410, "logcat_lines": 2876, "cold_init_total_ms": 2153.42, "first_prefill_tok_s": 329.26, "first_decode_tok_s": 34.91, "first_ttft_s": 3.14, "first_peak_private_mb": 2606.18, "errors": []}
@@ -655,10 +655,10 @@ exit=0
 exit=0
 ### END 03:53:43 JST
 
-### CMD: gcloud storage rm -r gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-d6b49c2b gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-4a2460a2 gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-3c28cac7 gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-872ceabd 2>&1 | tail -1; gcloud storage du -s gs://litert-edge-portal-devicerun/litert-cli/inputs/; gcloud storage ls gs://litert-edge-portal-devicerun/litert-cli/sessions/ | grep -c -E 'session-(e60522b0|c3c1094e|76bb31e7|20550b6d|93c1148a|ca7670c5)'  (remove round 6's four uploaded input dirs from the project bucket; session outputs stay)
+### CMD: gcloud storage rm -r gs://<bucket>/litert-cli/inputs/litert-cli-benchmark-d6b49c2b gs://<bucket>/litert-cli/inputs/litert-cli-benchmark-4a2460a2 gs://<bucket>/litert-cli/inputs/litert-cli-benchmark-3c28cac7 gs://<bucket>/litert-cli/inputs/litert-cli-benchmark-872ceabd 2>&1 | tail -1; gcloud storage du -s gs://<bucket>/litert-cli/inputs/; gcloud storage ls gs://<bucket>/litert-cli/sessions/ | grep -c -E 'session-(e60522b0|c3c1094e|76bb31e7|20550b6d|93c1148a|ca7670c5)'  (remove round 6's four uploaded input dirs from the project bucket; session outputs stay)
 ### START 2026-10-08 03:53:43 JST
 ..............
-11680278877  gs://litert-edge-portal-devicerun/litert-cli/inputs/
+11680278877  gs://<bucket>/litert-cli/inputs/
 6
 exit=0
 ### END 03:54:34 JST

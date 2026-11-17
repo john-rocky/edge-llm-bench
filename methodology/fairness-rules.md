@@ -230,7 +230,7 @@ launch mask (evidence: notes outside this repo; the capped records are kept as
   `render_leaderboard.arm_row` keeps a `true` run past the line out of every metric pool,
   after the text check (§12), and a dashboard cell left without a number shows
   `— (no valid run: cpu-capped >15 % (k of N runs))`, never the rate.
-- The line (owner decision 2026-10-08). The flag stays the fact — any fall below the
+- The line (2026-10-08). The flag stays the fact — any fall below the
   hardware maximum, judged by the runner as before; how far the ceiling fell decides the
   pool. `cpu_cap_drop_pct` is the largest `(1 − min / hw) × 100` over the policies of the
   engine's CPUs (`conditions.cpusAllowedList`, else the launch mask, else every CPU), one
@@ -253,7 +253,7 @@ launch mask (evidence: notes outside this repo; the capped records are kept as
   `results/raw/2026-10-08-dashboard-executorch-v1-s26{,-b}-android/`). The Pixel 8a's capped
   launches of 2026-10-07 (above) were renamed `*.json.quarantine-cpu-cap` before the runner
   read the caps: they carry no `cpuMaxFreqMHz` and stay out of the summary whatever the line.
-- The accelerator arms (owner decision 2026-10-08). On the Android arms whose engine places
+- The accelerator arms (2026-10-08). On the Android arms whose engine places
   the model on the NPU or the GPU — `llama.cpp-npu` (Hexagon NPU, `--device HTP0`),
   `llama.cpp-gpu` (Adreno GPU through OpenCL), `litert-lm-npu` (NPU through the Qualcomm
   dispatch), `litert-lm-gpu` (GPU), `executorch-vulkan` (Vulkan delegate, GPU) and

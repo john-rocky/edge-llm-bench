@@ -4,7 +4,7 @@
 # (prefill 1024, max_num_tokens 1280) to see the same failure, then other token settings to find one that runs.
 # Works/does-not-work only; no rate from this script is a measurement (one iteration, phone state not controlled).
 set -u
-S=/private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad
+S=<work>
 CA=/Users/USER/code/litertlm-convert/community_accel_work
 L="$CA/s2_npu_sweep/.device_hold"
 NAME=edge-llm-bench/ddp-s25ultra-gemma-cpu-repro

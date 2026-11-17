@@ -202,7 +202,7 @@ is not in the log and not in the help text.
 user name replaced by USER). The S26's work directory was removed at the end; the hold was returned at 16:14:46 JST.
 Not in `table.md`, not in `results/summary`.
 
-## Rounds 2 and 3 (16:30–16:45 JST, user 16:2x「両方よろしく」): the two flag candidates, and five control runs on the quiet phone
+## Rounds 2 and 3 (16:30–16:45 JST): the two flag candidates, and five control runs on the quiet phone
 
 Round 2 (`round2-flags/`): three settings on the same phone, same binary and bundle, each = a cache-writing
 1-iteration process then a 3-iteration process 0 s later (the shape of A0 + A), 180 s rest between settings.

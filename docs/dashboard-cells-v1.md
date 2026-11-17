@@ -34,7 +34,7 @@ see "Core AI arm (v2)" below; validated by `scripts/validate_cells.py`).
 Task: `short-chat`, the cross-arm standard cell (same prompt and token budget
 on every arm). The 1024-prefill / 256-decode / ctx-2048 column
 (`long-context-1024-gen256`, methodology
-`agreed-protocol-gemma4.md`) is the natural second task and was not in v1 —
+`protocol-gemma4.md`) is the natural second task and was not in v1 —
 open question 3 below; the Mac leg of a deeper column (p≈2K / g=256, three
 KV allocations) was measured 2026-09-18, section "Long-context column".
 Since 2026-10-06 the weekly set carries it: section "Second task in the
@@ -380,7 +380,7 @@ at its next sitting.
 
 Retakes of the lost cells on 2026-09-09 (campaigns
 `…-iphone17pro-retake-*` 13:47–14:33 and `…-retake2-*` 16:13–17:17, both
-stopped by hand at a cell boundary when the owner went out; both admitted on
+stopped by hand at a cell boundary; both admitted on
 their anchor) recorded the Core AI 0.6B (the new id) with coherent output at
 169 tok/s warm, and found two things: the published 1.7B phone bundle
 (`mlboydaisuke/qwen3-1.7b-CoreAI-official` `ios-gpu/`) fails to load with
@@ -567,7 +567,7 @@ two LiteRT-LM cells open; both were measured on 2026-10-12 with v0.16.0
 
 Open question 3 is answered for the weekly job: since 2026-10-06 every sitting
 measures the protocol cell `long-context-1024-gen256` beside `short-chat`
-(owner decision 2026-10-06; the device time it adds was accepted the same
+(since 2026-10-06; the device time it adds was accepted the same
 morning).
 
 Rows. Every active `short-chat` row on LiteRT-LM, llama.cpp and MLX has one
@@ -598,7 +598,7 @@ The same text goes to every arm. Since 2026-10-19 the tail is the 2K ladder's
 below.
 
 `context-tokens=2048` on every LiteRT-LM and llama.cpp row: the
-protocol's context (`methodology/agreed-protocol-gemma4.md`: prefill 1024,
+protocol's context (`methodology/protocol-gemma4.md`: prefill 1024,
 decode 256, context forced to 2048 for Gemma 4; the set uses the same
 allocation for the Qwen3 rows, so one column is one allocation) —
 LiteRT-LM `maxNumTokens`, llama.cpp `n_ctx`. On Android the option also
@@ -699,7 +699,7 @@ non-Android row (the Mac and iPhone runners do not read the option), an anchor
 row and a row that also carries `exclude=`. The Pixel 8a's Qwen3-4B and Gemma 4
 E4B rows carry `exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash`
 on every arm and task (short-chat, `long-context-1024-gen256`,
-`native-benchmark-1024x256`; owner decision 2026-10-07): in the 2026-10-07 b1r2
+`native-benchmark-1024x256`; since 2026-10-07): in the 2026-10-07 b1r2
 sitting the LiteRT-LM CPU Qwen3-4B 1K launch held 3.26 GB in swap beside 3.9 GB
 resident, the phone's 3.9 GB zram was full (44 kB free) with 1.6 GB available,
 and in the 52 minutes since its boot the phone had read 34.6 GB from flash and
@@ -720,7 +720,7 @@ every row keeps running on the Galaxy S26. Source: notes outside this repo and t
 
 A cell's runs on Android carry `cpu-capped` when the clock ceiling of a CPU the engine ran on
 fell below its hardware maximum during the run (since 2026-10-07,
-`methodology/fairness-rules.md` §13 cpu-cap-rule). Since 2026-10-08 (owner decision) the depth
+`methodology/fairness-rules.md` §13 cpu-cap-rule). Since 2026-10-08 the depth
 decides the pool: a run whose ceiling fell at most 15 % (summary `cpu_cap_drop_pct`, the line
 `render_leaderboard.CPU_CAP_MAX_DROP_PCT`) pools, and the cell's number carries
 `◇ cpu-capped ≤15 % (k of N runs)`; a run past it stays out, and a cell left with no other
@@ -810,7 +810,7 @@ not text-checked, as before.
 Memory. `memoryMedianResidentMB` / `memoryPeakResidentMB` are the host
 process's VmRSS / VmHWM; the device's buffers (weights, KV cache and compute
 in HTP0 or OpenCL memory) are outside them, and the records' `rssBasis` says
-so. On the 2026-10-07 smoke (Qwen3 0.6B short-chat, lane notes outside this
+so. On the 2026-10-07 smoke (Qwen3 0.6B short-chat, notes outside this
 repo) the NPU launch's VmHWM was 217 MiB while llama.cpp's own breakdown put
 880 MiB in HTP0 (406 weights, 448 KV, 26 compute).
 
@@ -823,7 +823,7 @@ llama-bench compiles at load as well but times after its own warmup run, so
 its launches are not labelled. The NPU keeps no compile cache.
 
 CPU cap. The 15 % line of the cpu-cap-rule does not apply to these arms
-(owner decision 2026-10-08, `methodology/fairness-rules.md` §13, "The
+(2026-10-08, `methodology/fairness-rules.md` §13, "The
 accelerator arms"): `render_leaderboard.CPU_CAP_EXEMPT_ARMS` = `llama.cpp-npu`,
 `llama.cpp-gpu`, `litert-lm-npu`, `litert-lm-gpu`, `executorch-vulkan`,
 `executorch-qnn`, the arms whose engine places the model on the NPU or the GPU.
@@ -1029,7 +1029,7 @@ labels, regime, timing, memory and telemetry: [docs/ortgenai-arm-v1.md](ortgenai
 
 ## ONNX Runtime GenAI arm in the weekly set (2026-10-09)
 
-Since 2026-10-09 (owner GO) the Mac block of `dashboard-text-v1.cells` ends with the 12 Qwen3
+Since 2026-10-09 the Mac block of `dashboard-text-v1.cells` ends with the 12 Qwen3
 rows of `matrices/dashboard-ortgenai-v1.cells` (0.6B / 1.7B / 4B, short-chat and the 1K text
 task at `context-tokens=2048`, the CPU EP and the WebGPU plugin EP, the engine default; one
 engine process per cell, run 1 cold, runs 2-4 warm). The Galaxy S26 measures only the two
@@ -1057,7 +1057,7 @@ after its cooldown.
 
 ## NPU and Android GPU rows in the weekly set (2026-10-09)
 
-Since 2026-10-09 (owner GO) the Galaxy S26's weekly sitting ends with the short-chat rows of
+Since 2026-10-09 the Galaxy S26's weekly sitting ends with the short-chat rows of
 `matrices/dashboard-npu-v1-android-s26.cells`: `matrices/dashboard-npu-v1-android-s26-short.cells`
 holds the session anchor and those ten rows (five models × `llama.cpp-npu` / `llama.cpp-gpu`, the
 side build `b11469-snapdragon`), byte-identical to the plan file, which stays the file the rows
@@ -1100,7 +1100,7 @@ which the rotation leaves alone). A marker per build is the open fix.
 
 ## ExecuTorch arm in the weekly set, Mac leg (2026-10-08)
 
-Since 2026-10-08 (owner GO) the Mac blocks of `dashboard-text-v1.cells` and
+Since 2026-10-08 the Mac blocks of `dashboard-text-v1.cells` and
 `dashboard-longctx1024-v1.cells` end with the ExecuTorch rows of
 `matrices/dashboard-executorch-v1-mac.cells`: our own exports of the dashboard models with
 ExecuTorch v1.5.1's own exporters (not published artifacts; `docs/executorch-arm-v1.md`), the
@@ -1110,7 +1110,7 @@ text task at `context-tokens=2048`, the Mac runner's regime (run 1 cold, runs 2-
 `llama_main --warmup`). 12 rows run; the 8 Gemma 4 rows are `exclude=` with their reasons
 (the XNNPACK runner `gemma4_e2e_runner` has no warm regime; the exporter has no MLX path).
 The Mac sitting grows by about one hour (`expected_hours` 2.2 → 3.2, `timeout_hours` 4 → 5,
-`ops/dashboard-v1/schedule.json`; derivation in the lane's round record, two measured sittings
+`ops/dashboard-v1/schedule.json`; derivation in notes outside this repo, two measured sittings
 of 36 and 22 minutes). The Android and iPhone ExecuTorch rows are not in the weekly set: the
 Android rows wait on the Galaxy S26's CPU cap line and on keeping the runner directory on the
 phones; the iPhone rows need the ExecuTorch build of the app, which replaces the Core AI build
@@ -1121,8 +1121,10 @@ under the same bundle id, so they are by-hand sittings only.
 A `native-benchmark-<P>x<D>` cell is one launch of an engine's own benchmark entry: its first
 call cold, the calls after it warm (LiteRT-LM `benchmark()` calls 2..N of a `--runs N` launch;
 the Core AI stock arm's trials 1..N, the ones `llm-benchmark` averages; llama-bench's in-process
-repeats, all recorded warm). Since 2026-10-08 such a cell headlines the protocol's regime
-(`methodology/agreed-protocol-gemma4.md`: warm for the side-by-side, cold reported separately as
+repeats, all recorded warm). On Android a llama-bench run is two such launches, one for the
+prefill test and one for the decode test ("llama.cpp protocol rows: two launches per run",
+below). Since 2026-10-08 a protocol cell headlines the protocol's regime
+(`methodology/protocol-gemma4.md`: warm for the side-by-side, cold reported separately as
 first use) on every platform and for every arm: the warm median wherever the session has warm
 runs, with the session's cold first-call median beside it (`cold_tps`), and the cold median only
 where the session has none — the LiteRT-LM protocol sittings before 2026-10-08 made one call per
@@ -1153,7 +1155,7 @@ app's memory stays as that cell's record.
 
 ## llama.cpp on b11721 (2026-10-19)
 
-The llama.cpp pin moved from b8999 to b11721 on every platform (owner decision 2026-10-19: the
+The llama.cpp pin moved from b8999 to b11721 on every platform (2026-10-19: the
 comparison arms are measured on their current release too; `environment.lock.json` `arms.llama.cpp`,
 `android/engine-pins.json`). The re-measure runs from three cells files, each holding its platform's
 session anchor row and the weekly set's ten llama.cpp rows (short-chat and the 1K text task of the five
@@ -1246,7 +1248,7 @@ turn arrives; moving back is the same edit in reverse and a re-measurement.
 On the iPhone 18 Pro the dynamic INT4 bundle fails at engine creation on the Metal GPU under LiteRT-LM v0.18.0
 (`Failed to create engine … Failed to modify graph with delegate`, 4 of 4 launches in three tasks,
 `results/raw/2026-10-19-dashboard-v1-iphone18pro-q06-dynamic-ios/`; the same bytes load on the Mac's Metal GPU and on
-Android's OpenCL GPU the same day; hazard `ios-metal-dynamic-int4-engine-fails`, issue draft pending the owner's GO). With
+Android's OpenCL GPU the same day; hazard `ios-metal-dynamic-int4-engine-fails`). With
 the mixed-INT4 bundle dropping the user turn on 0.18.0 (#3688), no INT4 Qwen3 0.6B bundle runs on the iPhone's GPU. Smokes
 of 12:22 (short-chat, 19 prompt tokens, one launch each): the repo's dynamic INT8 bundle `Qwen3-0.6B.litertlm`
 (`dynamic_int8`, LlmMetadata for 0.18.0 since 2026-10-12) on the GPU 46.5 tok/s decode, 158 prefill, 1,515 MB peak; the
@@ -1258,13 +1260,13 @@ shows; the recipe label says INT8), and the weekly set gains a `backend=cpu` pai
 `litert-lm-cpu`, as Android shows its CPU arm) so the 4-bit class stays measurable on the phone. Neither row claims the
 other's class: the quantization travels in the row (quant-per-arm-rule). The Mac and Android rows keep the INT4 bundle.
 First values: `matrices/dashboard-q06-int8-ios.cells`, one sitting on 2026-10-19. Revert = the ios rows back to
-`dynamic_wi4b32_afp32`, the cpu pair out. Owner's items: whether the iPhone page should carry the INT8 row at all while
+`dynamic_wi4b32_afp32`, the cpu pair out. Open items: whether the iPhone page should carry the INT8 row at all while
 the other arms are 4-bit, and the upstream issue.
 
 ## Qwen3 0.6B candidate (2026-10-19)
 
-A local candidate for the iPhone Metal failure above, measured beside the current file in one sitting per device (owner
-decision 2026-10-19). Nothing is uploaded and no page row moves: the candidate's rows live in their own cells
+A local candidate for the iPhone Metal failure above, measured beside the current file in one set of runs per device
+(2026-10-19). Nothing is uploaded and no page row moves: the candidate's rows live in their own cells
 files, under their own model id.
 
 - The candidate = the dynamic INT4 file's 2026-08-05 revision (litert-community/Qwen3-0.6B at 8414150f, hvt4's export,
@@ -1301,9 +1303,9 @@ files, under their own model id.
   sitting stays within an hour (the morning's six-row file of the same model took 57 min on the S26 and 63 min on the
   Pixel 8a); each pair sits in one sitting. The Mac sitting runs the yardstick built with the entry
   (`DD_MAC=.build/dd-mac-q06cand`).
-- Reading (owner's rule): the candidate replaces the Hub file only if it is not slower anywhere (same-sitting warm decode
+- Reading: the candidate replaces the Hub file only if it is not slower anywhere (same-sitting warm decode
   and prefill within −3 % of the current file on every device and backend) and both pass the text check; then a Hub PR
-  goes to a GO request. If it is slower somewhere it does not replace the file: an iOS-only file or a card note instead.
+  follows. If it is slower somewhere it does not replace the file: an iOS-only file or a card note instead.
   On the iPhone GPU the first question is whether the engine builds at all.
 
 ## Qwen3 0.6B on LiteRT-LM main@b7c40ea81: a GPU-composite export, and YNNPACK on the CPU (2026-10-20)
@@ -1337,16 +1339,16 @@ one CPU and one GPU sitting per phone; no page row moves.
   path in `file=` (pushed as they are, sha256-checked on the phone): the rows never share a cell with the page's
   v0.18.0 rows (`litert-community/Qwen3-0.6B` + `file=`), whose cells select by device, arm, model id, task and
   context, not by engine.
-- Cells: `matrices/lu1020-q06-gpu-a-android.cells` (the Hub file and E2 in pairs: the 1K task and the protocol, which
-  launch `litert_lm_advanced_main` only), `matrices/lu1020-q06-gpu-b-android.cells` (the same pairs on short-chat, which
-  launches `litert_lm_main`) and `matrices/lu1020-q06-cpu-android.cells` (the Hub file on the CPU: the protocol and the
+- Cells: `matrices/oct20-q06-gpu-a-android.cells` (the Hub file and E2 in pairs: the 1K task and the protocol, which
+  launch `litert_lm_advanced_main` only), `matrices/oct20-q06-gpu-b-android.cells` (the same pairs on short-chat, which
+  launches `litert_lm_main`) and `matrices/oct20-q06-cpu-android.cells` (the Hub file on the CPU: the protocol and the
   1K task, XNNPACK and `ynnpack=1` interleaved per round, one binary). The GPU side build's `litert_lm_advanced_main`
   is the one the T1b lane built at b7c40ea81 on 2026-10-14 (sha256 `ce1f25dc…5234`), the seven libraries the
   commit's prebuilt ones, byte for byte; its `litert_lm_main` (for part b) is built at the same commit. `ynnpack=1` is the arm `litert-lm-cpu-ynnpack` (android/README.md,
   "Side builds"): a toggle in the conditions only would pool the two into one cell.
 - Reading: E2 against the Hub file only within one sitting on one build; YNNPACK on against off only within one
   sitting on one binary, with YNNPACK's own lines in every on launch and none in an off one.
-- The control (the cells of 2026-10-21, the S26 sitting of 2026-10-22): `matrices/lu1020-q06-cpu-ctl-android.cells`, six arms in one Galaxy S26 sitting, the
+- The control (the cells of 2026-10-21, the S26 sitting of 2026-10-22): `matrices/oct20-q06-cpu-ctl-android.cells`, six arms in one Galaxy S26 sitting, the
   protocol only. HEAD = the CPU rows' build and file, XNNPACK and `ynnpack=1` (the CPU file's two protocol rows as they
   are, so the sitting is also their S26 retake); slinky = the same build with slinky left at what LiteRT-LM 2ef6baeb's
   workspace resolves (side build `head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly-slinkytf`: slinky a3eec6fc of
@@ -1515,9 +1517,9 @@ this paragraph first said "the rule keeps them off the page"). If a newer mlx-sw
 `matrices/mlx-gemma4-file-mac.cells` lose their `exclude=` and run as candidates of the QAT class, in the
 schema of the LiteRT-LM file. The iPhone leg is the same procedure in its own sitting.
 
-### 2 rows from 2026-10-19 (owner decision)
+### 2 rows from 2026-10-19
 
-Decision (2026-10-19 11:4x, the owner's): the page's MLX Gemma 4 has two rows per model and platform, the
+Decision (2026-10-19): the page's MLX Gemma 4 has two rows per model and platform, the
 QAT OptiQ row the rule above picks and the PTQ row `mlx-community/gemma-4-{e2b,e4b}-it-4bit`, each with its class in
 its name. Why:
 
@@ -1737,7 +1739,7 @@ decode, median over 3 processes), against 251.8 / 9.01 for `Qwen3_1.7B.litertlm`
 `Qwen3-4B_dynamic_wi4b32_afp32_gpu_composites.litertlm` reaches the lane's memory guard there (MemAvailable under
 400,000 kB): the lowest read was under that line in three of its five GPU processes and just above it in two, and
 every GPU process built its engine. The guard stopped the process on 2026-11-02 2 s after the benchmark's session was
-created (as on a lab Pixel 8a in T1c's 2026-10-16 round with T1c's own 4B export), and on 2026-11-03, with background
+created (as on a lab Pixel 8a in a 2026-10-16 run with a GPU-composite 4B export), and on 2026-11-03, with background
 apps stopped first, after one finished run, 3 s after the second run's session was created. On 2026-11-05
 (`results/raw/2026-11-05-t1c-qwen3-0190-p8a-4b-cached-android/`), with background apps stopped before each process, one
 cold process and one reading its caches ran their 3 runs, median 104.6 / 8.74 tok/s, and the guard stopped a second
@@ -1844,3 +1846,38 @@ read 24.7 and 27.2 % lower with the wait on
 within 3.6 % either way on `llama.cpp-gpu` and `litert-lm-gpu-igpu`, and the cold prefill median lower on all four GPU
 rows in both of their pairs (by 4.0 to 48.1 %): a GPU row's later sitting can read lower for the wait alone, on the
 same machine.
+
+## llama.cpp protocol rows: two launches per run (2026-11-16)
+
+On an attached phone, a llama.cpp `native-benchmark-<P>x<D>` run is two llama-bench launches (`android/bench/run_cell.py`
+`LLAMA_BENCH_PHASES`): the prefill launch, `llama-bench -m <model> -t 4 -p 1024 -n 0 -o json`, and, after a cooldown,
+the decode launch, `llama-bench -m <model> -t 4 -p 0 -n 256 -d 1024 -o json`. The cooldown is the one the runner keeps
+before the row's launches (`run_campaign.launch_cooldown`): the row's `cooldown=`, else `COOLDOWN` (120 s), and
+`COOLDOWN` in round mode. With `-d 1024` llama-bench fills a 1024-token context before each repetition's timer starts,
+so the 256 tokens are timed on top of that context. The GPU / NPU side build (`b11469-snapdragon`) runs the same two
+launches with its own flags on both (`-t 6 -ngl 99 [-ub 1024] --device GPUOpenCL | HTP0`). Before, a run was one
+launch, `-p 1024 -n 256`: llama-bench ran its prefill test and then its decode test in one process, and the decode test
+started from an empty context (`n_depth` 0). The protocol names LiteRT-LM's `benchmark()` entry
+(`methodology/protocol-gemma4.md`, "The spec"), which runs one conversation: the 1024-token prefill, then the 256-token
+decode. The two launches time llama-bench's decode at the same depth, and the decode launch gets its own wait for the
+CPU clock ceilings and its own reads of them. A decode on a 1024-token context can read lower than one on an empty
+context: each token reads the KV of the 1024 tokens before it.
+
+A run is still one record. `conditions.launches` holds the two launches in order (command, start, exit code, thermal,
+screen and battery reads, CPU ceilings, and the tests of that launch's JSON); the prefill rate comes from the first
+launch and the decode rate from the second. `conditions.cpuMaxFreqMHz` is, per policy, the lower of the two launches,
+`conditions.cpusAllowedList` the union of their CPUs, and `cpu-capped` / `cpu-capped-at-start` are set when either
+launch has them. A launch whose JSON is not the one expected test (`prompt-token-count-mismatch`,
+`decode-token-count-mismatch`, `decode-depth-mismatch`) gives no rate, and the run fails. The raw log holds both
+consoles.
+
+`harnessStamp` is `2026-08-android-cli-v1+llama-bench-d1024`, and the summary's `harness_stamp` column separates the two
+forms. A llama.cpp `native-benchmark-*` record without the suffix is in the one-launch form. Among them: the Galaxy
+S26's llama.cpp CPU records of 2026-10-06 (build b8999,
+`results/raw/2026-10-06-dashboard-protocol1024-v1-s26-{a1,a2,a3g,b1g}-android`) and its GPU / NPU side-build records
+of 2026-10-08 (`results/raw/2026-10-08-dashboard-npu-v1-s26-{qwen06,qwen17}-bench-android`). They are not re-labelled;
+those rows keep these numbers until measured again. On DDP a llama.cpp `native-benchmark-*` row is skipped either way
+(`runtime-not-wired-on-ddp`; with `--all-runtimes` or `BENCH_DDP_ALL_RUNTIMES=1`,
+`llama-bench-two-launch-not-wired-on-ddp`: a job there runs one command per run; `docs/ddp-integration.md`). The weekly
+set (`ops/dashboard-v1/schedule.json`) holds no llama.cpp `native-benchmark-*` row, so the recurring job's time does
+not change.

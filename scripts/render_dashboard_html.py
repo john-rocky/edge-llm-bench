@@ -26,8 +26,8 @@ many of its pool ran under a CPU frequency cap within the line, or under any cap
 Android NPU or GPU arm (counted, marked ◇).
 
 Every output is LOCAL and gitignored (/.dashboard/): the rendered page is
-cross-runtime standings, which this repo does not publish (CLAUDE.md, owner
-decision 2026-08-27). Hand the file over directly.
+cross-runtime standings, which this repo does not publish (CLAUDE.md, since
+2026-08-27). Hand the file over directly.
 """
 import argparse
 import csv

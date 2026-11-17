@@ -43,7 +43,7 @@ of the five dashboard models; the other four sittings are not run yet.
   on EOS after **93 tokens at 8,192** in all five rounds — the answer differs with `maxNumTokens` (engine-default sampling), the same
   observation as the Mac leg's GPU ‡ note. The GPU 8,192 decode rate is therefore over 93 tokens, not 256.
 - Conditions to read the numbers with: the screen was on for the whole session (`mWakefulness=Awake` at every round start,
-  `round_state.jsonl`), and the owner switched the developer option "stay awake" on by hand between the starts of round 1
+  `round_state.jsonl`), and the developer option "stay awake" was switched on by hand between the starts of round 1
   and round 2. Round 1 is also the coolest round. Every GPU log carries the engine's
   `GPU sampler unavailable. Falling back to CPU sampling` (the TopK sampler libraries do not load under `advanced_main`:
   `cannot locate symbol "kLiteRtRuntimeBuiltin"`), so GPU decode here includes CPU-side sampling.

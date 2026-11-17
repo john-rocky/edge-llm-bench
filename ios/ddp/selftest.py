@@ -861,7 +861,7 @@ def native_records(template):
                            "memoryMedianResidentMB": 2500.0, "memorySampleCount": 120,
                            "memoryPostTeardownFootprintMB": 300.0, "contextTokensConfigured": 2048, "wallSeconds": 20.5,
                            "initialThermalState": "nominal", "finalThermalState": "nominal",
-                           "harnessStamp": "2026-07-30-agreed-protocol-r4"},
+                           "harnessStamp": "2026-07-30-protocol-r4"},
                "conditions": {"instrument": f"litert-lm native benchmark() via BenchmarkApp --task {NATIVE_TASK}",
                               "run": i + 1, "runs": 2}}
         recs.append((f"litert-lm_litert-community_Qwen3-1.7B_{NATIVE_TASK}_{stamp}.json", rec))
@@ -968,8 +968,14 @@ def check_native(tmp, archive, template):
        f"session_argv: output-cap=drain forwards --litert-output-cap drain ({cap_argv})")
     mp_src = open(os.path.join(ROOT, "ios", "BenchmarkApp", "Sources", "Runtimes", "MediaPipeRuntime.swift")).read()
     ok("static var engineOutputCap = true" in mp_src
-       and "ExperimentalFlags.filterChannelContentFromKvCache = false" in mp_src,
+       and "static var filterChannelContentFromKvCache = false" in mp_src
+       and "ExperimentalFlags.filterChannelContentFromKvCache = Self.filterChannelContentFromKvCache" in mp_src,
        "MediaPipeRuntime.swift defaults to engineOutputCap and disables channel KV rewind")
+    en_src = open(os.path.join(ROOT, "ios", "BenchmarkApp", "Sources", "Benchmark", "EnduranceSession.swift")).read()
+    ok("MediaPipeRuntime.filterChannelContentFromKvCache = true" in en_src and '"+kv-channel-kept"' in en_src
+       and "MediaPipeRuntime.filterChannelContentFromKvCache = previousKvChannelFilter" in en_src,
+       "EnduranceSession.swift loads with the engine's channel KV filter on, puts the property back after the "
+       "load, and stamps a session without it")
 
 
 def main():

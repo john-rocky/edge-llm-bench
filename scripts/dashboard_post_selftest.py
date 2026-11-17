@@ -319,7 +319,7 @@ def ff_cases(tmp):
     windows_results(w)
     w2 = win_commit(w, "windows: a runner script", {"scripts/run_windows_matrix.py": "# windows\n"})
     s = sitting(raw, 20)
-    # the checkout as a sitting leaves it: another lane's staged record, untracked dir and unstaged edit,
+    # the checkout as a sitting leaves it: another job's staged record, untracked dir and unstaged edit,
     # and results/summary rebuilt on disk from every dir there (./bench matrix)
     write(os.path.join(raw, "2026-10-18-other-lane-staged-mac", "rec.jsonl"), "{}\n")
     sh(b, "git", "add", "--", "results/raw/2026-10-18-other-lane-staged-mac")
@@ -499,7 +499,7 @@ def main():
         switches[name] = os.path.join(tmp, f"switch-{name}.json")
         write(switches[name], json.dumps(sw))
 
-    # another lane's work in the same checkout: a staged record, an untracked campaign dir, an
+    # another job's work in the same checkout: a staged record, an untracked campaign dir, an
     # untracked file, an unstaged edit — none of it belongs in the post's commit or summary
     write(os.path.join(raw, "2026-09-30-other-lane-staged-mac", "rec.jsonl"), "{}\n")
     sh(bench, "git", "add", "--", "results/raw/2026-09-30-other-lane-staged-mac")

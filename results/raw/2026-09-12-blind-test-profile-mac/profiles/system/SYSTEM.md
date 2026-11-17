@@ -1,7 +1,7 @@
 # System profile: litert-community/gemma-4-E2B-it-litert-lm, native-benchmark 128x1024 ctx2048, Mac (Metal System Trace)
 
 Mac Studio (Mac16,9), macOS 27.0, Xcode 27.0, LiteRT-LM v0.16.0 vendored
-(yardstick harness=2026-07-30-agreed-protocol-r4), 2026-09-13.
+(yardstick harness=2026-07-30-protocol-r4), 2026-09-13.
 
 ## Rates (control vs traced — a profiled rate is never a speed row)
 

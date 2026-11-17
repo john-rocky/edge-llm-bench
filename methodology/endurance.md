@@ -21,6 +21,14 @@ wall clock (measured from the start of turn 1) passes N minutes:
   summarize-everything turns that sweep the full context.
 - **One conversation, accumulating KV.** Turn K+1 continues the conversation
   of turn K; per-turn prefill is the delta, not the history.
+- **The thought channel leaves the KV (Mac).** The Swift yardstick loads the
+  model for a session with LiteRT-LM's `filterChannelContentFromKvCache` on,
+  the engine's default: after each turn's decode the engine rewinds and
+  re-prefills the turn without its `<think>` channel content, so the next turn
+  continues from a history without it, as the 2026-09 sessions did. Single-turn
+  cells load with it off (no rewind after decode; llama.cpp, MLX and ExecuTorch
+  keep every decoded token). A session that ran with it off stamps
+  `+kv-channel-kept` after `+endurance-r1`.
 - **Context budget** is fixed per cell (`--context-tokens`, baseline 4096 for
   every model — same-budget). When the next turn would not fit
   (`getTokenCount()` + prompt estimate + output cap + margin > budget), the
@@ -97,8 +105,8 @@ Two files per cell, both raw (stored-report-rule):
 - **spread-rule** — within-session turn spread is the instrument here (a wide
   first-window spread means a contended machine: throw the session out and
   re-run). **Sessions are never pooled**: one session = one record; a
-  cross-session delta only counts through the usual session anchors
-  (`iphone-session-variance`), and `runs=1` is enforced in the cells.
+  cross-session delta only counts through the usual session anchors,
+  and `runs=1` is enforced in the cells.
 - **failed-runs-stay** — crash/hang/empty sessions keep row, record, and
   partial series; the CLI exits 1 so the runner logs the failure too.
 

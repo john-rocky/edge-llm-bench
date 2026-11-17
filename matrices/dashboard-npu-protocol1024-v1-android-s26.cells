@@ -1,10 +1,13 @@
 # Protocol rows (prefill forced to exactly 1024 tokens, decode 256: native-benchmark-1024x256) of the
 # NPU and Android GPU arms, Galaxy S26 only: llama-bench of llama.cpp's official Snapdragon asset b11469
 # (side build "b11469-snapdragon"; matrices/dashboard-npu-v1-android-s26.cells says how it runs),
-# llama-bench -p 1024 -n 256 -o json -ngl 99 -t 6 --device HTP0 (with -ub 1024) | GPUOpenCL — the
-# official wrapper's llama-bench settings; one launch per run, coldRun false (llama-bench repeats
-# in-process after its warmup run), never pooled with the task-prompt rows.
-# Same GGUF files and cooldowns as the weekly protocol rows (matrices/dashboard-protocol1024-v1-android.cells);
+# two launches per run, as the llama.cpp rows of matrices/dashboard-protocol1024-v1-android.cells:
+# llama-bench -p 1024 -n 0 -o json, then llama-bench -p 0 -n 256 -d 1024 -o json, both with
+# -ngl 99 -t 6 --device HTP0 (with -ub 1024) | GPUOpenCL: -t 6 and, on HTP0, -ub 1024 are the official
+# wrapper's llama-bench settings, -ngl 99 is added by this repo (every layer on the device);
+# coldRun false (llama-bench repeats in-process after its warmup run), never pooled with the task-prompt rows.
+# The 2026-10-08 records are one launch per run (llama-bench -p 1024 -n 256 -o json with the same flags).
+# Same GGUF files and cooldowns as the llama.cpp rows of matrices/dashboard-protocol1024-v1-android.cells;
 # the session anchor is the weekly llama.cpp CPU one.
 #   BENCH_CPU_MASK= ./bench matrix matrices/dashboard-npu-protocol1024-v1-android-s26.cells --platform android
 

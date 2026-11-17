@@ -11,8 +11,8 @@ record per process launch; per launch under `logs/`: the worker's stderr, its ti
 
 Mac Studio M4 Max 128 GB (`Mac16,9`), macOS 27.0 (26A428), 16 cores. Session anchor (`mlx-swift`
 Qwen3-0.6B-4bit short-chat, runs=3): warm 561.2 / 565.2 tok/s, cold 560.0, thermal nominal — 2 %
-above the last five Mac sessions' band (527–550 warm). The sitting ran inside a window another
-session (an Xcode-building Core AI lane) had agreed to keep free of builds (14:00–14:15); the
+above the last five Mac sessions' band (527–550 warm). The sitting ran inside a window kept free of
+Xcode builds (14:00–14:15); the
 per-launch foreign-process samples (`provenance.hostBefore/After.others`) show only `cmux`
 (31–35 %), the system `Storage` extension (92 % at launch 2) and a Chrome renderer (23 %).
 `pmset -g therm` reported no CPU speed limit.

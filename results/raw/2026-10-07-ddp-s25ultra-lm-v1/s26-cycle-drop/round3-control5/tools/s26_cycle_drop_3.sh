@@ -9,8 +9,8 @@
 #   C : A again after the rest
 # One run per setting; nothing here is a measurement (phone state not controlled beyond what the log shows).
 set -u
-S=/private/tmp/claude-501/-Users-USER-code-edge-llm-bench/d21f53ca-5923-4da1-b5fc-7e34ecbf7034/scratchpad
-BIN=/private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/lm-latest
+S=<work>
+BIN=<work>/lm-latest
 CA=/Users/USER/code/litertlm-convert/community_accel_work
 L="$CA/s2_npu_sweep/.device_hold"
 NAME=edge-llm-bench/ddp-s25ultra-gemma-gpu-cycle-drop-3

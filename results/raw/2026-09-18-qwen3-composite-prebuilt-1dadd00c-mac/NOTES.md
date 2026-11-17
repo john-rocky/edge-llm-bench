@@ -52,7 +52,7 @@ Reading, against the rule pre-registered in `PREREG.md`:
   is within 0.6 % (prefill) and 1.5 % (decode).
 - (d) TTFT at 31,744 drops 22.6 → 15.6 s (0.6B) and 66.5 → 49.3 s (4B) — prefill time only; the decode of 256 tokens is unchanged.
 - Host: idle at the start (the other session's 8-round matrix and the leaderboard session's benchmark_model had ended; both sessions
-  held further launches until this run's "done"). From 10:2x the leaderboard session ran a DDP upload driver (python, network; agreed
+  held further launches until this run's "done"). From 10:2x the leaderboard session ran a DDP upload driver (python, network;
   as non-compute) during the B round: the B-round legs of the 4B published/control files read 1–3 % below their A-round in prefill
   (ctl_4b_11 472.7 vs 479.2; ctl_4b_9 463.8 vs 479.8) and up to 5 % in decode (ctl_4b_9 42.9 vs 45.2), while the 12-flag arm's B process
   equals its A (643.9 / 643.9). `logs/runlog.txt` samples 1-min load, GPU utilization and any process above 20 % CPU before every leg:

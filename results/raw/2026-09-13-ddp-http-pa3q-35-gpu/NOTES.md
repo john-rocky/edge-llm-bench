@@ -1,12 +1,12 @@
 # 2026-09-13 — the DDP HTTP example with `--use_gpu=true`: `benchmark_model` on `pa3q-35`, GPU
 
-Session `session-233c4731`, project `litert-edge-portal`, location `global`, created by the same
+Session `session-233c4731`, project `<project>`, location `global`, created by the same
 `POST …/sessions` as the CPU session (`../2026-09-13-ddp-http-pa3q-35/`), with `request.json` as the
 body: the CPU body plus one argument, `--use_gpu=true`, different display names, and a `backend=gpu`
 label. Submitted 2026-09-13 16:43:58 JST; the operation's `endTime` is 62 s after its `createTime`
 (07:45:01.96 UTC); the 30-second poll saw `done: true` on its third call at 16:45:04 JST; result
 **PASSED**. Console:
-https://console.cloud.google.com/storage/browser/litert-edge-portal-devicerun/automation/sessions/session-233c4731/
+https://console.cloud.google.com/storage/browser/<bucket>/automation/sessions/session-233c4731/
 Commands, observed output and the reading: `docs/ddp-integration.md`, section "Route C", paragraph
 "GPU on the same route".
 

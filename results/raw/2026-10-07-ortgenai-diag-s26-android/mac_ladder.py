@@ -26,7 +26,7 @@ parent never imports onnxruntime or onnxruntime_genai (versions come from the
 package metadata); each child also calls disable_telemetry_events(); the
 telemetry directory is listed before and after the ladder. (The first version
 imported both packages in the parent without the variable: that parent ran
-ORT with its telemetry on, see ROUND2b.md.)
+ORT with its telemetry on.)
 
 usage: python -I mac_ladder.py <model dir> <out dir> [--lengths 64,256,512,1024]
                                [--profile 1024] [--gen 8] [--max-length 2048]

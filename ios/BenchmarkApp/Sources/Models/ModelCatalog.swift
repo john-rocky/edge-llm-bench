@@ -172,7 +172,7 @@ public enum ModelCatalog {
             hfRepoId: "mlx-community/Qwen3.5-0.8B-MLX-4bit"
         ),
         // PTQ. Since 2026-10-19 the page shows it as the second MLX Gemma 4 row beside the QAT OptiQ
-        // row, named by class (owner decision: the most-downloaded build, and the llama.cpp rows are
+        // row, named by class (the most-downloaded build, and the llama.cpp rows are
         // PTQ too; docs/dashboard-cells-v1.md "MLX Gemma 4 file"). The class is in the row name because
         // it costs quality: PTQ 78% vs QAT 87% on GSM8K on M4 Max (n=100, same protocol).
         ModelInfo(

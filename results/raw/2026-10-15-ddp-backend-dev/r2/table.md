@@ -17,7 +17,7 @@ Values the unit did not give: none (neither DDP record has `provenance.ddpMissin
 
 Model bytes on the unit: the DDP rows' sha is the one the wrapper read on the unit (`provenance.txt`); the p3a-r2 rows' is the sha checked on the phone (`modelShaSource` "device"); the p3a rows' `model.sha256` is the host file's, and the phone's copy then was 66064a4e… (`docs/dashboard-recurring-job-v1.md` 440–462, "Model bytes on the phone (correction, 2026-10-15)").
 
-The differences between the DDP rows and the attached-phone rows are kept in the private lane handoff, not in this repository; every value here is a per-device fact.
+The differences between the DDP rows and the attached-phone rows are kept in notes outside this repo; every value here is a per-device fact.
 
 Standing (`scripts/render_leaderboard.py` latest_session → arm_row, `shallow_cap` with CPU_CAP_MAX_DROP_PCT = 15):
 

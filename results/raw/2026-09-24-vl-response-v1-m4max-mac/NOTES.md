@@ -111,7 +111,7 @@ launches; PROVENANCE.md "Host") — every launch's foreign-process list is in it
 2. **SmolVLM2-500M on Metal (the CLI's WebGPU path) returns only end-of-text tokens** — the same failure the card reports
    for litert-lm 0.15.0, still present on `main@1dadd00c`: the engine runs (TTFT 0.00 s, 46,000
    "tokens/s" prefill, 64 decode steps at 759 tok/s) and prints 64 × `<|endoftext|>`. A textbook
-   benchmark-mode number without a text check (benchmark-mode-needs-a-text-check).
+   benchmark-mode number without a text check.
 3. **Gemma 4 E2B is the one bundle whose GPU arm passes**: 0.41 s per image on Metal (the CLI's WebGPU
    path) vs 1.96 s on the CPU, TTFT 0.07 vs 0.65 s, prefill 4,380 vs 446 tok/s, decode 141 vs 42 tok/s; the GPU arm
    also holds 775 MB resident against 3.1 GB on the CPU (weights stay in the GPU heap). Its 280

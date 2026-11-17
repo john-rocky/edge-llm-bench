@@ -10,7 +10,7 @@ M="$HOME/.cache/huggingface/hub/models--litert-community--Gemma3-1B-IT/snapshots
 b="$1"; label="gemma3-1b-$b-iter2x2-max4096"
 mkdir -p "$S/sessions"; out="$S/sessions/$label.$(date +%s).out"
 RL_TAIL=400 "$C/tools/rl.sh" "billed DDP session: Gemma 3 1B IT int4 $b, both processes --num_iterations=2 (tools/litert_warm2.py), --warmup-runs 0 --max-num-tokens 4096 (prefill 1024 / decode 256 at the defaults)" \
-  "source $V/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal python3 $C/tools/litert_warm2.py benchmark '$M' --ddp --device pa3q-35 --$b --num-iterations 2 --warmup-runs 0 --max-num-tokens 4096" > "$out" 2>&1
+  "source $V/bin/activate && LITERT_GCP_PROJECT='<project>' python3 $C/tools/litert_warm2.py benchmark '$M' --ddp --device pa3q-35 --$b --num-iterations 2 --warmup-runs 0 --max-num-tokens 4096" > "$out" 2>&1
 rc=$(grep -o '^exit=[0-9]*' "$out" | tail -1 | cut -d= -f2)
 sid=$(grep -o "session-[0-9a-f]\{8\}" "$out" | head -1)
 name=$(grep -o "litert-cli-benchmark-[0-9a-f]\{8\}" "$out" | head -1)

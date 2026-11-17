@@ -114,7 +114,7 @@ def phone_state(serial):
     temp = int(m.group(1)) / 10.0 if m else None
     caps = sh(serial, "for c in /sys/devices/system/cpu/cpufreq/policy*; do echo $(cat $c/scaling_max_freq) $(cat $c/cpuinfo_max_freq); done").split()
     capped = any(caps[i] != caps[i + 1] for i in range(0, len(caps) - 1, 2))
-    # the owner's hand settings can change mid-session (developer option "stay
+    # settings made by hand can change mid-session (developer option "stay
     # awake"); record them beside every launch so a change sits next to the numbers
     pw = sh(serial, "dumpsys power 2>/dev/null | grep -E 'mWakefulness=' | head -1")
     wm = re.search(r"mWakefulness=(\w+)", pw)
@@ -354,7 +354,7 @@ def resolve_model(model_id, fname, model_dir):
     """-> (local_path, revision, hf_verified, repo_manifest_path) or None when not staged.
     HF cache snapshot (revision = snapshot dir; the path keeps the .litertlm extension the
     engine sniffs) or VL_MODEL_DIR/<file> with an HF_SHA256SUMS line proving the bytes are
-    the Hub's (hub-bytes-need-lfs-sha-check)."""
+    the Hub's."""
     org, name = model_id.split("/", 1)
     cands = glob.glob(os.path.expanduser(f"~/.cache/huggingface/hub/models--{org}--{name}/snapshots/*/{fname}"))
     mcands = glob.glob(os.path.expanduser(f"~/.cache/huggingface/hub/models--{org}--{name}/snapshots/*/litertlm_manifest.json"))

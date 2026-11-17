@@ -1,8 +1,8 @@
 # D6 DDP backend — design (round 1)
 
 `bench matrix <cells> --ddp <device id> [--campaign NAME] [--dry-run]` → `android/ddp/run_ddp.py` (Route C:
-own request body + static wrapper `android/ddp/ddp_cell.sh` + own LiteRT-LM build). Decisions D1–D11:
-`LANE.md` §1. API facts: SDK 587.0.0 `devicerun_v1alpha_messages.py` (line numbers below).
+own request body + static wrapper `android/ddp/ddp_cell.sh` + own LiteRT-LM build).
+API facts: SDK 587.0.0 `devicerun_v1alpha_messages.py` (line numbers below).
 
 ## Files
 
@@ -63,7 +63,7 @@ own request body + static wrapper `android/ddp/ddp_cell.sh` + own LiteRT-LM buil
   `android/engine-pins.json` (tool fields + `so_files`) before anything else; SHA256SUMS is not read.
 - Model: `hf_hub_download(local_files_only=True)` in a dry run (sha = blob name), normal download + Hub size
   check + sha256 in a real run. Prompt: `prompts/text/<task>.txt`. Wrapper: `android/ddp/ddp_cell.sh`.
-- `gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/{engines/litert-lm/<tag>/<sha256>/<name>,
+- `gs://<bucket>/automation/inputs/edge-llm-bench/{engines/litert-lm/<tag>/<sha256>/<name>,
   models/<sha256>/<file>, prompts/<sha256>/<task>.txt, wrapper/<sha256>/ddp_cell.sh}`; real run: `gcloud storage
   ls <object>` per object, `gcloud storage cp` the missing ones only.
 - Per job: androidPushFiles 11 (limit 50, line 382), androidPullFiles 1 (`.../ddp-out`, limit 10, line 370),

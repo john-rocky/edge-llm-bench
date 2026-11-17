@@ -6,8 +6,8 @@
 # C (output dir), PROJECT, BUCKET, PROTO_DIR can be overridden in the environment.
 set -euo pipefail
 C=${C:-results/raw/2026-09-17-ddp-litert-lm-caiman-35}
-PROJECT=${PROJECT:-litert-edge-portal}
-BUCKET=${BUCKET:-gs://litert-edge-portal-devicerun}
+PROJECT=${PROJECT:-<project>}
+BUCKET=${BUCKET:-gs://<bucket>}
 # PROTO_DIR holds runtime/proto/litert_lm_metrics.proto and runtime/proto/engine.proto from the LiteRT-LM tag that
 # built the binary (git show v0.17.0:runtime/proto/<file> > $PROTO_DIR/runtime/proto/<file>).
 PROTO_DIR=${PROTO_DIR:-$HOME/code/LiteRT-LM}

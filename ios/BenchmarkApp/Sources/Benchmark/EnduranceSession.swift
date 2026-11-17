@@ -175,8 +175,18 @@ public enum EnduranceSession {
         await thermalSampler.start()
 
         await runtime.prepareContext(maxContextTokens: budget)
+        // The engine's default for a conversation: each turn's `<think>` channel content leaves the
+        // KV after its decode (single-turn cells load with the filter off; see the property). The
+        // property is read at load only, so it goes back right after the load, failed or not: a later
+        // single-turn load in the same process keeps its own default.
+        let previousKvChannelFilter = MediaPipeRuntime.filterChannelContentFromKvCache
+        MediaPipeRuntime.filterChannelContentFromKvCache = true
+        let kvChannelFilter = MediaPipeRuntime.filterChannelContentFromKvCache
         let loadStart = CFAbsoluteTimeGetCurrent()
-        try await runtime.loadModel(model) { _ in }
+        do {
+            defer { MediaPipeRuntime.filterChannelContentFromKvCache = previousKvChannelFilter }
+            try await runtime.loadModel(model) { _ in }
+        }
         let loadTime = CFAbsoluteTimeGetCurrent() - loadStart
         let memoryAfterLoad = MemoryMonitor.footprintMB()
         await memorySampler.start()
@@ -275,7 +285,10 @@ public enum EnduranceSession {
             memoryMedianResidentMB: await memorySampler.medianResidentMB,
             memoryFinalResidentMB: await memorySampler.finalResidentMB,
             contextTokensConfigured: budget,
-            harnessStamp: BenchmarkRunner.harnessStamp + "+endurance-r1",
+            // the 2026-09 sessions and this one by default ran with the channel filter on; a session
+            // whose KV kept the `<think>` channel says so
+            harnessStamp: BenchmarkRunner.harnessStamp + "+endurance-r1"
+                + (kvChannelFilter ? "" : "+kv-channel-kept"),
             initialThermalState: ThermalMonitor.describe(await thermalSampler.initialState),
             peakThermalState: ThermalMonitor.describe(await thermalSampler.peakState),
             finalThermalState: ThermalMonitor.describe(await thermalSampler.finalState),

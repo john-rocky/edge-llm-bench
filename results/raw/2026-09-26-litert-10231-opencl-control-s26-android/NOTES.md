@@ -94,6 +94,6 @@ the `RESIZE_BILINEAR` compile error (`../2026-09-26-vl-response-v1-s26-android/N
 finding 2). The effect on the caption becomes visible only with a folded bundle
 (google-ai-edge/litert-torch#1260).
 
-Next: a comment on #10231 with this table, after the owner's go.
+Next: a comment on #10231 with this table.
 
 This directory holds no JSONL, so `scripts/build_summary.py` does not read it.

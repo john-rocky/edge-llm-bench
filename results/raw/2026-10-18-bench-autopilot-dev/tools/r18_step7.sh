@@ -147,7 +147,7 @@ EOF
       [ "$got" = "$2" ] || { say "FAIL the candidate's place hashes $got after putting $1 (want $2)"; return 1; }
       say "OK the candidate's place holds $(basename "$1") ($got)"
     }
-    # the first launch after an install dies in the scene-create watchdog (memory bench-app-install-must-be-release):
+    # the first launch after an install dies in the scene-create watchdog:
     # one throwaway launch first
     t_install=$(date -u +%Y-%m-%dT%H-%M-%S)
     gtimeout --kill-after=30 300 xcrun devicectl device process launch --console --terminate-existing --device "$UDID" "$APPID" \

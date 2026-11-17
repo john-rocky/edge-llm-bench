@@ -89,7 +89,7 @@ def main(campaigns):
         key = (r["device"], r["runtime"], r["task"], r["context_tokens"] or "")
         cells.setdefault(key, {}).setdefault(w, []).append(r)
     # prefill: arm_row's (every run of the pool, cold included = the page's figure) and, on the warm platforms, arm_row
-    # over the warm rows only (the owner's rule reads warm decode and warm prefill); Android runs are all cold
+    # over the warm rows only (the rule reads warm decode and warm prefill); Android runs are all cold
     print("| device | arm | task | file | regime | decode tok/s (n, spread %) | prefill tok/s, all runs | prefill tok/s, rule's regime | peak MB | prompt tok | text check | Δ decode | Δ prefill (rule) | Δ prefill (all runs) | reading |")
     print("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
     for key in sorted(cells):

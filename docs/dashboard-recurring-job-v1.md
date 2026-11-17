@@ -3,7 +3,7 @@
 Status: design + implemented job unit (2026-09-07); first end-to-end run on
 the Galaxy S26 2026-09-08 (campaigns `2026-09-08-dashboard-v1-s26-*`); the
 Core AI arm joined the cells file the same day (§8). The
-scheduler is **enabled on the bench host since 2026-09-08** (owner decision):
+scheduler is **enabled on the bench host since 2026-09-08**:
 `~/Library/LaunchAgents/com.edge-llm-bench.dashboard-v1.plist`, rendered from
 `ops/dashboard-v1/com.edge-llm-bench.dashboard-v1.plist.template`; disable
 with `launchctl bootout gui/$(id -u)/com.edge-llm-bench.dashboard-v1`. Since
@@ -127,7 +127,7 @@ prints `BenchmarkInfo:` on a glog line and an aggregated block (`Aggregated Benc
 median over the iterations) after the iterations; `android/bench/parsers.py` reads both forms
 since 2026-10-15 and never takes a value from the aggregated block.
 
-The 2026-10-19 llama.cpp bump (b8999 → b11721, owner decision that day: the comparison arms are measured
+The 2026-10-19 llama.cpp bump (b8999 → b11721: the comparison arms are measured
 on their current release too) takes the same route with one cells file per platform,
 `matrices/dashboard-llama-b11721-{mac,ios,android}.cells` (the session anchor row and the weekly set's ten
 llama.cpp rows, byte-identical; the Pixel 8a skips the four 4B-class rows by their exclude-on), one
@@ -210,8 +210,8 @@ devices and their per-device conditions are `devices` in the same file.
    no record here is invisible beyond its hold file. An entry with
    `auto: false` is never a candidate (its report line reads `by-hand`): it
    is measured only by `./bench dashboard-job <key>`, by hand, in a window
-   the owner offers. The iPhone 17 Pro is that entry since 2026-10-18 (the
-   owner's daily phone, not a bench device; the bench iPhone is the 18 Pro).
+   the owner offers. The iPhone 17 Pro is that entry since 2026-10-18 (a
+   daily-use phone, not a bench device; the bench iPhone is the 18 Pro).
 3. **Oldest first.** Among the available pending devices, the one whose last
    admitted session is oldest; a device never measured is oldest of all;
    ties fall to `schedule.json` order (m4max, s26, pixel8a, iphone18pro;
@@ -273,7 +273,7 @@ bench host's):
 | Galaxy S26 | any firing; USB, screen on or off (read and stamped per launch), unmasked (`BENCH_CPU_MASK=`) | 3 h 23 min (15 cells × 3 runs, one session) | attached, campaign lock free, no foreign engine process, no frequency cap, ≥28 GB free or it falls back to halves | hold `s2_npu_sweep/.device_hold` |
 | Pixel 8a | any firing; USB, screen on or off (read and stamped per launch), `taskset f0` | 4 h 02 min as three sessions (a 1 h 41, b1 1 h 15, b2 1 h 06) + pushes | as S26; free space below 28 GB → halves with rotation | hold `.device_hold.pixel8a` (+ `.device_hold.<serial>`) |
 | Pixel 11 Pro (entry since 2026-10-27) | any firing (from 05:30 its `release_by` 08:00 leaves no room, §11); USB, screen on or off (read and stamped per launch), `taskset 7c` on every launch (chosen on llama.cpp's anchor row, `devices/pixel-11-pro.md`) | 9 h 47 min as one session (its first sitting, by hand on 2026-10-27: ten model files' first push and two gate re-runs included); since 2026-10-31 the S26's three halves in two sittings, a, then b1 + b2 (§11) | as S26; under `release_by` the halves run whatever the free space (459.1 GB free at registration as the job reads it: no half's floor rotates a copy out) | hold `.device_hold.pixel11pro` (+ `.device_hold.<serial>`), the sibling lanes' hold for this phone too (since 2026-10-31) |
-| iPhone 17 Pro | never by `auto` (`auto: false` since 2026-10-18: the owner's daily phone, not a bench device); by hand, `./bench dashboard-job iphone17pro`, in a window the owner offers — plugged, unlocked (Auto-Lock Never), one hold at a time | 1 h 53 min for 12 cells with every cell HOT-retried; about 25 min more for the E4B cells | attached, `lockState` unlocked, app installed, no `bench_matrix_iphone` running | hold `community_accel_work/.iphone_hold` (+ `.device_hold.iphone`) |
+| iPhone 17 Pro | never by `auto` (`auto: false` since 2026-10-18: a daily-use phone, not a bench device); by hand, `./bench dashboard-job iphone17pro`, in a window the owner offers — plugged, unlocked (Auto-Lock Never), one hold at a time | 1 h 53 min for 12 cells with every cell HOT-retried; about 25 min more for the E4B cells | attached, `lockState` unlocked, app installed, no `bench_matrix_iphone` running | hold `community_accel_work/.iphone_hold` (+ `.device_hold.iphone`) |
 | iPhone 18 Pro (entry since 2026-10-06; the bench iPhone, kept on USB) | the 05:30 firing only (`auto_window` 05:00–08:00), after ≥4 h without a record; unlocked (Auto-Lock Never); since 2026-11-04 one part of its set per firing, given back by 08:00 (`release_by`, §11) | the whole set 4.1 h (2026-11-04) and 4.7 h (2026-10-29), its runs in the job logs; since 2026-11-04 two parts of about 2.2 and 2.0 h ("The iPhone 18 Pro set in two parts", below) | attached, `lockState` unlocked, app installed, no `bench_matrix_iphone` running; `udid` is the UDID `devicectl list devices` prints | hold `~/code/coreai/ondevice/.device_hold` (the iPhone lanes' lockfile) + the iPhone 17 Pro's two names |
 | Galaxy S26 lab unit on the Developer Device Platform (`s26-ddp`, pool m1q-36 of SM-S942U1, since 2026-10-18) | never the firing's device: after its attached sitting (or a firing with none), while `ddp_weekly` is true in `ops/autopilot/switch.json`, at most once in `interval_days` (6) | 2026-10-16 by hand: 12 of its 16 jobs in 151 device-min, 92 min wall in three streams; first job sitting 2026-10-18: 42.9 min, 2 sessions (15.3 + 25.2 min), 193.0 device-min (ROUND5) | doctor.py `check_ddp` (gcloud signed in, huggingface_hub, the pinned engine files); the plan's Device Run sessions within `ddp_max_sessions`; no phone of this host listed or touched | none on the host; billed per device minute (about 200 a week) |
 
@@ -283,7 +283,7 @@ heavy job waits on (`quiet_wait.py`, the guard hook); a lock another lane holds 
 Before that the runner's name-based guard only refused to start, and an export from another lane ran on top of a
 sitting on 2026-10-19 12:39.
 
-Bench work goes last (user 2026-10-22; in the job since 2026-10-28): a free window that any other job wants is busy
+Bench work goes last (in the job since 2026-10-28): a free window that any other job wants is busy
 the same way. With the flock taken, before writing its label, the sitting counts the jobs `quiet_rank.py` counts for
 a window: a window waiter registered in `<lock>.waiters/<pid>` (`quiet_hold.py`), a job registered in
 `<lock>.yield_waiters/<pid>` while it waits for a build slot, and the job a held `<lock>.yield_slots/<i>` names
@@ -450,7 +450,7 @@ the other halves' pushed copies are rotated out first, as between halves). An ex
 retake never fans out into them. First use: the ONNX Runtime GenAI short-chat cells on the
 Galaxy S26 (`docs/dashboard-cells-v1.md`, "ONNX Runtime GenAI arm in the weekly set").
 
-Second use (2026-10-09, owner GO): `matrices/dashboard-npu-v1-android-s26-short.cells`, the session
+Second use (2026-10-09): `matrices/dashboard-npu-v1-android-s26-short.cells`, the session
 anchor and the short-chat rows of the S26's NPU / GPU plan file (llama.cpp's Snapdragon side
 build), as the session `-npu` after the ONNX Runtime one: about 2.1 h, `timeout_hours` 4
 (`docs/dashboard-cells-v1.md`, "NPU and Android GPU rows in the weekly set", has the derivation).
@@ -822,8 +822,7 @@ are the design working as written, and both are gaps:
   (verdict DEVICE, captured cells stand) instead of paying every remaining
   cooldown; the signal is a run of launch failures with no records pulled.
   Done the same day (§5, `DEVICE_LOST.txt`): two consecutive launch
-  refusals end the session; it cannot change a number, so it was not put
-  to the owner first.
+  refusals end the session; it cannot change a number.
 - A run that starts at `serious` or `critical` is marked and re-run once,
   never stopped. `fair` is this phone's charging label and the anchor rule
   handles it; `serious` is a real thermal escalation and the session should
@@ -842,7 +841,7 @@ was not); the 1.7B / 4B Core AI cells fell inside the unreachable window.
 - Qwen3.5 / LFM2.5 stay as disabled placeholders until they are enabled;
   uncommenting them adds cells to the same slots (about +40% device time).
 - iPhone MLX Gemma 4 E4B: the QAT OptiQ row stays `exclude=app-killed-at-model-load-sigkill`; since
-  2026-10-19 the PTQ 4bit build is a second row (owner decision), and it loads on the iPhone 18 Pro
+  2026-10-19 the PTQ 4bit build is a second row, and it loads on the iPhone 18 Pro
   (peak 5,139 MB, `results/raw/2026-10-19-dashboard-v1-iphone18pro-mlx-ptq-r3-ios/`).
 - The second task (1024-prefill / 256-decode / ctx 2048) is scheduled since
   2026-10-06: every sitting measures `long-context-1024-gen256` beside
@@ -850,7 +849,7 @@ was not); the 1.7B / 4B Core AI cells fell inside the unreachable window.
   in the weekly set"; estimated device time per sitting: §3). It roughly
   doubles a sitting; `expected_hours` / `timeout_hours` in `schedule.json`
   carry the estimate until the first sittings replace it.
-- The iPhone 17 Pro is `auto: false` since 2026-10-18 (the owner's daily
+- The iPhone 17 Pro is `auto: false` since 2026-10-18 (a daily-use
   phone, not a bench device; the bench iPhone is the 18 Pro). Its entry stays
   for the by-hand route (`./bench dashboard-job iphone17pro` in a window the
   owner offers), its `udid` now the UDID `devicectl list devices` prints;
@@ -1158,9 +1157,8 @@ week of 2026-10-26: `no device to measure now` at 05:30 on 10-30, 10-31 and
 alone (`auto` lists the iPhone `rerun pending this week`, and the sitting gets
 no part); without one, the one sitting by hand of the 2026-10-31 decision (the
 rerun run alone, as every part is admitted) or the next week's part a, which
-runs the row anyway. Which of the two is chosen on the Sunday morning read of
-the week: the supervising session recommends one, the owner's decision desk
-decides; the job takes neither by itself. A hot morning can defer one or two
+runs the row anyway. Which of the two is chosen by hand on the Sunday morning read of
+the week; the job takes neither by itself. A hot morning can defer one or two
 rows a part (replayed: 2026-11-06's part b one, 2026-11-07's part a two), and
 on 2026-11-07 seven of part a's eight re-runs were flagged again (each retry
 kept with a `FLAGGED.txt` line), so a deferral loses little that the re-run

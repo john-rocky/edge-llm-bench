@@ -62,7 +62,8 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from device_probe import thermal_status, adb  # noqa: E402
 from run_cell import (arm_name, capture_stem, context_prompt, engine_command, launch_env, side_model_path,  # noqa: E402
-                      ortgenai_dev_dir, remove_ortgenai_folder, DEV_DIR, CPU_MASK, ENGINES_DIR)
+                      ortgenai_dev_dir, remove_ortgenai_folder, llama_bench_two_launch, DEV_DIR, CPU_MASK,
+                      ENGINES_DIR, LLAMA_BENCH_PHASES)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SCHEDULE = os.path.join(ROOT, "ops", "dashboard-v1", "schedule.json")
@@ -168,12 +169,21 @@ def launch_records(out_dir, launch):
     return rows
 
 
+def launch_cooldown(cell, round_mode=False):
+    """Seconds between the two launches of one llama-bench run (run_cell.py --launch-cooldown, a
+    llama.cpp native-benchmark row): the cooldown this runner keeps before the row's own launches —
+    COOLDOWN in round mode, else the row's cooldown= or COOLDOWN, as before its payload launch."""
+    return COOLDOWN if round_mode else int(cell["opts"].get("cooldown", COOLDOWN))
+
+
 def run_cell_once(cell, out_dir, runs, rnd=None, launch=None, gate_timed_out=False):
     cmd = [sys.executable, os.path.join(ROOT, "android", "bench", "run_cell.py"),
            "--runtime", cell["runtime"], "--model-id", cell["model_id"],
            "--task", cell["task"], "--runs", str(runs), "--out", out_dir]
     if runs > 1:  # the >=COOLDOWN discipline holds INSIDE a multi-run cell too
         cmd += ["--cooldown", str(COOLDOWN)]
+    if llama_bench_two_launch(cell["runtime"], cell["task"]):  # and between a run's two launches
+        cmd += ["--launch-cooldown", str(launch_cooldown(cell, rnd is not None))]
     if cell["opts"].get("backend"):
         cmd += ["--backend", cell["opts"]["backend"]]
     if cell["opts"].get("engine-build"):
@@ -409,11 +419,12 @@ def round_schedule(anchors, payload, rounds):
             yield rnd, launch, cell
 
 
-def planned_command(cell, own_link=True):
+def planned_command(cell, own_link=True, bench_phase=None):
     """Pure command construction: no downloads, probes, locks or device calls. own_link=False
     keeps a LiteRT-LM cpu / gpu side build on the flat model path (the DDP route: one job = one
     lab unit, so no other build's caches sit beside the copy, and the job command carries no
-    mkdir / ln for run_cell.side_model_path's link)."""
+    mkdir / ln for run_cell.side_model_path's link). bench_phase = one launch of a llama-bench
+    run (run_cell.LLAMA_BENCH_PHASES); None = engine_command's one-process form."""
     opts = cell["opts"]
     filename = opts.get("file")
     if not filename:
@@ -436,7 +447,7 @@ def planned_command(cell, own_link=True):
         cell["runtime"], opts.get("backend"), model, cell["task"], prompt,
         int(budgets[cell["task"]]) if cell["task"] in budgets else None, limit, ctx,
         engine_dir=engine_dir, ynnpack=opts.get("ynnpack") == "1",
-        engine_build=opts.get("engine-build"))
+        engine_build=opts.get("engine-build"), bench_phase=bench_phase)
     affinity = f"taskset {CPU_MASK} " if CPU_MASK else ""
     env = launch_env(engine_dir, opts.get("backend"), cell["runtime"])
     return f"cd {DEV_DIR} && {env} {affinity}{command}", binary, sampler
@@ -465,10 +476,17 @@ def main():
             print(json.dumps({"skip": cell_id(cell), "excludeOn": key, "reason": reason}))
         for rnd, launch, cell in round_schedule(anchors, payload, rounds):
             command, binary, sampler = planned_command(cell)
+            # a llama-bench row's run = two launches (run_cell.LLAMA_BENCH_PHASES): command = the first
+            launches = ([{"phase": phase, "command": planned_command(cell, bench_phase=phase)[0]}
+                         for phase in LLAMA_BENCH_PHASES]
+                        if llama_bench_two_launch(cell["runtime"], cell["task"]) else [])
             print(json.dumps({"round": rnd, "launch": launch, "cell": cell_id(cell, True),
                               "anchor": cell["opts"].get("anchor") == "1",
-                              "command": command, "binary": binary, "sampler": sampler,
+                              "command": launches[0]["command"] if launches else command,
+                              "binary": binary, "sampler": sampler,
                               "cooldownSeconds": COOLDOWN, "gateAutoRetry": False,
+                              **({"launches": launches, "launchCooldownSeconds": launch_cooldown(cell, True)}
+                                 if launches else {}),
                               **({"excludeOn": cell["opts"]["exclude-on"]}
                                  if cell["opts"].get("exclude-on") else {})}))
         return 0

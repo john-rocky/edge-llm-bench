@@ -16,8 +16,8 @@ thermal nominal — inside the band of the last five Mac sessions (527–550 war
 after every launch into the record (`provenance.hostBefore/After.others`): a Chrome
 renderer (23–86 %) during several launches, `syspolicyd` / `spotlightknowledged` /
 `mediaanalysisd` (macOS indexing the freshly written WAVs) on a few — listed per run in
-NOTES.md. `pmset -g therm` reported no CPU speed limit throughout. Another Claude
-session (the Qwen3-TTS usage-recipe lane) confirmed by message at 06:16 that its Mac
+NOTES.md. `pmset -g therm` reported no CPU speed limit throughout. Another
+session (the Qwen3-TTS usage-recipe work) confirmed at 06:16 that its Mac
 timing runs had ended at 06:12; it ran non-timing work (an ASR round-trip check, a
 phone measurement over adb) during this session.
 

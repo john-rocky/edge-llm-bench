@@ -33,7 +33,7 @@ Per run the record carries (metrics):
   loadTimeSeconds          = process start -> request marker (engine creation,
                              weight load / conversion, cache)
   vlTextCheck              = pass | fail — the manifest's keyword rule over the
-                             reply (benchmark-mode-needs-a-text-check)
+                             reply
   memoryPeakResidentMB (ps sampling), coldRun = true (fresh process)
 and conditions.gpuAccelerator = the GPU accelerator the launch's log registered,
 "<name> (<file>)" (added 2026-09-26: the 2026-09-24 GPU records ran on
@@ -86,7 +86,7 @@ DISPLAY = {
 }
 
 
-# Files whose recipe the lane already states elsewhere (quant-label-rule): the
+# Files whose recipe this repo already states elsewhere (quant-label-rule): the
 # Gemma 4 .litertlm carries no recipe word and Google's repo ships no manifest;
 # ios/BenchmarkApp/Sources/Models/ModelCatalog.swift and docs/dashboard-cells-v1.md
 # name it. Non-transferable to any other bundle.

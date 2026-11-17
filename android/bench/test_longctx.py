@@ -278,6 +278,159 @@ class LongContextTests(unittest.TestCase):
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["conditions"]["regime"], "cold-process")
         self.assertNotIn("generatedTokenCount", rows[0]["metrics"])
+        self.assertEqual(rows[0]["metrics"]["harnessStamp"], "2026-08-android-cli-v1")   # not a llama-bench run
+
+    def test_llama_bench_two_launch_commands(self):
+        # a llama.cpp native-benchmark run = the prefill launch, then the decode launch at the
+        # prefill's depth; a side build's flags on both; without a phase the one-process form
+        task, side = "native-benchmark-1024x256", f"{cell.ENGINES_DIR}/b1"
+        want = {
+            (None, None): ("./llama-bench -m MODEL -t 4 -p 1024 -n 0 -o json",
+                           "./llama-bench -m MODEL -t 4 -p 0 -n 256 -d 1024 -o json"),
+            (None, side): (f"{side}/bin/llama-bench -m MODEL -t 4 -p 1024 -n 0 -o json",
+                           f"{side}/bin/llama-bench -m MODEL -t 4 -p 0 -n 256 -d 1024 -o json"),
+            ("gpu", side): (f"{side}/bin/llama-bench -m MODEL -t 6 -p 1024 -n 0 -o json -ngl 99 --device GPUOpenCL",
+                            f"{side}/bin/llama-bench -m MODEL -t 6 -p 0 -n 256 -d 1024 -o json -ngl 99 "
+                            "--device GPUOpenCL"),
+            ("npu", side): (f"{side}/bin/llama-bench -m MODEL -t 6 -p 1024 -n 0 -o json -ngl 99 -ub 1024 --device HTP0",
+                            f"{side}/bin/llama-bench -m MODEL -t 6 -p 0 -n 256 -d 1024 -o json -ngl 99 -ub 1024 "
+                            "--device HTP0"),
+        }
+        self.assertEqual(cell.LLAMA_BENCH_PHASES, ("prefill", "decode"))
+        for (backend, engine_dir), launches in want.items():
+            got = [cell.engine_command("llama.cpp", backend, "MODEL", task, None, None, None, None,
+                                       engine_dir=engine_dir, bench_phase=phase) for phase in cell.LLAMA_BENCH_PHASES]
+            self.assertEqual(tuple(g[0] for g in got), launches)
+            self.assertEqual({g[1:] for g in got}, {("llama-bench", "n/a (llama-bench)", "llama-bench-managed")})
+            one = cell.engine_command("llama.cpp", backend, "MODEL", task, None, None, None, None, engine_dir=engine_dir)
+            self.assertEqual(one[0], launches[0].replace(" -p 1024 -n 0 ", " -p 1024 -n 256 "))
+        with self.assertRaises(ValueError):
+            cell.llama_bench_counts(task, "both")
+
+    def test_llama_bench_launch_test_reads_counts_and_depth(self):
+        def t(p, g, d):
+            return {"n_prompt": p, "n_gen": g, "n_depth": d, "avg_ts": 1.0}
+        check = parsers.llama_bench_launch_test
+        self.assertEqual(check([t(1024, 0, 0)], "prefill", 1024, 256), (t(1024, 0, 0), []))
+        self.assertEqual(check([t(1024, 0, None)], "prefill", 1024, 256), (t(1024, 0, None), []))
+        self.assertEqual(check([t(0, 256, 1024)], "decode", 1024, 256), (t(0, 256, 1024), []))
+        for tests, phase, flag in [
+            ([t(1024, 0, 0), t(0, 256, 0)], "prefill", "prompt-token-count-mismatch"),   # the one-process form
+            ([t(512, 0, 0)], "prefill", "prompt-token-count-mismatch"),
+            ([], "decode", "decode-token-count-mismatch"),
+            ([t(0, 128, 1024)], "decode", "decode-token-count-mismatch"),
+            ([t(0, 256, 0)], "decode", "decode-depth-mismatch"),                         # -d not applied
+            ([t(0, 256, None)], "decode", "decode-depth-mismatch"),
+        ]:
+            self.assertEqual(check(tests, phase, 1024, 256), (None, [flag]))
+
+    @staticmethod
+    def bench_console(tests, policy6_khz=4742400):
+        """A llama-bench launch's console as run_cell.run_once returns it: the sampler's CPU lines
+        (policy6 read at policy6_khz), its memory reads, the engine's JSON, the exit line."""
+        return ("CPUPOLICY policy0 3628800 0 1 2 3 4 5\nCPUPOLICY policy6 4742400 6 7\n"
+                f"VmHWM:\t  400000 kB\nVmRSS:\t  380000 kB\nCpus_allowed_list:\t0-7\nCPUMAX 3628800 {policy6_khz}\n"
+                "===ENGINE_OUTPUT===\n" + json.dumps(tests, indent=2) + "\nEXIT_CODE=0\n")
+
+    def run_mocked_bench(self, consoles, backend=None, thermal=((0, "nominal"),) * 3):
+        """run_cell.main on a llama.cpp native-benchmark-1024x256 row, runs=1, --launch-cooldown 120:
+        consoles = {phase: console} (the launch's command picks it); every device read mocked."""
+        tmp = tempfile.TemporaryDirectory(prefix="llama-bench-unit-")
+        self.addCleanup(tmp.cleanup)
+        folder = Path(tmp.name)
+        model = folder / "model.gguf"
+        model.write_bytes(b"offline fixture")
+        argv = ["run_cell.py", "--runtime", "llama.cpp", "--model-id", "fixture/model", "--task",
+                "native-benchmark-1024x256", "--runs", "1", "--file", str(model), "--out", str(folder),
+                "--serial", "NEVER-CONNECT", "--launch-cooldown", "120"]
+        if backend:
+            argv += ["--backend", backend, "--engine-build", "b1"]
+
+        def launch(cmd, *rest, **kw):
+            return consoles["decode" if " -d 1024 " in cmd else "prefill"], 0, 371.0
+
+        with patch.object(sys, "argv", argv), patch.dict(os.environ), \
+             patch.object(cell, "ensure_model", return_value=("/fixture/model.gguf", str(model))), \
+             patch.object(cell, "observed_engine", return_value=("b11721", "fixture-sha")), \
+             patch.object(cell, "adb", return_value="present"), \
+             patch.object(cell, "device_info", return_value={"systemName": "Android", "modelIdentifier": "OFFLINE-FIXTURE"}), \
+             patch.object(cell, "thermal_status", side_effect=list(thermal)), \
+             patch.object(cell, "screen_conditions", return_value={"screen": "on-usb", "screenSource": "measured"}), \
+             patch.object(cell, "battery", return_value={"batteryLevel": 0.9, "batteryState": "charging", "temperatureC": 31.0}), \
+             patch.object(cell, "wait_cpu_uncapped", return_value=False) as cap_wait, \
+             patch.object(cell.time, "sleep") as sleep, \
+             patch.object(cell, "run_once", side_effect=launch) as run:
+            os.environ.pop("BENCH_SESSION_DEADLINE", None)
+            rc = cell.main()
+        rows = [json.loads(p.read_text()) for p in sorted(folder.glob("*.json"))]
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(cap_wait.call_count, 2)                     # the cpu-cap wait before each launch
+        self.assertEqual([c.args for c in sleep.call_args_list], [(120,)])   # the cooldown between them
+        return rc, rows[0], [c.args[0] for c in run.call_args_list], (folder / rows[0]["provenance"]["rawLog"]).read_text()
+
+    def bench_test(self, p, g, d, rate, **fields):
+        return {"n_prompt": p, "n_gen": g, "n_depth": d, "avg_ts": rate, "stddev_ts": 0.5, **fields}
+
+    def test_llama_bench_run_is_two_launches_flat(self):
+        # the flat build: prefill rate from the prefill launch, decode rate from the decode launch
+        # at depth 1024, named in the harness stamp; both commands and each launch's cap reads in
+        # the record; the decode launch's capped policy flags the run; its start off nominal makes
+        # the run's start state
+        consoles = {"prefill": self.bench_console([self.bench_test(1024, 0, 0, 495.5)]),
+                    "decode": self.bench_console([self.bench_test(0, 256, 1024, 151.25)], policy6_khz=4000000)}
+        rc, row, cmds, log = self.run_mocked_bench(consoles, thermal=[(0, "nominal"), (1, "light"), (1, "light")])
+        self.assertEqual(rc, 0)   # a cap and a start state are conditions, not engine failures (cpu-cap-rule)
+        self.assertEqual(cmds, ["./llama-bench -m /fixture/model.gguf -t 4 -p 1024 -n 0 -o json",
+                                "./llama-bench -m /fixture/model.gguf -t 4 -p 0 -n 256 -d 1024 -o json"])
+        m, c = row["metrics"], row["conditions"]
+        self.assertEqual((m["promptTokensPerSecond"], m["promptTokenCount"], m["decodeTokensPerSecond"],
+                          m["generatedTokenCount"], m["coldRun"]), (495.5, 1024, 151.25, 256, False))
+        self.assertEqual(m["harnessStamp"], "2026-08-android-cli-v1+llama-bench-d1024")
+        self.assertEqual([(x["phase"], x["engineCommand"]) for x in c["launches"]], list(zip(("prefill", "decode"), cmds)))
+        self.assertEqual(c["launches"][1]["cooldownBeforeSeconds"], 120)
+        self.assertNotIn("cooldownBeforeSeconds", c["launches"][0])
+        self.assertEqual([x["cpuMaxFreqMHz"]["policy6"]["min"] for x in c["launches"]], [4742.4, 4000])
+        self.assertEqual([bool(x["cpuCapped"]) for x in c["launches"]], [False, True])
+        self.assertEqual([x["llamaBenchTests"][0]["n_depth"] for x in c["launches"]], [0, 1024])
+        self.assertEqual(c["cpuMaxFreqMHz"]["policy6"], {"min": 4000, "hw": 4742.4, "cpus": "6-7"})
+        self.assertEqual(c["cpusAllowedList"], "0-7")
+        self.assertIn("cpu-capped", c["protocolFlags"])
+        self.assertEqual((m["initialThermalState"], c["thermalRawStatus"]), ("light", 1))
+        self.assertEqual([x["initialThermalState"] for x in c["launches"]], ["nominal", "light"])
+        self.assertNotIn("engineCommand", c)   # the flat build's record names its commands per launch
+        self.assertEqual(log.count("===ENGINE_OUTPUT==="), 2)
+        self.assertTrue(log.startswith("===LAUNCH 1/2 prefill===\n") and "\n===LAUNCH 2/2 decode===\n" in log)
+
+    def test_llama_bench_run_is_two_launches_side_build(self):
+        # a GPU side build: its flags and env on both launches, the device read from both JSONs
+        dev = {"devices": "GPUOpenCL", "backends": "OpenCL", "gpu_info": "Adreno", "n_gpu_layers": 99,
+               "flash_attn": -1, "n_ubatch": 512}
+        consoles = {"prefill": self.bench_console([self.bench_test(1024, 0, 0, 900.0, **dev)]),
+                    "decode": self.bench_console([self.bench_test(0, 256, 1024, 40.0, **dev)])}
+        rc, row, cmds, _ = self.run_mocked_bench(consoles, backend="gpu")
+        self.assertEqual(rc, 0)
+        side = f"{cell.ENGINES_DIR}/b1"
+        self.assertEqual(cmds, [f"{side}/bin/llama-bench -m /fixture/model.gguf -t 6 -p 1024 -n 0 -o json -ngl 99 "
+                                "--device GPUOpenCL",
+                                f"{side}/bin/llama-bench -m /fixture/model.gguf -t 6 -p 0 -n 256 -d 1024 -o json -ngl 99 "
+                                "--device GPUOpenCL"])
+        c, env = row["conditions"], cell.launch_env(side, "gpu", "llama.cpp")
+        self.assertEqual(row["runtime"], "llama.cpp-gpu")
+        self.assertEqual([x["engineCommand"] for x in c["launches"]], [f"{env} {cmd}" for cmd in cmds])
+        self.assertEqual(c["engineCommand"], f"{env} {cmds[0]} ; {env} {cmds[1]}")
+        self.assertEqual(len(c["backendRegistered"]), 1)
+        self.assertNotIn("protocolFlags", c)
+        self.assertEqual((row["metrics"]["promptTokensPerSecond"], row["metrics"]["decodeTokensPerSecond"]), (900.0, 40.0))
+        self.assertEqual(row["metrics"]["harnessStamp"], "2026-08-android-cli-v1+llama-bench-d1024")
+
+    def test_llama_bench_decode_off_its_depth_gives_no_decode_rate(self):
+        consoles = {"prefill": self.bench_console([self.bench_test(1024, 0, 0, 495.5)]),
+                    "decode": self.bench_console([self.bench_test(0, 256, 0, 190.0)])}
+        rc, row, _, _ = self.run_mocked_bench(consoles)
+        self.assertEqual(rc, 1)
+        self.assertEqual(row["conditions"]["protocolFlags"], ["decode-depth-mismatch"])
+        self.assertNotIn("decodeTokensPerSecond", row["metrics"])
+        self.assertEqual(row["metrics"]["promptTokensPerSecond"], 495.5)
 
     def test_report_reads_android_layout_and_preserves_regimes(self):
         report = load_module("longctx_report", ROOT / "scripts/longctx_ab_report.py")

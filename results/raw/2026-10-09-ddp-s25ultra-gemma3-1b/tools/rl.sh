@@ -6,7 +6,7 @@ note="$1"; shift
 tmp=$(mktemp)
 bash -c "$*" > "$tmp" 2>&1
 rc=$?
-sed "s#$HOME#/Users/USER#g; s#majimadaisuke#USER#g" "$tmp" >> "$LOG"
+sed "s#$HOME#/Users/USER#g; s#$(id -un)#USER#g" "$tmp" >> "$LOG"
 { echo "exit=$rc"; echo "### END $(TZ=Asia/Tokyo date '+%H:%M:%S JST')"; } >> "$LOG"
 tail -${RL_TAIL:-40} "$tmp"; echo "exit=$rc"
 rm -f "$tmp"

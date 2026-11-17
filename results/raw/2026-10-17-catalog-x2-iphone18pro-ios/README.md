@@ -22,7 +22,7 @@ a 256-token answer, three allocations, paired rounds, cold and warm read apart.
   (24B5099f), wired USB to the bench Mac, unlocked (Auto-Lock Never), external power connected; the battery sat at its
   80 % charge limit throughout (`battery-start.json` / `battery-end.json` of each sitting: `BatteryCurrentCapacity`
   80, `ExternalConnected` true, `BatteryIsCharging` false; the records stamp `batteryState: charging`, `batteryLevel`
-  0.8). The bench iPhone by the device policy (the 17 Pro is the user's daily phone and was not attached); this is the
+  0.8). The bench iPhone (the 17 Pro is a daily-use phone and was not attached); this is the
   18 Pro's own column in the catalog, not a continuation of the 17 Pro rows.
 - App: `ios/BenchmarkApp` (BenchmarkApp, bundle `com.example.CoreMLLLMChat` 0.2.0, Release, team MFN25KNUGJ, the two
   increased-memory entitlements), built from this commit's `Sources/` in the build tree `.build/dd-ios-0180-18pro/src`

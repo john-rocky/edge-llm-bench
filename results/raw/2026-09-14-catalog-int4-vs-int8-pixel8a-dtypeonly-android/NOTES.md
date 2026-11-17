@@ -15,7 +15,7 @@ e306445: ratio 1.059 vs the newest b8999 session; payload re-judged 1.069), ther
 runs=3 interleaved per round, 07:54–09:14. Cells: `matrices/catalog-int4-vs-int8-pixel8a-dtypeonly.cells`, profile
 pair `…-dtypeonly-profile.cells`.
 
-**Prediction written before the sitting** (handoff item 1): with the graph held constant, the int8 file decodes
+**Prediction written before the sitting**: with the graph held constant, the int8 file decodes
 about 12 % faster than the int4 file on this phone (the 2026-09-13 GEMV difference, 11.8 ms/step, on an equal
 attention/KV graph). **Outcome: the opposite** — see the profile pair; and the int8 file's text is garbage on this
 path, which is what sitting 2 (`…-dtypeonly-norope-android`) fixes.

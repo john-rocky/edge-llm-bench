@@ -1,9 +1,9 @@
 # 2026-10-06-dashboard-v1-m4max-protocol1024-mac — notes
 
 Protocol rows = LiteRT-LM's own `benchmark()` entry point: prefill forced to exactly 1024 tokens
-with no prompt, decode 256, context 2048 (`methodology/agreed-protocol-gemma4.md`), task
+with no prompt, decode 256, context 2048 (`methodology/protocol-gemma4.md`), task
 `native-benchmark-1024x256`, on the **Mac Studio M4 Max** (`Mac16,9`, macOS 27.0 26A428).
-yardstick flavor=full, harness `2026-07-30-agreed-protocol-r4`, vendored LiteRT-LM v0.16.0
+yardstick flavor=full, harness `2026-07-30-protocol-r4`, vendored LiteRT-LM v0.16.0
 (`CLiteRTLM_mac.xcframework.zip@v0.16.0 sha256:3ae6c876…`), GPU backend (the yardstick default),
 `--litert-native-benchmark 1024x256 --context-tokens 2048`.
 

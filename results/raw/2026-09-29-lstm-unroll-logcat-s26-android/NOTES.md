@@ -107,6 +107,6 @@ in the window was overwritten.
   options it passes are lines 379–387.
 - `SHA256SUMS` — the pushed files (as on the phone), the public logs and the scripts.
 
-Next: a comment on #10300 with the window excerpt and the options answer, after the owner's go.
+Next: a comment on #10300 with the window excerpt and the options answer.
 
 This directory holds no JSONL, so `scripts/build_summary.py` does not read it.

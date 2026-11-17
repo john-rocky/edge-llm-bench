@@ -11,13 +11,13 @@
 #   file  = E2, the local export Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm (sha256 fbbf0657...5b79,
 #           343,466,928 B; litert-torch main 0a81bf6f3 on 2026-10-13, --quantization_recipe=dynamic_wi4b32_afp32
 #           --apply_gpu_composites=True --cache_length=32768 --prefill_lengths=128,1024), not on the Hub: the file of
-#           matrices/lu1020-q06-gpu-a-android.cells and lu1020-r4-q06-e2-ynn-android.cells (the same name, so the same
+#           matrices/oct20-q06-gpu-a-android.cells and oct20-r4-q06-e2-ynn-android.cells (the same name, so the same
 #           quant label, android/bench/run_cell.py ANDROID_QUANT_LABELS), here an APFS clone in the lane's directory.
 #           Its graph's KV is the export's 32,771-entry placeholder; the engine allocates --max_num_tokens when the
 #           flag is set (LiteRT-LM runtime/engine/engine_settings.cc: the metadata or the default formula only when it
 #           is 0) and logs magic_number=32771, target_number=<the allocation> at load (E2's GPU rows, 2026-10-20).
 #   build = the side build head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly (android/engine-pins.json; the build of
-#           the YNNPACK rows on the dashboard, matrices/lu1020-q06-cpu-android.cells), in
+#           the YNNPACK rows on the dashboard, matrices/oct20-q06-cpu-android.cells), in
 #           /data/local/tmp/llmbench/engines/<that tag>/; the flat pinned v0.18.0 build is not touched. ynnpack=1 =
 #           --enable_ynnpack=true (arm litert-lm-cpu-ynnpack); the row without it is the XNNPACK arm (litert-lm-cpu).
 #   rows  = native-benchmark-1024x256 (litert_lm_advanced_main --benchmark, 1,024 prefill and 256 decode tokens) at
@@ -27,7 +27,7 @@
 #           arm, model id and task only (android/bench/run_cell.py capture_stem, android/bench/run_campaign.py
 #           cell_id: a native- task keeps the legacy name, without the context), so one id for the five allocations
 #           would make the sitting's gate judge them as one capture; one id per allocation also keeps E2's 2,048 rows
-#           of lu1020-r4-q06-e2-ynn-android.cells (the page's CPU table) apart, and each allocation its own pushed
+#           of oct20-r4-q06-e2-ynn-android.cells (the page's CPU table) apart, and each allocation its own pushed
 #           copy, engine cache and firstEver marker on the phone. Not page rows of the main sections.
 # Estimate: one sitting about 60 min (job phase A about 11 min, the anchor row 3 runs about 7 min, 18 launches of
 # about 2.25 min each with the 120-s cooldown; the 2026-10-22 S26 sitting of 7 cells ran 57.9 min). First row = the

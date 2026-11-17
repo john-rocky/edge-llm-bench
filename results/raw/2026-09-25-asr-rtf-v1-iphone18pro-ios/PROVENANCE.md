@@ -16,7 +16,7 @@ devicectl `C7A74909-7573-5A0F-9201-F7D03DC811EF`, UDID `00008160-000038CA02C0003
 charging throughout. First measurement of any kind on this phone (a new column: its rows do
 not continue the iPhone 17 Pro's). No lock file exists for the iPhone runner; the probe
 list of the device-busy rule was run before the first launch (no other driver, no hold
-file, the two other sessions that could hold a phone answered by message).
+file).
 `ProcessInfo.thermalState` before and after every launch, the battery level and state and
 low-power mode are in every record (`conditions.thermalInitial/Final`, `device.*`).
 

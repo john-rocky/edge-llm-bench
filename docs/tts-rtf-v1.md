@@ -20,8 +20,8 @@ own stage clocks (`ttsPrefillSeconds` / `ttsTalkerSeconds` / `ttsMtpSeconds` /
 `ttsCodecSeconds`) and its own RTF (`ttsPipelineRealTimeFactor`, stage clocks /
 audio — the number the model card quotes) ride along.
 
-**Audio check.** A rate whose output nobody listened to is not a measurement
-(benchmark-mode-needs-a-text-check, third face). Every record carries the
+**Audio check.** A rate whose output nobody listened to is not a measurement.
+Every record carries the
 output's round trip: the 24 kHz WAV, resampled to 16 kHz PCM16 with macOS
 `afconvert`, transcribed by the asr-rtf-v1 instrument (LiteRT-LM `omni/asr`
 `asr_runner` at `main@1dadd00c`, CPU, the engine defaults) with the first

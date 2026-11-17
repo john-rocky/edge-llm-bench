@@ -48,7 +48,7 @@ BEGIN = "<!-- BEGIN GENERATED: scripts/render_leaderboard.py -->"
 END = "<!-- END GENERATED: scripts/render_leaderboard.py -->"
 HEADLINE_TASK = "short-chat"
 SPREAD_FLAG = 5.0  # % — same bar the regression differ uses
-# cpu-cap-rule line (owner decision 2026-10-08, methodology/fairness-rules.md §13): a run
+# cpu-cap-rule line (2026-10-08, methodology/fairness-rules.md §13): a run
 # flagged cpu-capped still pools, counted and marked, while the clock ceiling of the CPUs
 # the engine ran on fell by at most this many percent (summary cpu_cap_drop_pct: the
 # largest (1 - min / hw) x 100 over their cpufreq policies); a deeper cap keeps it out of
@@ -58,7 +58,7 @@ SPREAD_FLAG = 5.0  # % — same bar the regression differ uses
 # short-chat runs and 49-58 % in every 1K launch (the prime cluster, policy6, fell
 # furthest in each).
 CPU_CAP_MAX_DROP_PCT = 15
-# cpu-cap-rule, the accelerator arms (owner decision 2026-10-08, methodology/fairness-rules.md
+# cpu-cap-rule, the accelerator arms (2026-10-08, methodology/fairness-rules.md
 # §13): the Android arms whose engine places the model on the NPU or the GPU. A run of theirs
 # flagged cpu-capped pools, counted and marked with its fall, whatever the fall; the line above
 # holds for every other arm (the CPU arms llama.cpp, litert-lm-cpu, executorch-xnnpack,
@@ -82,18 +82,18 @@ CPU_CAP_EXEMPT_ARMS = frozenset({
 })
 # cold-warm-split, the headline regime per platform (moved here from render_dashboard on
 # 2026-11-06, so that arm_row reads prefill and TTFT by it as the surfaces read decode):
-# Apple lanes have in-process warm runs, the Android and Windows CLIs compare fresh-process cold
+# the Apple harnesses have in-process warm runs, the Android and Windows CLIs compare fresh-process cold
 # runs — the column header says which
 REGIME = {"ios": "warm", "mac": "warm", "android": "cold", "windows": "cold"}
 # the protocol task family (native-benchmark-<P>x<D>: one launch of an engine's own benchmark
-# entry; methodology/agreed-protocol-gemma4.md, docs/dashboard-cells-v1.md)
+# entry; methodology/protocol-gemma4.md, docs/dashboard-cells-v1.md)
 PROTOCOL_TASK_PREFIX = "native-benchmark-"
 
 
 def headline_regime(plat, task, a):
     """The regime cell `task` on `plat` headlines from arm_row result `a` (cold-warm-split: one
     regime per number, never mixed). A text-task cell reads its platform's (REGIME). A protocol
-    cell reads the protocol's regime, warm (methodology/agreed-protocol-gemma4.md: warm
+    cell reads the protocol's regime, warm (methodology/protocol-gemma4.md: warm
     for the side-by-side, cold reported separately as first use), wherever its session has warm
     runs, on every platform and for every arm alike — LiteRT-LM benchmark() calls 2..N of a
     launch, Core AI trials 1..N (the trials llm-benchmark averages), llama-bench's in-process
@@ -131,7 +131,7 @@ _VERSION_TAG = re.compile(r"^v?\d+(\.\d+)+$")
 
 def latest_session(rows):
     """Rows of the newest capture SESSION for one (device, runtime, model) cell —
-    cross-session pooling is invalid (iphone-session-variance). A session is a
+    cross-session pooling is invalid. A session is a
     campaign dir (one sitting), not a calendar date: two sittings on one day
     must not pool (2026-08-24, a fair-thermal morning + a nominal evening
     retake of MiniCPM produced a fictitious pooled warm median under the old

@@ -635,7 +635,7 @@ def main():
         return verdict, reason, details["anchors"][0], details
 
     # the 2026-09-13 Pixel 8a numbers: the sitting on the pin b8999 (median 28.2),
-    # another lane's session two days earlier on b10903 (55.0), the last b8999
+    # another job's session two days earlier on b10903 (55.0), the last b8999
     # session before it (29.7)
     mine = anchor_rows(own, (29.1, 28.2, 25.9), "b8999", minutes=0)
     lane = anchor_rows("results/raw/lane-b10903-android", (55.0, 55.0, 55.0), "b10903", days=2)
@@ -724,7 +724,7 @@ def main():
     attached("FAKE-S")
     engines = os.path.join(state, "engines.txt")
     real_pgrep = dj.pgrep
-    dj.pgrep = lambda pattern: []   # host drivers of other lanes are not this test's business
+    dj.pgrep = lambda pattern: []   # host drivers of other jobs are not this test's business
     # the base attempt() picks today: the first -r<n> whose anchor phase is not on disk (a real S26 sitting of
     # the day has its dirs in results/raw: 2026-11-02 JST made this read -r2)
     base, n = f"{datetime.date.today().isoformat()}-dashboard-v1-s26", 1
@@ -1552,7 +1552,7 @@ if a[:1] == ["matrix"]:
 sys.exit(0)
 '''
 
-# the sibling lane's hold tool as the job calls it (hold_cli.py acquire <path> <script> <pid> | release <path> <pid>)
+# the shared hold tool as the job calls it (hold_cli.py acquire <path> <script> <pid> | release <path> <pid>)
 FAKE_HOLD_CLI = '''#!/usr/bin/env python3
 import json, os, sys
 cmd, path = sys.argv[1], sys.argv[2]

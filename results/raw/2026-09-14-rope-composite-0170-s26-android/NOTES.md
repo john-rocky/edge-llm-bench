@@ -50,7 +50,7 @@ first APK pass), `diag/driver_control_v0160.log` (7–8), `diag/driver_apk.log` 
 ## Engine provenance (0.17.0)
 
 - **The v0.17.0 GitHub release ships no Android binary** (assets 2026-09-09: `CLiteRTLM.xcframework.zip`,
-  `CLiteRTLM_mac.xcframework.zip`, `litert_lm_main.macos_arm64`) — the handoff's "release android_arm64 binary" did
+  `CLiteRTLM_mac.xcframework.zip`, `litert_lm_main.macos_arm64`) — the planned "release android_arm64 binary" did
   not exist. So: `LITERTLM_TAG=v0.17.0 android/scripts/build_litert_lm_main.sh` (bazel 7.6.1 via bazelisk, NDK
   29.0.13113456, `--config=android_arm64 --enable_platform_specific_config`, ~7 min on the M4 Max from the existing
   `~/.cache/apple-silicon-llm-bench/litert-lm-v0.17.0` clone at `git describe` = `v0.17.0`, commit 945edf3) →
@@ -77,7 +77,7 @@ first APK pass), `diag/driver_control_v0160.log` (7–8), `diag/driver_apk.log` 
   relabeled re-run.
 - **`--max_output_tokens` and the thought channel**: the 0.17.0 CLI does not print the thought channel at all (the
   v0.16.0 CLI printed `</think>`), and neither CLI counts it against the 128 budget (536–909 generated tokens for
-  the thinking cells); the Kotlin API counts it (128 on the dot, the reply cut inside `<thought>`). Handoff item 9.
+  the thinking cells); the Kotlin API counts it (128 on the dot, the reply cut inside `<thought>`).
 - **`pkill -f litert_lm_main` inside `adb shell "…"`** kills the shell running the command line (its own args
   match) — use `pkill -x`.
 - The CPU frequency cap on this phone moved during the sitting (cpu0 `scaling_max_freq` 3628800 at 14:51 →

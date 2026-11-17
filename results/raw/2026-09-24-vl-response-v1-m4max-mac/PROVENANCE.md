@@ -73,7 +73,7 @@ copied to this campaign's `SHA256SUMS`).
 The released macOS binaries carry no image flags (`litert_lm_main.macos_arm64` of the
 v0.17.x releases: four flags; the GitHub releases ship only the two xcframework zips), so
 this is a bump for measurement; `environment.lock.json`'s v0.16.0 pin for the yardstick's
-text cells is untouched (bump-engine-for-comparison). Every record stamps
+text cells is untouched. Every record stamps
 `engineVersion: main@1dadd00c` and the binary's sha256 in `engineArtifact`.
 
 ## Models (sha256 in every record's `model.sha256`; `hfRevision`)

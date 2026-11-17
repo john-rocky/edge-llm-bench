@@ -2,7 +2,7 @@
 
 8 cells = `fixtures/slice.cells` (= `matrices/dashboard-text-v1.cells` lines 67, 68, 70, 71, 76, 77, 79, 80). Rows per cell: the DDP akita-35 runs of this round (1K: iteration 1 cold and 2 warm as separate rows), the attached Pixel 8a's 2026-10-15 v0.18.0 runs, the DDP m1q-36 runs, the attached Galaxy S26's latest session of the cell (engine in its column). Every value is the record's own value (record path in the last column; the records as committed, read from a checkout of the git index); `cpu-capped` and its drop % are the summary columns `cpu_capped` / `cpu_cap_drop_pct` (`rows.csv`: the tabled rows plus the two r2 smoke rows of `Pixel 8a (DDP akita-35)`, which its standing reads). "engine cache (raw log)" = the cache lines of the record's raw log: XNNPACK weight cache "build for" / "loaded from", GPU "Initialized InferenceContext from serialized data" count / "Initializing OpenCL-based API from serialized data" count. Standing and medians: `render_leaderboard.arm_row`; % computed by a script from those values. DDP device names in the summary: `Pixel 8a (DDP akita-35)`, `SM-S942U1 (DDP m1q-36)`.
 
-The differences between the DDP rows and the attached-phone rows are kept in the private lane handoff, not in this repository; every value here is a per-device fact.
+The differences between the DDP rows and the attached-phone rows are kept in notes outside this repo; every value here is a per-device fact.
 
 ## 1. Qwen3-1.7B short chat, CPU (`Qwen3_1.7B.litertlm`)
 

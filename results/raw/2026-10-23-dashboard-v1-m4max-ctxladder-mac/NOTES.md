@@ -9,5 +9,5 @@ the job took no window of its own.
 The context ladder that followed in the same window (the HEAD cpu_only CLI, the cells file's header) ran out of the
 window at 07:18:18 JST after 36 of its 40 launches (the fourth launch of the 2,048 and 4,096 allocations missing). A
 ladder is read within one sitting, so none of its launches is a record: they are not imported here, and their consoles
-stay in the lane's notes. The ladder is the next sitting's, `2026-10-23-dashboard-v1-m4max-ctxladder-s2-mac`, whose
+stay in notes outside this repo. The ladder is the next sitting's, `2026-10-23-dashboard-v1-m4max-ctxladder-s2-mac`, whose
 admission took this dir as its reference; the two sittings are committed together (the reference chain).

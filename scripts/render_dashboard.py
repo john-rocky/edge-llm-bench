@@ -50,7 +50,7 @@ What this adds over LEADERBOARD.md:
     never mixed (cold-warm-split).
 
 Every output is LOCAL and gitignored: the rendered table is cross-runtime
-standings, which this repo does not publish (CLAUDE.md, owner decision
+standings, which this repo does not publish (CLAUDE.md, since
 2026-08-27). Paste it where it is needed or read it here.
 """
 import argparse
@@ -522,7 +522,7 @@ def render_md(out_cells, cells_path, stale_days, today, include_cpu_capped=False
              f"ran under a shallower cap, at most {CAP_LINE} below the maximum: they count, "
              "and the number says so. `◇ cpu-capped, counted (accelerator arm), max drop D % "
              "(k of N runs)` = the same on an Android NPU or GPU arm, whose capped runs count "
-             "whatever the fall (the CPUs carry the engine's host side there; owner decision "
+             "whatever the fall (the CPUs carry the engine's host side there; since "
              "2026-10-08); D = the largest fall among them. "
              "Protocol cells (`native-benchmark-*`, each engine's own benchmark entry: a "
              "launch's first call cold, the rest warm) read the protocol's regime, the "

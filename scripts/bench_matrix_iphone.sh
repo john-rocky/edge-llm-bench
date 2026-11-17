@@ -67,7 +67,7 @@ DEFAULT_RUNS="${RUNS:-4}"
 BASE_COOLDOWN="${BASE_COOLDOWN:-100}"                # s between cells (fairness cold-warm-split)
 THERMAL_COOLDOWN="${THERMAL_COOLDOWN:-240}"          # s before the one thermal re-run
 # `fair` is this phone's charging label (the anchor rule handles it); `serious` /
-# `critical` is a real escalation. Owner decision 2026-09-09: pause, capped —
+# `critical` is a real escalation. Since 2026-09-09: pause, capped —
 # a capture that saw serious/critical waits SERIOUS_COOLDOWN before its retry
 # and again before the next cell, instead of the 240 s, and the run goes on.
 SERIOUS_COOLDOWN="${SERIOUS_COOLDOWN:-600}"

@@ -353,7 +353,7 @@ class Dashboard(unittest.TestCase):
         self.assertEqual(render_dashboard.cap_mark(dict(c, cpu_capped_counted="0/3")), "")
 
     def test_an_accelerator_arm_counts_a_deep_cap(self):
-        # the accelerator arms (owner decision 2026-10-08, render_leaderboard.CPU_CAP_EXEMPT_ARMS):
+        # the accelerator arms (2026-10-08, render_leaderboard.CPU_CAP_EXEMPT_ARMS):
         # a Galaxy S26 llama.cpp NPU cell whose three runs fell as the arm's protocol launches
         # of 2026-10-08 did, both clusters capped past the line (53.0-58.3 %) -> the three runs
         # pool, counted, and the number carries the largest drop; the arm decides, not the row

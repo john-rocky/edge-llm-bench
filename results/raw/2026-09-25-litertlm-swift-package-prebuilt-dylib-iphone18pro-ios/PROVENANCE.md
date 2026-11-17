@@ -129,8 +129,8 @@ simple terms…") at 174 tok/s decode on the one cold run (a first run that star
 thermal `fair` after the ASR session read 174 tok/s too and was set aside by the runner's
 thermal gate; both kept in `controls/`); the 11-flag file (`p1024_06b_11flags`, `bd685768…`, the two
 composites `odml.sdpa_transposed` + `odml.qkv_norm_rope` on top) reports 212 tok/s but
-decodes garbage ("kếasurableoubtedly rolesentialstag ByVal更是客户提供…") — the rate is void
-(benchmark-mode-needs-a-text-check), and it is the iPhone counterpart of the Mac finding that
+decodes garbage ("kếasurableoubtedly rolesentialstag ByVal更是客户提供…") — the rate is void,
+and it is the iPhone counterpart of the Mac finding that
 the composite kernels of the v0.17.0 generation do not run these files correctly (on the Mac
 the OSS v0.17.0 GPU path refused the kernels; the built-in iOS accelerator runs them and
 produces wrong text). So on the released framework the composite files have no valid iPhone
