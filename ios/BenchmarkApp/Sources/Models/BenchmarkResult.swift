@@ -311,6 +311,7 @@ public struct Metrics: Codable, Sendable {
     public let memoryAtTotalPeak: MemoryBreakdown?
     public let memoryOverlapQueries: Int?
     public let memoryOverlapQueryMS: Double?
+    public let memoryOverlapFailedQueries: Int?
     /// The context (KV) budget this run was actually given, i.e. the value handed to
     /// `LLMRuntime.prepareContext`. Either the runner's prompt+output estimate or the
     /// `--context-tokens` override. Recorded because it is not derivable from anything
@@ -465,6 +466,7 @@ public struct Metrics: Codable, Sendable {
         self.memoryAtTotalPeak = memoryAccounting?.atTotalPeak
         self.memoryOverlapQueries = memoryAccounting?.overlapQueries
         self.memoryOverlapQueryMS = memoryAccounting?.overlapQueryMS
+        self.memoryOverlapFailedQueries = memoryAccounting?.overlapFailedQueries
     }
 }
 
@@ -507,6 +509,7 @@ public struct NativeBenchmarkRecord: Encodable, Sendable {
         public let memoryAtTotalPeak: MemoryBreakdown?
         public let memoryOverlapQueries: Int?
         public let memoryOverlapQueryMS: Double?
+        public let memoryOverlapFailedQueries: Int?
         public let contextTokensConfigured: Int
         public let wallSeconds: Double
         public let initialThermalState: String
@@ -566,6 +569,7 @@ public struct NativeBenchmarkRecord: Encodable, Sendable {
             self.memoryAtTotalPeak = memoryAccounting?.atTotalPeak
             self.memoryOverlapQueries = memoryAccounting?.overlapQueries
             self.memoryOverlapQueryMS = memoryAccounting?.overlapQueryMS
+            self.memoryOverlapFailedQueries = memoryAccounting?.overlapFailedQueries
         }
     }
 

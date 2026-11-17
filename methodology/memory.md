@@ -136,7 +136,11 @@ reads for the first time pages in over seconds), and every 2 s while the process
 has wrapped regions (the GPU touching a wrapped page moves none of those
 counters). A measurement takes about 0.7 ms per 600 regions plus 0.7-0.8 ms
 per 512 MB walked, twice per wrapped region; the record carries the count and
-the time (`memoryOverlapQueries`, `memoryOverlapQueryMS`).
+the time (`memoryOverlapQueries`, `memoryOverlapQueryMS`). A sample between two
+measurements uses the last one. A measurement that fails (a region on the list
+cannot be read again) counts in `memoryOverlapQueries` and in
+`memoryOverlapFailedQueries`, leaves the last measurement in use the same way,
+and is tried again at the same pace.
 
 LiteRT's profiler (google-ai-edge/LiteRT at 056f841,
 `litert/core/util/memory_profiling/accelerator_memory_apple.mm`) takes place 3 from
@@ -185,8 +189,8 @@ the whole native call, and LiteRT-LM's `benchmark()` builds its engine inside it
 MiB, so the parts add up to it (`hostAttributedMB` + `externalMB` +
 `wrappedResidentMB` - `overlapExternalMB` - `overlapFootprintMB` = `totalMB`);
 `memoryAccountingBasis` names this definition (`apple-vm-wrapped-pages-v1`). The
-total is empty when the wrapped regions could not be measured (the page-table
-query refused). Which number answers what: the total for "does it fit in RAM",
+total is empty when the measurement at the first tick fails: a sample before the
+first measurement has no total. Which number answers what: the total for "does it fit in RAM",
 across runtimes; `phys_footprint` for "will iOS kill it" (jetsam charges the
 footprint, not mapped clean pages or pages only the GPU holds).
 

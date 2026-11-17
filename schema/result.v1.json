@@ -115,6 +115,7 @@
         "memoryAtTotalPeak": { "type": "object", "description": "The whole reading at the sample where the total peaked, every part in MiB: hostResidentMB, hostAttributedMB, externalMB, graphicsMB, graphicsCompressedMB, neuralMB, neuralCompressedMB, graphicsNoFootprintMB, neuralNoFootprintMB, metalAllocatedMB, mappedWeightsMB (LiteRT: Metal beyond the whole ledger), wrappedResidentMB (the GPU-wrapped pages in RAM), overlapMB (both overlaps; summary column mem_overlap_at_total_peak_mb), overlapExternalMB, overlapFootprintMB, wrappedGPUOnlyMB (wrapped pages outside the page table), wrappedLocatedMB (the wrapped regions' sizes), acceleratorPresentMB, acceleratorAttributedMB, residentInRAMRecomputedMB, totalMB" },
         "memoryOverlapQueries": { "type": "integer", "description": "How many times the window measured the overlaps (VM region queries)" },
         "memoryOverlapQueryMS": { "type": "number", "description": "The time those measurements took in all, ms" },
+        "memoryOverlapFailedQueries": { "type": "integer", "description": "Of those measurements, how many failed (a region on the list could not be read again); each time the last measurement stayed in use" },
         "energyJoulesPerToken": { "type": "number" },
         "gsm8kAccuracy": { "type": "number" },
         "gsm8kN": { "type": "integer" },

@@ -110,8 +110,8 @@ public enum MemoryMonitor {
         /// (macOS: every device, iOS: the default one); nil without a device.
         public var metalAllocatedBytes: UInt64?
         /// The GPU-wrapped regions as `measureOverlap(metalBeyondLedger:)` last measured them (the
-        /// sampler fills it in; `read()` leaves it empty); nil when it was needed and
-        /// could not be measured.
+        /// sampler fills it in; `read()` leaves it empty); nil when it was needed and no
+        /// measurement had succeeded yet in the window.
         public var overlap: Overlap? = Overlap()
 
         public init() {}
@@ -446,13 +446,15 @@ public struct MemoryAccounting: Sendable {
     public var medianAcceleratorAttributedMB: Double?
     public var peakResidentInRAMMB: Double?
     public var medianResidentInRAMMB: Double?
-    /// Nil when some sample needed the overlap and it could not be measured.
+    /// Nil when a sample needed the overlap before any measurement of it had succeeded.
     public var peakTotalMB: Double?
     public var medianTotalMB: Double?
     public var atTotalPeak: MemoryBreakdown?
     /// The overlap queries the window ran and the time they took.
     public var overlapQueries: Int
     public var overlapQueryMS: Double
+    /// Of those queries, the ones that failed; the last measurement stayed in use.
+    public var overlapFailedQueries: Int
 }
 
 /// One reading, in MiB, as a record carries it (`memoryAtTotalPeak`).
@@ -550,9 +552,9 @@ public actor MemorySampler {
     private var acceleratorSeen = false
     private var overlapCache: MemoryMonitor.Overlap?
     private var overlapAt: (external: UInt64, internal: UInt64, mapped: UInt64, uptimeNS: UInt64)?
-    private var overlapUnavailable = false
     private var placeThreeMoving = false
     private var overlapQueries = 0
+    private var overlapFailedQueries = 0
     private var overlapQueryNS: UInt64 = 0
     private var task: Task<Void, Never>?
     private var trace: MemoryTrace?
@@ -598,7 +600,8 @@ public actor MemorySampler {
             medianTotalMB: total ? Self.median(totalSamples) : nil,
             atTotalPeak: total ? totalPeakReading.map(MemoryBreakdown.init) : nil,
             overlapQueries: overlapQueries,
-            overlapQueryMS: Double(overlapQueryNS) / 1e6)
+            overlapQueryMS: Double(overlapQueryNS) / 1e6,
+            overlapFailedQueries: overlapFailedQueries)
         #endif
     }
 
@@ -624,10 +627,10 @@ public actor MemorySampler {
         acceleratorSeen = false
         overlapCache = nil
         overlapAt = nil
-        overlapUnavailable = false
         placeThreeMoving = false
         overlapQueries = 0
         overlapQueryNS = 0
+        overlapFailedQueries = 0
         trace = MemoryTrace.fromEnvironment()
         traceRegionsAtNS = 0
         // The reading at the start seeds the peaks without counting as a sample.
@@ -680,7 +683,7 @@ public actor MemorySampler {
         } else {
             due = true
         }
-        if due && !overlapUnavailable {
+        if due {
             let measured = MemoryMonitor.measureOverlap(metalBeyondLedger: mapped)
             overlapQueries += 1
             overlapQueryNS &+= DispatchTime.now().uptimeNanoseconds &- now
@@ -692,11 +695,18 @@ public actor MemorySampler {
                 overlapCache = measured
                 overlapAt = (r.externalBytes, r.internalBytes, mapped, now)
             } else {
-                overlapUnavailable = true
-                overlapCache = nil
+                // A failed measurement (a region on the list could not be read again: seen at the
+                // end of Qwen3-14B GPU runs) keeps the last one, as between two measurements, and
+                // is tried again at the same pace: the counters stay those of the last measurement,
+                // the time is this attempt's. Before the first measurement there is none to keep,
+                // so a sample has no total until one succeeds.
+                overlapFailedQueries += 1
+                let at = overlapAt
+                overlapAt = (at?.external ?? r.externalBytes, at?.internal ?? r.internalBytes,
+                             at?.mapped ?? mapped, now)
             }
         }
-        r.overlap = overlapUnavailable ? nil : overlapCache
+        r.overlap = overlapCache
         return r
         #endif
     }
