@@ -25,7 +25,9 @@ v1 measures the same engine through `litert_lm_main`.
 ## Regimes
 
 - One engine process per run = **cold** by this repo's definition (fresh
-  process, caches on disk). The very first run per (model, backend) builds the
+  process, caches on disk). A llama-bench protocol run is two processes and
+  is recorded `coldRun=false` (below). The very first run per (model, backend)
+  builds the
   ML Drift / OpenCL caches → labelled `firstEver`, reported separately, never
   as the engine's speed (cold-warm-split). Detection is automatic: a marker
   file on the device (`markers/<artifact>.<backend>.cachebuilt`, written after
@@ -48,7 +50,22 @@ v1 measures the same engine through `litert_lm_main`.
   Apple **cold** rows only. llama-bench (`native-benchmark-*` task) repeats
   in-process and is recorded `coldRun=false`; litert `--benchmark` is a fresh
   process (`coldRun=true`) — the two native rows are different regimes and the
-  join key already separates them.
+  join key already separates them. A llama-bench run of
+  `native-benchmark-1024x256` is two launches: the prefill launch
+  (`-p 1024 -n 0`) and, after a cooldown, the decode launch
+  (`-p 0 -n 256 -d 1024`). The cooldown is the one the runner keeps before
+  the row's launches (`run_campaign.launch_cooldown`): the row's `cooldown=`,
+  else `COOLDOWN` (120 s), and `COOLDOWN` in round mode. With `-d 1024`
+  llama-bench fills a 1024-token context before each repetition's timer
+  starts, so the decode rate is timed on top of that context. Before each
+  launch the runner waits for the CPU clock ceilings to be back at their
+  maximum (up to `CPUCAP_WAIT`) and reads them during it, as for any launch
+  ("Conditions pinned per run"). The run is one record: the prefill rate from
+  the first launch, the decode rate from the second, both launches in
+  `conditions.launches`, and `harnessStamp`
+  `2026-08-android-cli-v1+llama-bench-d1024`. A llama-bench record without
+  that suffix timed both tests in one launch (`-p 1024 -n 256`): the prefill
+  test, then the decode test on an empty context.
 
 ## Metrics — measured vs absent (absent stays absent)
 
@@ -65,7 +82,8 @@ v1 measures the same engine through `litert_lm_main`.
   That is the launch mask; an engine may set its own affinity (LiteRT-LM: cpu4-8 on the
   Pixel 8a, `devices/pixel-8a.md`), so the sampler also reads the engine's
   `Cpus_allowed_list` during the run and the record keeps the last read in
-  `conditions.cpusAllowedList` (since 2026-10-07).
+  `conditions.cpusAllowedList` (since 2026-10-07; for a two-launch llama-bench
+  run the union of its two launches' CPUs).
 - Thermal: `dumpsys thermalservice` status int; 0 → `"nominal"` so the repo's
   nominal gate works unchanged; the raw int rides along in
   `conditions.thermalRawStatus`. Gate: wait for status 0 up to `THERMAL_WAIT`
@@ -77,10 +95,11 @@ v1 measures the same engine through `litert_lm_main`.
   `cpuinfo_max_freq` (`cpu-capped-at-start` and a `THERMAL_GATE.txt` line when it is not);
   during the launch the sampler reads every policy's `scaling_max_freq` with the RSS, the
   record keeps each policy's lowest read (`conditions.cpuMaxFreqMHz`, min / hw / cpus in
-  MHz), and a run during which a policy of the engine's CPUs sat below its hardware
-  maximum is flagged `cpu-capped`. It pools into no number when that ceiling fell more
-  than 15 % (summary `cpu_cap_drop_pct` above `render_leaderboard.CPU_CAP_MAX_DROP_PCT`),
-  and pools, marked, when it fell less.
+  MHz; for a two-launch llama-bench run the lower of its two launches, each launch's own
+  reads in `conditions.launches`), and a run during which a policy of the engine's CPUs sat
+  below its hardware maximum is flagged `cpu-capped`. It pools into no number when that
+  ceiling fell more than 15 % (summary `cpu_cap_drop_pct` above
+  `render_leaderboard.CPU_CAP_MAX_DROP_PCT`), and pools, marked, when it fell less.
 - Battery level/state from `dumpsys battery` (disclose-hw-state).
 - Screen: benches run with USB attached. The screen state is read from the
   phone before every launch (`dumpsys power`, `mWakefulness`) and stamped in

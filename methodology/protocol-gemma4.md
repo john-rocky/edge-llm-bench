@@ -137,6 +137,9 @@ The dashboards read a `native-benchmark-1024x256` cell by the regime row above (
 session's cold first call reported beside it as first use, and the cold median only for a
 sitting whose launches made one call each (`scripts/render_dashboard.py` `headline_regime`, the
 dashboard page's `make_cell`; `docs/dashboard-cells-v1.md` "Protocol cells: the headline regime").
+On Android a llama-bench run is two launches, each with its own in-process repeats: the prefill
+test in the first, the decode test in the second, timed on a 1024-token context (`-d 1024`;
+`methodology/android.md` "Regimes").
 
 The drivers that run all of this are the matrix runners, `scripts/bench_matrix_iphone.sh` and
 `scripts/bench_matrix_mac.sh` (`./bench matrix`): a `native-benchmark-1024x256` row launches the

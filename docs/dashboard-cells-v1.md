@@ -1121,7 +1121,9 @@ under the same bundle id, so they are by-hand sittings only.
 A `native-benchmark-<P>x<D>` cell is one launch of an engine's own benchmark entry: its first
 call cold, the calls after it warm (LiteRT-LM `benchmark()` calls 2..N of a `--runs N` launch;
 the Core AI stock arm's trials 1..N, the ones `llm-benchmark` averages; llama-bench's in-process
-repeats, all recorded warm). Since 2026-10-08 such a cell headlines the protocol's regime
+repeats, all recorded warm). On Android a llama-bench run is two such launches, one for the
+prefill test and one for the decode test ("llama.cpp protocol rows: two launches per run",
+below). Since 2026-10-08 a protocol cell headlines the protocol's regime
 (`methodology/protocol-gemma4.md`: warm for the side-by-side, cold reported separately as
 first use) on every platform and for every arm: the warm median wherever the session has warm
 runs, with the session's cold first-call median beside it (`cold_tps`), and the cold median only
@@ -1844,3 +1846,38 @@ read 24.7 and 27.2 % lower with the wait on
 within 3.6 % either way on `llama.cpp-gpu` and `litert-lm-gpu-igpu`, and the cold prefill median lower on all four GPU
 rows in both of their pairs (by 4.0 to 48.1 %): a GPU row's later sitting can read lower for the wait alone, on the
 same machine.
+
+## llama.cpp protocol rows: two launches per run (2026-11-16)
+
+On an attached phone, a llama.cpp `native-benchmark-<P>x<D>` run is two llama-bench launches (`android/bench/run_cell.py`
+`LLAMA_BENCH_PHASES`): the prefill launch, `llama-bench -m <model> -t 4 -p 1024 -n 0 -o json`, and, after a cooldown,
+the decode launch, `llama-bench -m <model> -t 4 -p 0 -n 256 -d 1024 -o json`. The cooldown is the one the runner keeps
+before the row's launches (`run_campaign.launch_cooldown`): the row's `cooldown=`, else `COOLDOWN` (120 s), and
+`COOLDOWN` in round mode. With `-d 1024` llama-bench fills a 1024-token context before each repetition's timer starts,
+so the 256 tokens are timed on top of that context. The GPU / NPU side build (`b11469-snapdragon`) runs the same two
+launches with its own flags on both (`-t 6 -ngl 99 [-ub 1024] --device GPUOpenCL | HTP0`). Before, a run was one
+launch, `-p 1024 -n 256`: llama-bench ran its prefill test and then its decode test in one process, and the decode test
+started from an empty context (`n_depth` 0). The protocol names LiteRT-LM's `benchmark()` entry
+(`methodology/protocol-gemma4.md`, "The spec"), which runs one conversation: the 1024-token prefill, then the 256-token
+decode. The two launches time llama-bench's decode at the same depth, and the decode launch gets its own wait for the
+CPU clock ceilings and its own reads of them. A decode on a 1024-token context can read lower than one on an empty
+context: each token reads the KV of the 1024 tokens before it.
+
+A run is still one record. `conditions.launches` holds the two launches in order (command, start, exit code, thermal,
+screen and battery reads, CPU ceilings, and the tests of that launch's JSON); the prefill rate comes from the first
+launch and the decode rate from the second. `conditions.cpuMaxFreqMHz` is, per policy, the lower of the two launches,
+`conditions.cpusAllowedList` the union of their CPUs, and `cpu-capped` / `cpu-capped-at-start` are set when either
+launch has them. A launch whose JSON is not the one expected test (`prompt-token-count-mismatch`,
+`decode-token-count-mismatch`, `decode-depth-mismatch`) gives no rate, and the run fails. The raw log holds both
+consoles.
+
+`harnessStamp` is `2026-08-android-cli-v1+llama-bench-d1024`, and the summary's `harness_stamp` column separates the two
+forms. A llama.cpp `native-benchmark-*` record without the suffix is in the one-launch form. Among them: the Galaxy
+S26's llama.cpp CPU records of 2026-10-06 (build b8999,
+`results/raw/2026-10-06-dashboard-protocol1024-v1-s26-{a1,a2,a3g,b1g}-android`) and its GPU / NPU side-build records
+of 2026-10-08 (`results/raw/2026-10-08-dashboard-npu-v1-s26-{qwen06,qwen17}-bench-android`). They are not re-labelled;
+those rows keep these numbers until measured again. On DDP a llama.cpp `native-benchmark-*` row is skipped either way
+(`runtime-not-wired-on-ddp`; with `--all-runtimes` or `BENCH_DDP_ALL_RUNTIMES=1`,
+`llama-bench-two-launch-not-wired-on-ddp`: a job there runs one command per run; `docs/ddp-integration.md`). The weekly
+set (`ops/dashboard-v1/schedule.json`) holds no llama.cpp `native-benchmark-*` row, so the recurring job's time does
+not change.
