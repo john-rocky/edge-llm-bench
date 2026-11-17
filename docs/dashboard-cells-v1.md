@@ -1265,7 +1265,7 @@ the other arms are 4-bit, and the upstream issue.
 
 ## Qwen3 0.6B candidate (2026-10-19)
 
-A local candidate for the iPhone Metal failure above, measured beside the current file in one sitting per device
+A local candidate for the iPhone Metal failure above, measured beside the current file in one set of runs per device
 (2026-10-19). Nothing is uploaded and no page row moves: the candidate's rows live in their own cells
 files, under their own model id.
 
