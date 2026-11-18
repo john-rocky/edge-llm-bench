@@ -147,12 +147,11 @@ neutralize it — disclosing thermal state does not stop order from deciding the
 large model heats the GPU within seconds, and absolute decode tok/s on a Mac swings ~30% with
 thermal state, so block ordering measures the order, not the engines.
 
-Worked example (2026-08-15, Muse-Glimmer-30B on M4 Max —
-`results/raw/2026-08-15-muse-glimmer-30b-3way/`): a block-ordered first attempt had
-ExecuTorch decaying **23.5 → 17.4 tok/s inside its own block**, and Core AI — the block that
-went second, on the GPU the first block had heated — read **15.6–20.7 against its own true
-~27.4**. Both arms were wrong, in opposite directions, and the per-trial spread check catches
-only the arm whose spread is wide, not the one that is uniformly depressed.
+Worked example (2026-08-15, Muse-Glimmer-30B on M4 Max): in a block-ordered first attempt,
+ExecuTorch's decode **fell 26 % inside its own block**, and Core AI — the block that went
+second, on the GPU the first block had heated — read **24–43 % below its own true value**.
+Both arms read below their own true values. A per-trial spread check catches an arm whose
+readings spread, as both did here, but not an arm depressed by the same amount on every run.
 
 Therefore:
 
@@ -161,7 +160,7 @@ Therefore:
   ≥100 s guard for warm campaigns).
 - **Publish every round**, so the reader can see the order effects that remain.
 - First-position cache effects are real too: the first run after another arm has pulled a
-  multi-GB model through the page cache can read far below true (measured: 16.2 vs 27.4).
+  multi-GB model through the page cache can read far below true (measured: 41 % below).
   Discard such a round only on the strength of the following rounds, and say so in the table.
 
 ## 12. A run whose decoded text fails the text check is not a measurement  <!-- slug: text-check-rule -->
