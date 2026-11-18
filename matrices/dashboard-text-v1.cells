@@ -9,13 +9,14 @@
 # the engines with a PUBLISHED artifact for every model in the set —
 # LiteRT-LM (litert-community), MLX (mlx-community), llama.cpp (unsloth GGUF at
 # Q4_K_M). Core AI stayed out of v1 (Apple-only, side-loaded own exports; its
-# Gemma-4 bundles need an unpublished engine patch). v2 (2026-09-08) adds it on
+# Gemma-4 bundles do not run on Apple's released coreai-models). v2 (2026-09-08) adds it on
 # the Apple platforms: our own Qwen3 exports (0.6B/4B published as
 # mlboydaisuke/*-CoreAI-official, 1.7B a local export), side-loaded and run
 # through the same short-chat protocol as the other arms; the Gemma 4 rows are
-# kept as exclude= — the per-layer-embedding bundles need the unpublished
-# COREAI_STATIC_INPUTS engine patch, so a stock engine cannot run them
-# (docs/dashboard-cells-v1.md "Core AI arm (v2)").
+# kept as exclude= — the per-layer-embedding bundles need
+# EngineOptions.staticInputBuffers, which Apple's released coreai-models
+# lacks (our COREAI_STATIC_INPUTS engine patch adds it), so a stock engine
+# cannot run them (docs/dashboard-cells-v1.md "Core AI arm (v2)").
 # Recipes differ per arm and are stated per row (quant-per-arm-rule); the
 # file= / catalog entry carries the recipe descriptor, never a bare "int4"
 # (quant-label-rule). Order light -> heavy, arms interleaved per model block
@@ -314,7 +315,7 @@ mac onnxruntime-genai onnx-community/Qwen3-4B-ONNX long-context-1024-gen256 back
 # `<name>_int8.litertlm` (+ a VL int8), Qwen3.5-4B ships int8 + mixed_int4,
 # LFM2.5-1.2B-Instruct ships int4 / int4_gpu / int8. Apple-side ids below are
 # the existing catalog entries where one exists; LFM2.5 litert on Apple needs
-# context-tokens=1024 (LiteRT-LM#3129, lu-focus-litert-ios.cells).
+# context-tokens=1024 (LiteRT-LM#3129, demo-models-litert-ios.cells).
 #
 # --- Qwen3.5 (sizes to confirm) ---
 #android litert-lm litert-community/Qwen3.5-0.8B short-chat backend=cpu file=Qwen3.5-0.8B_int8.litertlm

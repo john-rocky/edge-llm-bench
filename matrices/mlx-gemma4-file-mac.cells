@@ -7,7 +7,7 @@
 #   4bit            PTQ: mlx_vlm.convert of google/gemma-4-E*B-it, uniform 4 bit affine g64
 #   qat-mobile      Google's mobile schema (config quantization_config quant_method "gemma": 2 / 4 / 8 bit weights,
 #                   per-channel weight_scale, static input / output activation scales); the card states no quantization
-# Rule (supervisor 2026-10-19, docs/dashboard-cells-v1.md "MLX Gemma 4 file (2026-10-19)"): the page's file is of the
+# Rule (2026-10-19, docs/dashboard-cells-v1.md "MLX Gemma 4 file (2026-10-19)"): the page's file is of the
 # QAT class, the class of the page's comparison partner (the LiteRT-LM Gemma 4 bundles, wNa8o8 QAT); among the QAT
 # bundles that load and pass the text check, the fastest warm decode, and within 5 % the one with the most 30-day
 # downloads. The PTQ 4bit rows are measured for the table, not for the page (ModelCatalog.swift: GSM8K 78 % for the
@@ -15,8 +15,9 @@
 # not load these bundles (one launch each, 10:31 / 10:32: NOTES-qat-mobile-load.txt in the campaign dir).
 # Source: matrices/dashboard-text-v1.cells line 204 (anchor); lines 237 and 263 (the 1K rows: cooldown=300; runs=4
 # is the runner's default there, written out here). File order alternates: E2B OptiQ first, E4B 4bit first.
-#   DD_MAC=<yardstick build> BENCH_ENGINE_PINS_FILE=<its pins file> python3 quiet_hold.py \
-#     r14-mlx-gemma4-file -- ./bench matrix <this file> --platform mac --campaign 2026-10-19-mlx-gemma4-file-mac
+# Run inside a Mac measurement window:
+#   DD_MAC=<yardstick build> BENCH_ENGINE_PINS_FILE=<its pins file> \
+#     ./bench matrix <this file> --platform mac --campaign 2026-10-19-mlx-gemma4-file-mac
 
 # ---- mac ----
 mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3

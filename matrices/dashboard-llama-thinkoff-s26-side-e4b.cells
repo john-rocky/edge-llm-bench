@@ -9,9 +9,8 @@
 # (the flat build's llama.cpp Qwen3 0.6B short-chat, as in the weekly -npu session); then the two side-build rows, each
 # byte-identical to its source line: matrices/dashboard-npu-v1-android-s26-short.cells lines 29, 30.
 # Needs the side build on the phone, /data/local/tmp/llmbench/engines/b11469-snapdragon (android/README.md, "Side builds").
-# Run after the runner change is on main, the S26 hold taken first by a keeper through the shared queue (the asr lane
-# uses the same S26 queue): queue_cli.py enqueue, then queue_cli.py wait <the S26 hold> autopilot_r15_side_e4b <keeper pid>, then
-#   BENCH_SITTING=1 python3 scripts/dashboard_job.py s26 --cells matrices/dashboard-llama-thinkoff-s26-side-e4b.cells --suffix llama-thinkoff-side-e4b --once --hold-held-by <keeper pid>
+# Run after the runner change is on main, the S26 hold taken first by another process, then
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py s26 --cells matrices/dashboard-llama-thinkoff-s26-side-e4b.cells --suffix llama-thinkoff-side-e4b --once --hold-held-by <pid>
 # and release the hold when the job ends.
 
 android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf

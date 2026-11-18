@@ -1,5 +1,5 @@
-# 2026-10-23 the context ladder of Qwen3 0.6B's all-composite export (E2) on the CPU, XNNPACK and YNNPACK (lane
-# ctx-ladder, round r1), Android, sitting A of two per device: the Android session anchor, then max_num_tokens
+# 2026-10-23 the context ladder of Qwen3 0.6B's all-composite export (E2) on the CPU, XNNPACK and YNNPACK, Android,
+# sitting A of two per device: the Android session anchor, then max_num_tokens
 # 2,048 / 4,096 / 8,192, each with the XNNPACK row and the YNNPACK row of one binary. Sitting B =
 # matrices/ctx-ladder-q06-e2-ynnpack-b-android.cells (2,048 again, 16,384 and 32,768).
 # The question: how XNNPACK and YNNPACK compare as the context grows.
@@ -12,7 +12,7 @@
 #           343,466,928 B; litert-torch main 0a81bf6f3 on 2026-10-13, --quantization_recipe=dynamic_wi4b32_afp32
 #           --apply_gpu_composites=True --cache_length=32768 --prefill_lengths=128,1024), not on the Hub: the file of
 #           matrices/oct20-q06-gpu-a-android.cells and oct20-r4-q06-e2-ynn-android.cells (the same name, so the same
-#           quant label, android/bench/run_cell.py ANDROID_QUANT_LABELS), here an APFS clone in the lane's directory.
+#           quant label, android/bench/run_cell.py ANDROID_QUANT_LABELS), here an APFS clone in this ladder's own directory.
 #           Its graph's KV is the export's 32,771-entry placeholder; the engine allocates --max_num_tokens when the
 #           flag is set (LiteRT-LM runtime/engine/engine_settings.cc: the metadata or the default formula only when it
 #           is 0) and logs magic_number=32771, target_number=<the allocation> at load (E2's GPU rows, 2026-10-20).

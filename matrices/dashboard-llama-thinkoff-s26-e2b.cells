@@ -8,9 +8,8 @@
 # The first row is the Android session anchor, byte-identical to matrices/dashboard-llama-b11721-android.cells line 20
 # (llama.cpp Qwen3 0.6B short-chat, unchanged by the fix); then the two Gemma 4 E2B rows, each byte-identical to its
 # source line: matrices/dashboard-text-v1-android-a.cells lines 28, 31.
-# Run after the runner change is on main, the S26 hold taken first by a keeper through the shared queue (the asr lane
-# uses the same S26 queue): queue_cli.py enqueue, then queue_cli.py wait <the S26 hold> autopilot_r15_text_e2b <keeper pid>, then
-#   BENCH_SITTING=1 python3 scripts/dashboard_job.py s26 --cells matrices/dashboard-llama-thinkoff-s26-e2b.cells --suffix llama-thinkoff-e2b --once --hold-held-by <keeper pid>
+# Run after the runner change is on main, the S26 hold taken first by another process, then
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py s26 --cells matrices/dashboard-llama-thinkoff-s26-e2b.cells --suffix llama-thinkoff-e2b --once --hold-held-by <pid>
 # and release the hold when the job ends.
 
 android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
