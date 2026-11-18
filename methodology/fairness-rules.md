@@ -96,6 +96,8 @@ Both numbers matter. Cold matters for app launch latency. Warm matters for the u
 
 Every result row shows model size, quantization, runtime format, and backend. We never compare a 4-bit GGUF and an FP16 CoreML model as if they were the same model running on different runtimes. They are different deployment profiles.
 
+To compare two runtimes on speed, run both with the weights quantized to the same number of bits in every part of the model, embedding tables and output layer included. Then measure accuracy the same way on both (same questions, prompt, chat-template settings, decoding and scoring) and hold both to the same limit on accuracy loss relative to the unquantized model. Without these two steps, a speed gap may come from the model files, not the runtimes.
+
 ## 4. Failed runs stay in the table  <!-- slug: failed-runs-stay -->
 
 If a runtime crashes, OOMs, hangs, or cannot support a configuration, the row stays in the table with a clear failure reason. Hiding failures makes a benchmark useless.
