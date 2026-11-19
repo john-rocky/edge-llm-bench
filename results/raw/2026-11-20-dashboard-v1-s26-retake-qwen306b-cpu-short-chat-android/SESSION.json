@@ -1,0 +1,119 @@
+{
+ "campaign": "results/raw/2026-11-20-dashboard-v1-s26-retake-qwen306b-cpu-short-chat-android",
+ "phase": "payload",
+ "cells": "logs/dashboard-job/retake-2026-11-20-s26.cells",
+ "device_key": "s26",
+ "device_display": "Galaxy S26",
+ "device_identifier": "SM-S942Q",
+ "platform": "android",
+ "attempt": 1,
+ "started": "2026-11-20 02:00:05",
+ "ended": "2026-11-20 02:28:18",
+ "admitted": true,
+ "verdict": "COMPLETED",
+ "reason": "anchor nominal, ratio 0.998 vs reference (b11721)",
+ "anchor": {
+  "regime": "cold",
+  "anchors": [
+   {
+    "cell": "llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat",
+    "primary": true,
+    "median": 110.9,
+    "n": 3,
+    "thermal": [
+     "nominal"
+    ],
+    "engine_version": "b11721",
+    "reference": {
+     "campaign": "results/raw/2026-11-20-dashboard-v1-s26-retake-qwen306b-cpu-short-chat-anchor-android",
+     "median": 111.1,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "b11721"
+    },
+    "reference_nominal": {
+     "campaign": "results/raw/2026-11-20-dashboard-v1-s26-retake-qwen306b-cpu-short-chat-anchor-android",
+     "median": 111.1,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "b11721"
+    },
+    "reference_any_version": {
+     "campaign": "results/raw/2026-11-20-dashboard-v1-s26-retake-qwen306b-cpu-short-chat-anchor-android",
+     "median": 111.1,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "b11721"
+    },
+    "ratio": 0.9981998199819982
+   },
+   {
+    "cell": "litert-lm-gpu litert-community/Qwen3-0.6B short-chat",
+    "primary": false,
+    "median": 83.79,
+    "n": 3,
+    "thermal": [
+     "nominal"
+    ],
+    "engine_version": "v0.19.0",
+    "reference": {
+     "campaign": "results/raw/2026-11-20-dashboard-v1-s26-retake-qwen306b-cpu-short-chat-anchor-android",
+     "median": 88.2,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.19.0"
+    },
+    "reference_nominal": {
+     "campaign": "results/raw/2026-11-20-dashboard-v1-s26-retake-qwen306b-cpu-short-chat-anchor-android",
+     "median": 88.2,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.19.0"
+    },
+    "reference_any_version": {
+     "campaign": "results/raw/2026-11-20-dashboard-v1-s26-retake-qwen306b-cpu-short-chat-anchor-android",
+     "median": 88.2,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.19.0"
+    },
+    "ratio": 0.9500000000000001
+   }
+  ]
+ },
+ "anchor_phase": "results/raw/2026-11-20-dashboard-v1-s26-retake-qwen306b-cpu-short-chat-anchor-android",
+ "runner_exit": 0,
+ "cells_expected": 3,
+ "cells_with_records": 3,
+ "release_by": "2026-11-20 08:00",
+ "retake": {
+  "ids": [
+   "2026-11-19-s26-qwen306b-cpu-short-chat"
+  ],
+  "cells_file": "logs/dashboard-job/retake-2026-11-20-s26.cells",
+  "rows": [
+   "android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu engine-build=v0.19.0-pregpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm",
+   "android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf",
+   "android litert-lm litert-community/Qwen3-0.6B short-chat backend=cpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"
+  ]
+ },
+ "thermal_gate": [
+  "cpu-capped litert-lm-cpu_litert-community_Qwen3-0.6B_short-chat_2026-11-19T17-23-31.003239_run1: policy6 min 4396.8/4742.4 MHz (cpus 6-7)",
+  "cpu-capped litert-lm-cpu_litert-community_Qwen3-0.6B_short-chat_2026-11-19T17-25-52.430020_run1: policy0 min 2899.2/3628.8 MHz (cpus 0-5); policy6 min 2880/4742.4 MHz (cpus 6-7)",
+  "cpu-capped litert-lm-cpu_litert-community_Qwen3-0.6B_short-chat_2026-11-19T17-28-14.384435_run1: policy0 min 2745.6/3628.8 MHz (cpus 0-5); policy6 min 2668.8/4742.4 MHz (cpus 6-7)"
+ ],
+ "schema": "dashboard-job-session.v1",
+ "job": "dashboard-v1"
+}
