@@ -1288,6 +1288,19 @@ public enum ModelCatalog {
             hfFilePatterns: ["Qwen3.5-0.8B_int8.litertlm"],
             primaryFile: "Qwen3.5-0.8B_int8.litertlm"
         ),
+        // Qwen3.5-0.8B, the same repo's GPU-composite export (`Qwen3.5-0.8B_int8_gpu_composite_v0190.litertlm`, on the
+        // Hub since 2026-11-05): the model card's file for the GPU on LiteRT-LM 0.19.x, where the int8 file above stays
+        // the CPU one. Builds that carry LiteRT #11565 refuse it on the GPU (the card's 2026-11-13 entry).
+        ModelInfo(
+            id: "litert-community/Qwen3.5-0.8B/int8_gpu_composite_v0190",
+            displayName: "Qwen3.5 0.8B (.litertlm, int8, GPU composites for LiteRT-LM 0.19)",
+            quantization: "int8 dynamic on every fully connected weight (GatedDeltaNet decay/gate projections included), GPU composites",
+            parameterCountB: 0.8,
+            onDiskSizeMB: 888,
+            hfRepoId: "litert-community/Qwen3.5-0.8B",
+            hfFilePatterns: ["Qwen3.5-0.8B_int8_gpu_composite_v0190.litertlm"],
+            primaryFile: "Qwen3.5-0.8B_int8_gpu_composite_v0190.litertlm"
+        ),
         ModelInfo(
             // Not on the Hub yet: a side-loaded own export (litert-torch, Qwen3.5 gated-delta composites
             // with explicit valid_len), staged at ~/Documents/models/litert-lm/litert-local__Qwen3.5-0.8B-wi4b32-afp32-gpu-cpu/.
