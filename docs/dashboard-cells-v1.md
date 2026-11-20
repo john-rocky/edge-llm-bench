@@ -199,9 +199,10 @@ in the operating memory).
 Two reading notes for the Android rows, both properties of the harness, not
 of the engines: run 1 of a fresh (model, backend) is the engine-cache build
 and is stamped `firstEver` (summaries here drop it); and the memory column
-is VmRSS, which does not count the GPU arm's buffers — the LiteRT GPU rows'
-resident figures are not comparable with the CPU arms' (methodology
-`android.md`). The Android llama.cpp rows run at `n_ctx` 4096, the lane's
+is VmRSS, which on this phone (Mali GPU) includes the GPU driver's
+allocations and leaves out dma-buf buffers (methodology `android.md`,
+"GPU memory and VmRSS"; measured 2026-11-20).
+The Android llama.cpp rows run at `n_ctx` 4096, their
 standing setting, while the LiteRT rows run at each bundle's default context
 — both recorded per run (`conditions.contextTokens`); decode on a
 150-token conversation is not expected to move with it, the resident memory

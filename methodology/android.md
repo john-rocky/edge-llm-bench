@@ -73,8 +73,34 @@ v1 measures the same engine through `litert_lm_main`.
 |---|---|---|---|
 | decode / prefill tok/s | engine-reported | engine-reported | engine-reported (avg_ts) |
 | TTFT | engine-reported (excludes init, like iOS loadTime split) | **absent** | **absent** |
-| memory | driver RSS sampler (`/proc/<pid>/status` VmRSS, 0.5 s, median) → `memoryMedianResidentMB`; `memoryMedianMB` (phys_footprint) has **no Android equivalent — never fabricated**. The device buffers of a GPU or NPU arm (ML Drift / OpenCL / HTP0 / Qualcomm NPU memory) sit outside the process RSS; a side build's records (llama.cpp, LiteRT-LM on the NPU) say so in `provenance.rssBasis` | same | same |
+| memory | driver RSS sampler (`/proc/<pid>/status` VmRSS, 0.5 s, median) → `memoryMedianResidentMB`; `memoryMedianMB` (phys_footprint) has **no Android equivalent — never fabricated**. Whether a GPU arm's device memory is in VmRSS depends on the GPU, and an NPU arm's buffers are not in it ("GPU memory and VmRSS" below); a side build's records (llama.cpp, LiteRT-LM on the NPU) note their device buffers in `provenance.rssBasis` | same | same |
 | energy | manual only (batterystats delta, unplugged) — phase 2 protocol, owner-triggered | same | same |
+
+### GPU memory and VmRSS
+
+Measured 2026-11-20 on two phones: 256 MiB allocations through OpenCL, Vulkan
+and AHardwareBuffer in a small test process, and a LiteRT-LM GPU run of
+Gemma 4 E2B (engine build `v0.19.0-pregpu`, its OpenCL path) through this
+runner's command, read from `/proc/<pid>/status`, `smaps_rollup`, `smaps` and
+`fdinfo`.
+
+- Pixel 8a (Mali-G715): memory allocated through OpenCL or Vulkan is in VmRSS
+  from the allocation on, as RssFile pages, while `smaps_rollup`'s Rss does
+  not move. In the engine run, VmRSS minus `smaps_rollup` Rss was a median of
+  1,210 MiB, of a VmRSS that peaked near 2,000 MiB: that part of the resident
+  figure is GPU memory.
+- Galaxy S26 (Adreno 840): memory allocated through OpenCL or Vulkan is not in
+  VmRSS until the CPU writes it; the pages the CPU wrote enter VmRSS as
+  RssFile. In the engine run the GPU mappings (`kgsl-3d0`) held 1,399 MiB, of
+  which 134 MiB were resident.
+- AHardwareBuffer (dma-buf) memory is in VmRSS on neither phone; the Pixel 8a
+  engine run held about 390 MiB of dma-bufs (listed in `fdinfo`).
+- NPU: a llama.cpp NPU launch on the S26 (2026-10-07) peaked at a VmHWM of
+  217 MiB with 406 MiB of weights and 448 MiB of KV cache in its HTP0 buffers
+  (`android/bench/run_cell.py`).
+
+So a GPU row's resident figure is not the engine's whole memory on either
+phone, and the part it leaves out differs by GPU.
 
 ## Conditions pinned per run
 
