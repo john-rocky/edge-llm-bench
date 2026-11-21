@@ -1301,6 +1301,20 @@ public enum ModelCatalog {
             hfFilePatterns: ["Qwen3.5-0.8B_int8_gpu_composite_v0190.litertlm"],
             primaryFile: "Qwen3.5-0.8B_int8_gpu_composite_v0190.litertlm"
         ),
+        // Qwen3.5-0.8B, the same repo's mixed 4/8-bit file (`Qwen3.5-0.8B_mixed48_h1024.litertlm`, Hub commit 544ffe2c of
+        // 2026-11-20): litert-torch's qwen3_5_mixed48_h1024 recipe with a dynamic_wi8_afp32 second pass; the weight types
+        // below are read from the file. Its metadata asks for LiteRT-LM 0.20.0, newer than the v0.19.0 this app vendors; not
+        // run in this app. The Android rows run it on a LiteRT-LM main build (android/engine-pins.json main-5dcf06020).
+        ModelInfo(
+            id: "litert-community/Qwen3.5-0.8B/mixed48_h1024",
+            displayName: "Qwen3.5 0.8B (.litertlm, mixed int4 / int8, Hadamard 1024; asks for LiteRT-LM 0.20)",
+            quantization: "mixed int4 / int8, Hadamard 1024 (qwen3_5_mixed48_h1024 + dynamic_wi8_afp32): int4 channelwise on the embedding / lm_head, in_proj, gate_up and qkv weights; int8 channelwise on down_proj, out_proj, o_proj and the 1024 x 1024 Hadamard matrices",
+            parameterCountB: 0.8,
+            onDiskSizeMB: 487,
+            hfRepoId: "litert-community/Qwen3.5-0.8B",
+            hfFilePatterns: ["Qwen3.5-0.8B_mixed48_h1024.litertlm"],
+            primaryFile: "Qwen3.5-0.8B_mixed48_h1024.litertlm"
+        ),
         ModelInfo(
             // Not on the Hub yet: a side-loaded own export (litert-torch, Qwen3.5 gated-delta composites
             // with explicit valid_len), staged at ~/Documents/models/litert-lm/litert-local__Qwen3.5-0.8B-wi4b32-afp32-gpu-cpu/.

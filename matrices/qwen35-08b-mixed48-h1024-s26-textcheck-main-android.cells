@@ -1,0 +1,19 @@
+# 2026-11-21, in the same Galaxy S26 hold as matrices/qwen35-08b-mixed48-h1024-s26-main-android.cells, before its
+# sitting: the same file (litert-community/Qwen3.5-0.8B Qwen3.5-0.8B_mixed48_h1024.litertlm, Hub commit
+# 544ffe2ccf654a5e28f60d21f33db5c81899e961, 486,539,264 B, LFS sha256
+# 61c65dbcaa86461184df1b60a82941c5d3e65fb535411d1b2192ccf222e98b35) on the same side build (main-5dcf06020),
+# GPU and CPU:
+#   - task long-context-1024-gen256 (its fixed long prompt, 256 tokens out, context 2048; the form of
+#     matrices/lfm2-qwen35-s26-textcheck-pregpu-current-android.cells): the reply text of the file on this build
+#     (native-benchmark-1024x256 prints none; parsers.text_integrity and a read of the whole reply). The engine
+#     samples as the file's metadata sets it (the runner has no sampler control for LiteRT-LM: conditions.sampler
+#     engine-default);
+#   - one native-benchmark-1024x256 launch per backend: it builds the caches beside the side build's link to the model
+#     and writes the firstEver marker of the protocol rows (run_cell.py: the long-context task's marker is a paired one
+#     of its own), so the sitting's three runs per row are cache-loading runs and none of them is firstEver.
+# Not page rows: campaign <date>-qwen35-08b-mixed48-h1024-s26-textcheck-android (no `dashboard`).
+# Run (from the repo root): BENCH_SITTING=1 BENCH_ANDROID_SERIAL=<serial> BENCH_CPU_MASK= COOLDOWN=30 CAMPAIGN=<campaign> python3 android/bench/run_campaign.py matrices/qwen35-08b-mixed48-h1024-s26-textcheck-main-android.cells
+android litert-lm litert-community/Qwen3.5-0.8B/mixed48_h1024 long-context-1024-gen256 backend=gpu engine-build=main-5dcf06020 local=1 file=~/.cache/huggingface/hub/models--litert-community--Qwen3.5-0.8B/snapshots/544ffe2ccf654a5e28f60d21f33db5c81899e961/Qwen3.5-0.8B_mixed48_h1024.litertlm context-tokens=2048 runs=1
+android litert-lm litert-community/Qwen3.5-0.8B/mixed48_h1024 long-context-1024-gen256 backend=cpu engine-build=main-5dcf06020 local=1 file=~/.cache/huggingface/hub/models--litert-community--Qwen3.5-0.8B/snapshots/544ffe2ccf654a5e28f60d21f33db5c81899e961/Qwen3.5-0.8B_mixed48_h1024.litertlm context-tokens=2048 runs=1
+android litert-lm litert-community/Qwen3.5-0.8B/mixed48_h1024 native-benchmark-1024x256 backend=gpu engine-build=main-5dcf06020 local=1 file=~/.cache/huggingface/hub/models--litert-community--Qwen3.5-0.8B/snapshots/544ffe2ccf654a5e28f60d21f33db5c81899e961/Qwen3.5-0.8B_mixed48_h1024.litertlm context-tokens=2048 runs=1
+android litert-lm litert-community/Qwen3.5-0.8B/mixed48_h1024 native-benchmark-1024x256 backend=cpu engine-build=main-5dcf06020 local=1 file=~/.cache/huggingface/hub/models--litert-community--Qwen3.5-0.8B/snapshots/544ffe2ccf654a5e28f60d21f33db5c81899e961/Qwen3.5-0.8B_mixed48_h1024.litertlm context-tokens=2048 runs=1

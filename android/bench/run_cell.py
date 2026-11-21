@@ -2140,6 +2140,9 @@ ANDROID_QUANT_LABELS = {
     # (ios/BenchmarkApp/Sources/Models/ModelCatalog.swift; its card's File / Recipe table: int8, the 36
     # GatedDeltaNet decay/gate projections float since 2026-10-12)
     "Qwen3.5-0.8B_int8.litertlm": "int8 dynamic on linears + embedding (convs, delta rule, GatedDeltaNet decay/gate projections float)",
+    # the same repo's mixed 4/8-bit file (Hub commit 544ffe2c, 2026-11-20): the iOS ModelCatalog string of
+    # litert-community/Qwen3.5-0.8B/mixed48_h1024, the weight types read from the file
+    "Qwen3.5-0.8B_mixed48_h1024.litertlm": "mixed int4 / int8, Hadamard 1024 (qwen3_5_mixed48_h1024 + dynamic_wi8_afp32): int4 channelwise on the embedding / lm_head, in_proj, gate_up and qkv weights; int8 channelwise on down_proj, out_proj, o_proj and the 1024 x 1024 Hadamard matrices",
     # 2026-11-05 local exports, side-loaded by a file= path (not on the Hub): public litert-torch export_hf
     # --apply_gpu_composites=True. b0 / b1 / b2 = main 54b7962, cache 4096, the Hub file's prefill ladder, the same TFLite section
     # (b2 carries the Hub file's metadata and tokenizer sections and fp32 declared; b1 the metadata the exporter writes by itself, type
