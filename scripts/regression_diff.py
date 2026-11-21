@@ -202,6 +202,17 @@ def select(rows, sel):
 # regression watch never compares across a version. Rows without it keep an empty component.
 GROUP = ("device", "runtime", "model_id", "task", "prompt_version", "context_tokens", "cold_run")
 
+# What an anchor's rows must share on both sides of a cross-session pair before the anchor
+# normalizes it (2026-11-21). An anchor stands for session drift only while its own engine stays
+# put: one that moved between the two sittings moves with its engine, exactly as an anchor
+# measured by the engine under test does. The engine version alone does not show the move:
+# the harness stamp changes when the measurement contract does (the Apple LiteRT-LM rows'
+# output-budget and KV-filter suffix), and the artifact when the build does under one version
+# (the Android LiteRT-LM GPU builds v0.19.0 and v0.19.0-pregpu: engine_artifact de8c8402... and
+# 11c2cde9... on the Galaxy S26). An empty field is a value like any other: a side whose rows
+# do not carry it is not the same as a side whose rows do.
+ANCHOR_IDENTITY = ("engine_version", "harness_stamp", "engine_artifact")
+
 
 # fairness-rules §2 thermal guard, applied as code: only runs that STARTED at
 # nominal are comparable. The runners record hot runs (failed-runs-stay) and
@@ -212,18 +223,37 @@ GROUP = ("device", "runtime", "model_id", "task", "prompt_version", "context_tok
 NOMINAL_STATES = ("nominal", "")
 
 
+def counted(r, metric):
+    """The row's metric as a float when the row counts in its cell, else None."""
+    v = r.get(metric)
+    if not v or float(v) == 0.0:  # a 0 tok/s field is an unmeasured axis, not a datum
+        return None
+    if (r.get("thermal_initial") or "") not in NOMINAL_STATES:
+        return None
+    if r.get("first_ever") == "True":
+        return None  # engine-cache build run (cold-warm-split) — never pooled
+    return float(v)
+
+
 def cells(rows, metric):
     out = {}
     for r in rows:
-        v = r.get(metric)
-        if not v or float(v) == 0.0:  # a 0 tok/s field is an unmeasured axis, not a datum
+        v = counted(r, metric)
+        if v is None:
             continue
-        if (r.get("thermal_initial") or "") not in NOMINAL_STATES:
-            continue
-        if r.get("first_ever") == "True":
-            continue  # engine-cache build run (cold-warm-split) — never pooled
         out.setdefault(tuple(r[k] for k in GROUP), []).append(
-            (float(v), (r["timestamp"] or "")[:10]))
+            (v, (r["timestamp"] or "")[:10]))
+    return out
+
+
+def identities(rows, metric):
+    """GROUP key -> the set of ANCHOR_IDENTITY tuples of the rows cells() counts in that cell."""
+    out = {}
+    for r in rows:
+        if counted(r, metric) is None:
+            continue
+        out.setdefault(tuple(r[k] for k in GROUP), set()).add(
+            tuple(r.get(f) or "" for f in ANCHOR_IDENTITY))
     return out
 
 
@@ -258,33 +288,63 @@ def load_anchor_cells(path):
     return anchors
 
 
-def anchor_median(side_cells, anchors, device, cold_run, exclude_runtime, spread_limit):
-    """Median of a session-anchor cell within one selection. An anchor is
-    usable only if (a) its runtime is not the engine under test — an anchor
-    measured by the engine being bumped moves WITH the engine and normalizes
-    the change away (first Mac run proved it: the litert anchor improved 14%
-    and every mlx cell read a phantom -12%) — and (b) it has n>=2 within
-    the spread gate (an n=1 anchor passes the spread check trivially and a
-    single noisy cold value multiplies into every verdict; measured: a 31ms
-    -> 611ms cold-TTFT anchor stamped +1620% on an actually-flat cell).
-    Returns (median, label) or (None, why)."""
+def identity_change(b_ids, c_ids):
+    """The ANCHOR_IDENTITY fields whose values differ between two sides' sets, as text."""
+    parts = []
+    for i, name in enumerate(ANCHOR_IDENTITY):
+        bv, cv = sorted({t[i] for t in b_ids}), sorted({t[i] for t in c_ids})
+        if bv != cv:
+            parts.append(f"{name} {'/'.join(v or '(none)' for v in bv)} -> "
+                         f"{'/'.join(v or '(none)' for v in cv)}")
+    return "; ".join(parts) or "the fields pair up differently"
+
+
+def anchor_medians(b_cells, c_cells, b_ids, c_ids, anchors, device, cold_run, exclude_runtime,
+                   spread_limit):
+    """Medians of one session-anchor cell on both sides of a cross-session pair.
+    An anchor is usable only if (a) its runtime is not the engine under test — an
+    anchor measured by the engine being bumped moves WITH the engine and
+    normalizes the change away (first Mac run proved it: the litert anchor
+    improved 14% and every mlx cell read a phantom -12%) — (b) it has n>=2
+    within the spread gate on each side (an n=1 anchor passes the spread check
+    trivially and a single noisy cold value multiplies into every verdict;
+    measured: a 31ms -> 611ms cold-TTFT anchor stamped +1620% on an
+    actually-flat cell), and (c) its rows carry the same ANCHOR_IDENTITY set on
+    both sides (an anchor whose own engine, harness or build moved between the
+    sittings moves with it, as (a)'s does). The first anchor that passes all
+    three on both sides normalizes both: one anchor for the pair, never one per side.
+    Returns (base median, candidate median, label) or (None, None, why)."""
+    moved = []
     for rt, mid, task in anchors:
         if rt == exclude_runtime:
             continue
-        # an anchor is one cell at whatever allocation its cells line carries;
-        # match on everything but context_tokens (the anchors are short-chat cells,
-        # whose text has no version)
-        vals = [v for k, runs in side_cells.items()
-                if (k[0], k[1], k[2], k[3], k[4], k[6]) == (device, rt, mid, task, "", cold_run)
-                for v, _ in runs]
-        if len(vals) < 2:
+        meds, ids = [], []
+        for side_cells, side_ids in ((b_cells, b_ids), (c_cells, c_ids)):
+            # an anchor is one cell at whatever allocation its cells line carries;
+            # match on everything but context_tokens (the anchors are short-chat cells,
+            # whose text has no version)
+            keys = [k for k in side_cells
+                    if (k[0], k[1], k[2], k[3], k[4], k[6]) == (device, rt, mid, task, "", cold_run)]
+            vals = [v for k in keys for v, _ in side_cells[k]]
+            if len(vals) < 2:
+                break
+            med = statistics.median(vals)
+            spread = (max(vals) - min(vals)) / med * 100 if med else 0.0
+            if spread > spread_limit:
+                break  # an unreliable anchor normalizes nothing (spread-rule)
+            meds.append(med)
+            ids.append(set().union(*(side_ids.get(k, set()) for k in keys)))
+        if len(meds) < 2:
             continue
-        med = statistics.median(vals)
-        spread = (max(vals) - min(vals)) / med * 100 if med else 0.0
-        if spread > spread_limit:
-            continue  # an unreliable anchor normalizes nothing (spread-rule)
-        return med, f"{rt} {mid} {task}"
-    return None, "no usable anchor (need n>=2, in-spread, runtime != engine under test)"
+        if ids[0] != ids[1]:
+            moved.append(f"{rt} {mid} {task}: {identity_change(ids[0], ids[1])}")
+            continue
+        return meds[0], meds[1], f"{rt} {mid} {task}"
+    why = ("no usable anchor (need n>=2, in-spread, runtime != engine under test, "
+           "same engine version, harness stamp and artifact on both sides)")
+    if moved:
+        why += "; anchor engine moved: " + " | ".join(moved)
+    return None, None, why
 
 
 def run_device(args):
@@ -304,6 +364,7 @@ def run_device(args):
                                      ("mem_footprint_median_mb", False),
                                      ("energy_j_per_tok", False)):
         b_cells, c_cells = cells(base_rows, metric), cells(cand_rows, metric)
+        b_ids, c_ids = identities(base_rows, metric), identities(cand_rows, metric)
         common = sorted(set(b_cells) & set(c_cells))
         if not common:
             continue
@@ -357,10 +418,9 @@ def run_device(args):
                 eut = args.engine_under_test
                 if anchors and (eut is None or key[1] == eut):
                     excl = eut if eut else key[1]
-                    ba, ba_label = anchor_median(b_cells, anchors, key[0], key[-1],
-                                                 excl, args.spread_limit)
-                    ca, ca_label = anchor_median(c_cells, anchors, key[0], key[-1],
-                                                 excl, args.spread_limit)
+                    ba, ca, ba_label = anchor_medians(b_cells, c_cells, b_ids, c_ids, anchors,
+                                                      key[0], key[-1], excl, args.spread_limit)
+                    ca_label = ba_label
                 elif anchors:
                     ba, ba_label = None, f"arm not under test ({eut}) — raw cross-session is the drift signal"
                     ca, ca_label = None, ba_label
@@ -424,7 +484,9 @@ def main():
                     help="skip regenerating results/summary/ first")
     ap.add_argument("--anchors",
                     help="cells file whose anchor=1 cells normalize cross-session "
-                         "device pairs (e.g. matrices/anchors.cells)")
+                         "device pairs (e.g. matrices/anchors.cells); an anchor "
+                         "normalizes a pair only when its rows carry the same engine "
+                         "version, harness stamp and engine artifact on both sides")
     ap.add_argument("--engine-under-test",
                     help="runtime id whose release is being tested (e.g. litert-lm): "
                          "only its cells get anchor-normalized verdicts, and anchors "
