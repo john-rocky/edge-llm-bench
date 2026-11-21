@@ -602,8 +602,9 @@ outputs under `automation/sessions/`).
   llama.cpp's Metal teardown (`ggml_metal_rsets_free` -> `ggml_abort`, from
   `ggml_metal_device_free` in a static destructor during `exit`): b8999, and
   b11721 the same (2026-10-19 smoke, crash reports
-  `yardstick-2026-10-19-060022.ips` / `-060518.ips`); the runner writes `FAIL`
-  to FAILURES.txt by exit code. The rows stand.
+  `yardstick-2026-10-19-060022.ips` / `-060518.ips`), and b12359 the same
+  (2026-11-21, `yardstick-2026-11-21-203153.ips`: the same frames); the runner
+  writes `FAIL` to FAILURES.txt by exit code. The rows stand.
 - **Short-chat prefill is not comparable across arms.** On a ~20-token prompt
   the prefill figure is dominated by fixed per-call overhead and ranks the
   arms differently from decode; the 1024-token task is the prefill

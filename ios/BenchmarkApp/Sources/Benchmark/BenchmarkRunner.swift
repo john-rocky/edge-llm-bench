@@ -407,8 +407,11 @@ public actor BenchmarkRunner {
             parameters: configuration.task.parameters,
             metrics: metrics,
             // Keep the full output for the quality task (it's scored for correctness +
-            // degeneracy); other tasks keep a short sample to stay lean.
+            // degeneracy); other tasks keep a short sample to stay lean. With
+            // BENCH_FULL_OUTPUT_SAMPLE=1 every task keeps the whole retained reply, for a text
+            // check that reads each reply in full; the run itself is the same.
             outputSample: configuration.task.id == "quality"
+                || ProcessInfo.processInfo.environment["BENCH_FULL_OUTPUT_SAMPLE"] == "1"
                 ? collectedOutput : String(collectedOutput.prefix(200)),
             conditions: RunConditions.record(await configuration.runtime.recordConditions,
                                              promptVersion: configuration.task.promptVersion)

@@ -111,9 +111,15 @@
         "llama_cli_sha256": "edf21345a3abf767656767d8644f809e132e7ad2f94b906a04e9a3ee618849c3"
       },
       "mac": {
-        "tag": "b11721",
-        "since": "2026-10-19",
-        "note": "The Mac yardstick on b11721 is the 2026-10-19 build in .build/dd-mac-b11721 (r9), built from the iPhone 18 Pro's side tree .build/dd-ios-0180-18pro/src (the main tree's CoreAIRuntime.swift does not compile against its coreai-models 0.2.0 checkout): it loads llama.framework UUID 843E7D68 (b11721's macOS slice) and libCLiteRTLM_mac.dylib sha256 9526db9e (v0.18.0), Core AI stock 1.0.0-10-gbd3c539, and stamps from that tree's Vendored/engine-pins.json; the job's Mac route moved to it on 2026-10-19 06:10 (.build/dd-mac = this build, the 2026-09-18 build kept as .build/dd-mac-0918-litert0160-llama8999; the main tree's Vendored/engine-pins.json = the side tree's). scripts/session_check.py reads this block for a Mac sitting on or after since, and takes it from the newest registry for a sitting that began before it was committed (REGISTERED_LATER)."
+        "tag": "b12359",
+        "since": "2026-12-01",
+        "artifact": "llama-b12359-xcframework.zip (release binary)",
+        "artifact_sha256": "25eebedbbdef004c2da2bf4fd8daa77324d6db91bbff24d19d9da0942cbfd1b9",
+        "previous": {
+          "tag": "b11721",
+          "until": "2026-12-01"
+        },
+        "note": "From since on, the Mac yardstick is built from this repo's main tree on llama-b12359-xcframework.zip (artifact_sha256 = the release's digest; its macOS slice's arm64 LC_UUID 8686AC0D-E960-36BD-A467-96E6E19FAA99), with mlx-swift-lm 3.33.0 (arms.mlx-swift-lm.mac). b12359 is the build the v1.0.0 release names (v1.0.0 = b12359 plus one commit); its llama.h drops llama_set_warmup, 35 deprecated functions and defrag_thold, none of which the adapter calls. since is provisional: it becomes the day of the first sitting on that build. Before since a Mac sitting reads arms.llama.cpp.tag: b11721, the yardstick built 2026-11-16 from the iPhone 18 Pro app's tree (llama.framework LC_UUID 843E7D68, b11721's macOS slice). scripts/session_check.py reads this block for a Mac sitting on or after since. It takes the newest registry's block for a sitting that began before the block was committed (REGISTERED_LATER) only when the registry of that sitting's day has no Mac block, so the commit that sets since lands before that sitting."
       },
       "ios": {
         "tag": "b11721",
@@ -136,9 +142,21 @@
       }
     },
     "mlx-swift-lm": {
-      "source": "https://github.com/ml-explore/mlx-swift-examples",
+      "source": "https://github.com/ml-explore/mlx-swift-lm",
       "pinned_by": "revision in ios/BenchmarkApp/project.yml (floating-branch incident documented there)",
-      "revision": "60bd0d7880c82980f9481f8be78862e9b63c58a3"
+      "revision": "60bd0d7880c82980f9481f8be78862e9b63c58a3",
+      "note": "The iPhones' pin, and the Mac's before mac.since: the revision the iPhone 18 Pro's weekly app resolved (with mlx-swift 0.31.6). project.yml pins the Mac block's revision; the other app specs (project-ios26.yml, project-executorch.yml, project-ddp-mlx.yml) and Package.swift keep this one.",
+      "mac": {
+        "tag": "3.33.0",
+        "revision": "ca661dc6885f8603e911746838b60d312439a368",
+        "since": "2026-12-01",
+        "mlx_swift": "0.33.0",
+        "previous": {
+          "revision": "60bd0d7880c82980f9481f8be78862e9b63c58a3",
+          "until": "2026-12-01"
+        },
+        "note": "From since on, the Mac yardstick's mlx-swift-lm is the 3.33.0 release (2026-11-17), with mlx-swift 0.33.0, the newest release in the range 3.33.0 declares (up to next minor from 0.33.0); project.yml pins both. The adapter clears the model's reasoning protocol at load, so every decoded token reaches the reply as on 60bd0d78 (3.33.0 sends a Qwen3 <think> block apart from the reply by default). An engine default that moved with the version: prefill chunks are balanced (60bd0d78: the remainder in the last chunk). The build resolved the other 37 SwiftPM packages to the versions of the Mac yardstick built 2026-11-16 (swift-jinja 2.4.2, swift-transformers 1.3.3, swift-huggingface 0.9.0 among them): Package.resolved is not committed, and a fresh resolution takes the newest release in each declared range (on 2026-11-21 swift-jinja 3.2.1, swift-transformers 1.4.0, swift-huggingface 0.13.0), which reaches the chat templates of the llama.cpp, MLX and Core AI arms. since is provisional, as arms.llama.cpp.mac.since. scripts/session_check.py registry_pin reads this block for a Mac sitting on or after since."
+      }
     },
     "coreai-models": {
       "source": "https://github.com/apple/coreai-models",

@@ -20,7 +20,9 @@ the screened rule finds nothing; build_summary reads the file into text_check); 
 line turning a HOLD into a PASS, and a malformed one or a line for pin-drift or protocol-off exiting 2; the
 payload / anchor pair with one half missing; the exit codes; llama.cpp's pin per platform since the
 2026-10-19 bump (registry_pin with the Mac and iPhone blocks, the since day and the previous tag;
-a Mac sitting on either side of the Mac block's day, an iPhone sitting on the iPhones' block).
+a Mac sitting on either side of the Mac block's day, an iPhone sitting on the iPhones' block); and
+mlx-swift-lm's pin per platform (registry_pin with the Mac block, its since day and the top revision before
+it and on the iPhones; the same three kinds of sitting).
 
 It passes whichever platform's LiteRT-LM pin lags the others (a release-triggered pass moves one
 platform at a time): the generic cases carry a Mac llama.cpp cell stamped with the Mac's llama.cpp
@@ -68,7 +70,9 @@ LITERT_APPLE = LITERT["default_tag"]
 # below are), else default_tag
 MAC_BLOCK = LITERT.get("mac") or {}
 LITERT_MAC = MAC_BLOCK.get("tag") or LITERT_APPLE
-MLX = LOCK["arms"]["mlx-swift-lm"]["revision"]
+MLX_ARM = LOCK["arms"]["mlx-swift-lm"]
+# the iPhones' MLX pin, and the Mac's before its block's since day
+MLX = MLX_ARM["revision"]
 LLAMA_ARM = LOCK["arms"]["llama.cpp"]
 LLAMA_MODEL = "unsloth/Qwen3-1.7B-GGUF/Q4_K_M"
 
@@ -121,6 +125,25 @@ def llama_pin_of(platform, day=None):
 
 # the generic cases' llama.cpp cell is a Mac cell: it stamps the Mac's llama.cpp pin on the 2099 dirs
 LLAMA = llama_pin_of("mac")[0]
+
+
+def mlx_pin_of(platform, day=None):
+    """(mlx-swift-lm pin, where) a platform's MLX records are held to on `day` (session_check.registry_pin):
+    the Mac's arms.mlx-swift-lm.mac revision from its since day, else arms.mlx-swift-lm.revision (the
+    iPhones always)."""
+    block = (MLX_ARM.get("mac") or {}) if platform == "mac" else {}
+    if block.get("tag") and block.get("revision") and applies(block, day):
+        return block["revision"], "arms.mlx-swift-lm.mac.revision"
+    return MLX, "arms.mlx-swift-lm.revision"
+
+
+# a Mac dir's MLX cell stamps the Mac's MLX pin of the dir's day (its name's date; the 2099 dirs: every
+# since day past)
+MLX_MAC = mlx_pin_of("mac")[0]
+
+
+def mac_mlx(name):
+    return mlx_pin_of("mac", day_of(os.path.basename(name)[:10]))[0]
 
 
 def newest(day=None):
@@ -298,7 +321,7 @@ def anchor_dir(raw, name):
     d = campaign(raw, name)
     session(d, "anchor")
     write_jsonl(d, "mlx-swift_mlx-community_Qwen3-0_6B-4bit_short-chat.jsonl",
-                cell("mlx-swift", "mlx-community/Qwen3-0.6B-4bit", MLX))
+                cell("mlx-swift", "mlx-community/Qwen3-0.6B-4bit", mac_mlx(name)))
     return d
 
 
@@ -307,7 +330,7 @@ def payload_dir(raw, name, anchor, records=None, **over):
     d = campaign(raw, name)
     session(d, "payload", anchor, **over)
     write_jsonl(d, "mlx-swift_mlx-community_Qwen3-0_6B-4bit_short-chat.jsonl",
-                cell("mlx-swift", "mlx-community/Qwen3-0.6B-4bit", MLX))
+                cell("mlx-swift", "mlx-community/Qwen3-0.6B-4bit", mac_mlx(name)))
     records = records or cell("llama.cpp", LLAMA_MODEL, LLAMA)
     write_jsonl(d, jsonl_of(records), records)
     return d
@@ -400,7 +423,7 @@ def leader_sitting(raw, day, tag, cells):
     a = anchor(raw, f"{day}-dashboard-v1-{dev}-{tag}-anchor-{token}")
     p = campaign(raw, f"{day}-dashboard-v1-{dev}-{tag}-{token}")
     session(p, "payload", os.path.basename(a))
-    mlx = cell("mlx-swift", "mlx-community/Qwen3-0.6B-4bit", MLX)
+    mlx = cell("mlx-swift", "mlx-community/Qwen3-0.6B-4bit", MLX if LEADER_PLATFORM == "ios" else mac_mlx(day))
     for c in [[dict(r, device=dict(IOS_DEVICE)) for r in mlx] if LEADER_PLATFORM == "ios" else mlx] + cells:
         write_jsonl(p, jsonl_of(c), c)
     return [a, p], p
@@ -745,7 +768,7 @@ def main():
     print("--- the text screen: a Mac / iPhone text cell's reply proxies per run go into text_screen.json, a note")
     # a llama.cpp cell, so the screen's cases read no LiteRT-LM pin (engine-stamp, pin-drift)
     llama = f"llama.cpp {LLAMA_MODEL} short-chat ({LLAMA})"
-    mlx = f"mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat ({MLX})"
+    mlx = f"mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat ({MLX_MAC})"
     off_recs = cell("llama.cpp", LLAMA_MODEL, LLAMA, sample=OFF_TASK)
     t1a = anchor_dir(raw, "2099-09-01-dashboard-v1-m4max-anchor-mac")
     t1p = payload_dir(raw, "2099-09-01-dashboard-v1-m4max-mac", os.path.basename(t1a), records=off_recs)
@@ -1098,8 +1121,13 @@ def main():
     l_since = day_of((LLAMA_ARM.get("mac") or {}).get("since") or LLAMA_ARM.get("since"))
     l_prev = (LLAMA_ARM.get("previous") or {}).get("tag")
     if l_since and l_prev and l_prev != LLAMA:
-        for i, (day, stamp) in enumerate(((l_since - datetime.timedelta(days=1), l_prev), (l_since, l_prev),
-                                          (l_since, LLAMA))):
+        l_eve = l_since - datetime.timedelta(days=1)
+        # the day before: the pin it replaced (previous.tag), and the Mac's pin of that day (the lock's tag
+        # when the Mac block has a later since than the lock's); from since on: previous.tag and the block's
+        l_cases = [(l_eve, l_prev)] + ([(l_eve, llama_pin_of("mac", l_eve)[0])]
+                                       if llama_pin_of("mac", l_eve)[0] != l_prev else []) \
+            + [(l_since, l_prev), (l_since, LLAMA)]
+        for i, (day, stamp) in enumerate(l_cases):
             pin, where = llama_pin_of("mac", day)
             want = stamp != pin
             la = anchor_dir(raw, f"{day.isoformat()}-dashboard-v1-m4max-llama{i}-anchor-mac")
@@ -1135,6 +1163,59 @@ def main():
     else:
         print("  skip  the committed lock has no llama.cpp since day with a previous tag apart from the pin")
 
+    print("--- mlx-swift-lm's pin per platform: the Mac block from its since day, the top revision before it "
+          "and on the iPhones")
+    m_lock = {"arms": {"mlx-swift-lm": {"revision": "r1", "mac": {"tag": "9.9.0", "revision": "r2",
+                                                                  "since": "2099-03-02"}}}}
+    got = [session_check.registry_pin(plat, "mlx-swift", {}, m_lock, datetime.date.fromisoformat(d))
+           for plat in ("mac", "ios") for d in ("2099-03-01", "2099-03-02")]
+    ok([g[0] for g in got] == ["r1", "r2", "r1", "r1"]
+       and got[1][1] == "environment.lock.json arms.mlx-swift-lm.mac.revision (since 2099-03-02)"
+       and got[0][1] == got[2][1] == "environment.lock.json arms.mlx-swift-lm.revision",
+       f"registry_pin: the Mac reads arms.mlx-swift-lm.mac.revision from its since day and the top revision "
+       f"the day before; the iPhones the top revision on both days (got {got})")
+    ok(session_check.registry_pin("mac", "mlx-swift", {}, {"arms": {"mlx-swift-lm": {"revision": "r1"}}},
+                                  datetime.date(2099, 3, 2))[0] == "r1",
+       "registry_pin: a lock without the Mac block reads the top revision on the Mac (the registry before it)")
+    # the committed lock: Mac sittings on either side of the Mac block's day, an iPhone sitting on that day
+    m_since = day_of((MLX_ARM.get("mac") or {}).get("since"))
+    if m_since and MLX_MAC != MLX:
+        m_eve = m_since - datetime.timedelta(days=1)
+        for i, (day, stamp) in enumerate(((m_eve, MLX), (m_eve, MLX_MAC), (m_since, MLX), (m_since, MLX_MAC))):
+            pin, where = mlx_pin_of("mac", day)
+            want = stamp != pin
+            # the anchor phase stamps the day's pin (anchor_dir); the payload's MLX cell stamps `stamp`
+            ma = anchor_dir(raw, f"{day.isoformat()}-dashboard-v1-m4max-mlx{i}-anchor-mac")
+            mp = campaign(raw, f"{day.isoformat()}-dashboard-v1-m4max-mlx{i}-mac")
+            session(mp, "payload", os.path.basename(ma))
+            write_jsonl(mp, "mlx-swift_mlx-community_Qwen3-0_6B-4bit_short-chat.jsonl",
+                        cell("mlx-swift", "mlx-community/Qwen3-0.6B-4bit", stamp))
+            recs = cell("llama.cpp", LLAMA_MODEL, llama_pin_of("mac", day)[0])
+            write_jsonl(mp, jsonl_of(recs), recs)
+            rc, res, out = run([ma, mp], history=hist)
+            r = res[os.path.basename(mp)]
+            stamp_f = [f["detail"] for f in r["findings"] if f["rule"] == "engine-stamp"
+                       and f["detail"].startswith("mac mlx-swift:")]
+            ok(r["verdict"] == ("HOLD" if want else "PASS") and clean(r, {"engine-stamp"} if want else set(), pin=True)
+               and (not want or f"registry {pin} (environment.lock.json {where}" in stamp_f[0]),
+               f"a Mac sitting on {day} stamping MLX {stamp[:8]}: " + (f"engine-stamp against {where} {pin[:8]}"
+                                                                      if want else f"PASS on {where} {pin[:8]}")
+               + f" ({[x[:120] for x in stamp_f[:1]]})")
+        ia_ = ios_anchor(raw, f"{m_since.isoformat()}-dashboard-v1-iphone18pro-mlx-anchor-ios")
+        ip_ = campaign(raw, f"{m_since.isoformat()}-dashboard-v1-iphone18pro-mlx-ios")
+        session(ip_, "payload", os.path.basename(ia_))
+        for rt, model, eng in (("mlx-swift", "mlx-community/Qwen3-0.6B-4bit", MLX),
+                               ("llama.cpp", "unsloth/Qwen3-0.6B-GGUF/Q4_K_M", llama_pin_of("ios", m_since)[0])):
+            c = [dict(r, device=dict(IOS_DEVICE)) for r in cell(rt, model, eng)]
+            write_jsonl(ip_, jsonl_of(c), c)
+        rc, res, out = run([ia_, ip_], history=hist)
+        r = res[os.path.basename(ip_)]
+        ok(r["verdict"] == "PASS" and clean(r, set()),
+           f"an iPhone sitting on {m_since} stamping MLX {MLX[:8]}: PASS on arms.mlx-swift-lm.revision "
+           f"({sorted(rules(r))})")
+    else:
+        print("  skip  the committed lock has no Mac mlx-swift-lm block with a since day and its own revision")
+
     print(f"--- protocol-off: a LiteRT-LM headline cell off the protocol FAILs; other arms and tasks are "
           f"not read (the LiteRT-LM cells on LEADER, {LEADER_PLATFORM})")
     if LEADER_PLATFORM:
@@ -1156,7 +1237,7 @@ def main():
         qa = anchor_dir(raw, "2099-08-04-dashboard-v1-m4max-anchor-mac")
         qp = payload_dir(raw, "2099-08-04-dashboard-v1-m4max-mac", os.path.basename(qa))
         write_jsonl(qp, "mlx-swift_gemma_long-context-1024-gen256.jsonl",
-                    [protocol_record("mlx-swift", "mlx-community/gemma-4-e2b-it-4bit", MLX, i,
+                    [protocol_record("mlx-swift", "mlx-community/gemma-4-e2b-it-4bit", MLX_MAC, i,
                                      task="long-context-1024-gen256", ctx=2523) for i in range(4)])
         write_jsonl(qp, "llama.cpp_gemma_native-benchmark-1024x256.jsonl",
                     [protocol_record("llama.cpp", "unsloth/gemma-4-E2B-it-GGUF/Q4_K_M", LLAMA, i, ctx=None)
@@ -1222,7 +1303,7 @@ def main():
        and got(unit, DDP_ARM) == [""] * 3 and got(off_unit, DDP_ARM) == [""] * 3,
        "one run of four FAIL; a dir whose file names no run, and the Android dirs (no file), read ''")
     ok(got(ip, "litert-lm") == ["PASS:screen"] * 4 and set((screen_of(ip) or {"cells": {}})["cells"]) == {
-        f"litert-lm litert-community/Qwen3-1.7B short-chat ({OLD})", mlx},
+        f"litert-lm litert-community/Qwen3-1.7B short-chat ({OLD})", f"mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat ({MLX})"},
        "an iPhone payload's text cells are screened alike (its FAIL on pin-drift aside): PASS:screen")
 
     check_gpu_gate(tmp)

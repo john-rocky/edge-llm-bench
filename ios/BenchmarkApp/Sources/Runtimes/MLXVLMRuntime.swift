@@ -48,6 +48,8 @@ public actor MLXVLMRuntime: VLMRuntime {
                     progress(p.fractionCompleted)
                 }
             )
+            // Every decoded token as `.chunk`, as on 60bd0d78 (see MLXRuntime.loadModel).
+            await container.update { $0.configuration.reasoningConfig = nil }
             self.container = container
             self.loadedModelId = model.id
             let dt = CFAbsoluteTimeGetCurrent() - t0
@@ -109,6 +111,9 @@ public actor MLXVLMRuntime: VLMRuntime {
                                 stopReason: Self.translate(info.stopReason)
                             )))
                         case .toolCall:
+                            break
+                        default:
+                            // 3.33.0's other events; see MLXRuntime.generate.
                             break
                         }
                     }

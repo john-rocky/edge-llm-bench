@@ -39,6 +39,14 @@ public actor MLXRuntime: LLMRuntime {
                     progress(p.fractionCompleted)
                 }
             )
+            // mlx-swift-lm 3.33.0 sends the text a model frames as reasoning (Qwen3's <think>
+            // block; Gemma 4's thought channel) as `.reasoning` events, delimiters removed, and
+            // leaves it out of `.chunk`; 60bd0d78 sent every decoded token as `.chunk`. A row
+            // stores and times the whole reply, its first chunk being the first decoded token,
+            // as the llama.cpp adapter does. With no reasoning protocol on the configuration,
+            // every token reaches `.chunk` again. The counts and clocks of `.info` do not
+            // depend on it.
+            await container.update { $0.configuration.reasoningConfig = nil }
             self.container = container
             self.loadedModelId = model.id
             let dt = CFAbsoluteTimeGetCurrent() - t0
@@ -91,6 +99,12 @@ public actor MLXRuntime: LLMRuntime {
                                 stopReason: Self.translate(info.stopReason)
                             )))
                         case .toolCall:
+                            break
+                        default:
+                            // 3.33.0's other events (reasoning, rejected tool calls,
+                            // steering); none carries text once the reasoning protocol is
+                            // cleared at load. `default` keeps this file building on the
+                            // 60bd0d78 pin of the other app specs, which lack these cases.
                             break
                         }
                     }
@@ -183,8 +197,10 @@ public actor MLXRuntime: LLMRuntime {
                 count += 1
             }
             let decodeSeconds = Date.timeIntervalSinceReferenceDate - start
-            // TokenIterator keeps one step in flight (asyncEval); finish it before returning
-            Stream().synchronize()
+            // TokenIterator keeps one step in flight (asyncEval); finish it before returning.
+            // The default stream of the default device: mlx-swift 0.33's `Stream()` is a new stream,
+            // whose synchronize would not wait for that step (0.31.6's was the default stream).
+            Stream.defaultStream(Device.defaultDevice()).synchronize()
             return Clocks(count: count, prefillSeconds: iterator.promptPrefillTime + promptWait,
                           decodeSeconds: decodeSeconds)
         }

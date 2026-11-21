@@ -16,10 +16,12 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-# = environment.lock.json arms.llama.cpp.tag (b11721 since 2026-10-19, b8999 before). An existing
-# Vendored/llama.xcframework is kept: a bump replaces it and its .tag sidecar by hand
+# = environment.lock.json arms.llama.cpp.mac.tag: the Mac yardstick's pin (b12359, the build the llama.cpp
+# v1.0.0 release names; b11721 before, b8999 before that). The iPhone 18 Pro's weekly app links
+# arms.llama.cpp.ios.tag (b11721) from the tree it was built from; an app built from this tree links this
+# tag. An existing Vendored/llama.xcframework is kept: a bump replaces it and its .tag sidecar by hand
 # (docs/OPERATIONS.md, 'An engine shipped a release').
-LLAMA_TAG="${LLAMA_TAG:-b11721}"
+LLAMA_TAG="${LLAMA_TAG:-b12359}"
 LLAMA_ZIP_URL="https://github.com/ggml-org/llama.cpp/releases/download/${LLAMA_TAG}/llama-${LLAMA_TAG}-xcframework.zip"
 VENDORED_DIR="Vendored"
 LLAMA_FRAMEWORK="${VENDORED_DIR}/llama.xcframework"

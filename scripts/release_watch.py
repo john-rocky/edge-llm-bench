@@ -71,13 +71,14 @@ def main():
                  "best-effort arm: PLE models still need the unpublished "
                  "COREAI_STATIC_INPUTS patch"))
 
+    # the Mac's pin is a release (arms.mlx-swift-lm.mac.tag); the iPhones' revision is not one, so the
+    # row compares the Mac's tag when the lock has it
     mlx = arms.get("mlx-swift-lm", {})
-    head = gh_json(["api", "repos/ml-explore/mlx-swift-examples/commits/main",
-                    "--jq", "{sha: .sha}"])
-    rows.append(("mlx-swift-lm", "ml-explore/mlx-swift-examples",
-                 (head or {}).get("sha", "")[:8] or None,
-                 (mlx.get("revision") or "")[:8],
-                 "pinned BY REVISION in project.yml (floating-branch incident) — "
+    rows.append(("mlx-swift-lm", "ml-explore/mlx-swift-lm",
+                 latest_release("ml-explore/mlx-swift-lm"),
+                 (mlx.get("mac") or {}).get("tag") or (mlx.get("revision") or "")[:8],
+                 "pinned BY REVISION in project.yml (floating-branch incident), with mlx-swift at the "
+                 "newest release in its range; the lock's mac block (tag, revision, since) — "
                  "bump deliberately, never track main"))
 
     print(f"{'arm':14} {'pinned':12} {'latest':12}  action")
