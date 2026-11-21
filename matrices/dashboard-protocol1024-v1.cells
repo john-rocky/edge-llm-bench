@@ -1,13 +1,13 @@
-# Protocol rows = LiteRT-LM's own benchmark() entry point: prefill forced to exactly 1024 tokens with no prompt, decode 256, context 2048 (methodology/protocol-gemma4.md "The spec"); vendor-row, card-comparable, never pooled with the task-prompt long-context-1024-gen256 rows.
-# Entry points: Mac = yardstick --litert-native-benchmark 1024x256 --context-tokens 2048 (scripts/bench_matrix_mac.sh); iPhone = the app's --litert-native-benchmark flag, which scripts/bench_matrix_iphone.sh does not forward (it passes the task id as --task).
-# One launch = one measurement: the native path ignores --runs and prints one YARDSTICK_NATIVE_OK line (Mac: appended to the cell's .jsonl; iPhone: console only), not a schema-v1 record; scripts/import_native_benchmark.py lifts the line into JSON.
-# MLX and llama.cpp have no forced-prefill entry on Apple devices (protocol-gemma4.md deviation 6) = no Apple rows for them; llama-bench is the Android counterpart (matrices/dashboard-protocol1024-v1-android.cells).
-# Prepared 2026-10-06 (round m3 of the dashboard first-tab lane); same model set, catalog ids and cooldowns as matrices/dashboard-longctx1024-v1.cells; anchors = matrices/anchors.cells.
-# 2026-10-19: the Mac and iPhone Qwen3 0.6B LiteRT-LM rows (not the anchors) moved from the catalog id
+# Protocol rows = LiteRT-LM's own benchmark() entry point: prefill forced to exactly 1024 tokens with no prompt, decode 256, context 2048 (methodology/protocol-gemma4.md "The spec"); comparable with the model card's figures, never pooled with the task-prompt long-context-1024-gen256 rows.
+# Entry points: Mac = yardstick run --litert-native-benchmark 1024x256 --context-tokens 2048 (scripts/bench_matrix_mac.sh); iPhone = the app's --litert-native-benchmark 1024x256 flag with --context-tokens 2048 (scripts/bench_matrix_iphone.sh). Both runners also pass --task short-chat, which yardstick and the app read before the native branch.
+# One launch = N calls of benchmark() in one process (N = the row's runs=, else RUNS, default 4), call 1 cold; each call prints one YARDSTICK_NATIVE_OK line (Mac: appended to the row's .jsonl; iPhone: the console log), not a schema-v1 record; scripts/import_native_benchmark.py lifts the lines into JSON.
+# This file's protocol rows are LiteRT-LM's. On the Mac, MLX and llama.cpp also have a forced-prefill entry (scripts/bench_matrix_mac.sh): MLX's row is in matrices/native-benchmark-1024x256-v1.cells, llama.cpp has no row. Core AI's rows are in matrices/dashboard-coreai-v1-mac.cells and dashboard-coreai-v1-ios.cells. On the iPhone only LiteRT-LM and Core AI have one (scripts/bench_matrix_iphone.sh). llama-bench is the Android counterpart (matrices/dashboard-protocol1024-v1-android.cells).
+# Prepared 2026-10-06; same model set, catalog ids and cooldowns as matrices/dashboard-longctx1024-v1.cells; the anchor=1 rows are those of matrices/anchors.cells.
+# 2026-10-19: the Mac and iPhone Qwen3 0.6B LiteRT-LM rows, the anchor=1 rows included, moved from the catalog id
 # litert-community/Qwen3-0.6B (qwen3_0_6b_mixed_int4.litertlm; its template drops the user turn on LiteRT-LM
 # v0.18.0, google-ai-edge/LiteRT-LM#3688) to litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32
-# (Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm: dynamic INT4, block-32 weights, FP32 act); the anchor rows keep
-# litert-community/Qwen3-0.6B.
+# (Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm: dynamic INT4, block-32 weights, FP32 act); the same day the iPhone rows
+# moved on to litert-community/Qwen3-0.6B/dynamic_int8: that INT4 file fails on the iPhone's Metal GPU under v0.18.0.
 
 
 # ---- mac ----
