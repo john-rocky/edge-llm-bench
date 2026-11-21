@@ -1315,6 +1315,20 @@ public enum ModelCatalog {
             hfFilePatterns: ["Qwen3.5-0.8B_mixed48_h1024.litertlm"],
             primaryFile: "Qwen3.5-0.8B_mixed48_h1024.litertlm"
         ),
+        // Qwen3.8-27B, `Qwen3.8-27B_wi4b32_32k.litertlm` in litert-community/Qwen3.8-27B (Hub commit 392f105a of 2026-11-20):
+        // the weight types below are read from the file. Its metadata asks for LiteRT-LM 0.20.0, newer than the v0.19.0 this
+        // app vendors; not run in this app. The Mac rows run it on a LiteRT-LM main build's CLI
+        // (matrices/qwen38-27b-main-mac.cells).
+        ModelInfo(
+            id: "litert-community/Qwen3.8-27B/wi4b32_32k",
+            displayName: "Qwen3.8 27B (.litertlm, int4 block-32, context up to 32k; asks for LiteRT-LM 0.20)",
+            quantization: "INT4 (block-32 weights with FP16 scales, FP32 act) on every fully connected weight, the embedding and lm_head included; norms, the GatedDeltaNet short-conv weights and the gated-delta constants FP32",
+            parameterCountB: 27.0,
+            onDiskSizeMB: 15169,
+            hfRepoId: "litert-community/Qwen3.8-27B",
+            hfFilePatterns: ["Qwen3.8-27B_wi4b32_32k.litertlm"],
+            primaryFile: "Qwen3.8-27B_wi4b32_32k.litertlm"
+        ),
         ModelInfo(
             // Not on the Hub yet: a side-loaded own export (litert-torch, Qwen3.5 gated-delta composites
             // with explicit valid_len), staged at ~/Documents/models/litert-lm/litert-local__Qwen3.5-0.8B-wi4b32-afp32-gpu-cpu/.

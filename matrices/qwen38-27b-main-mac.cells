@@ -1,0 +1,29 @@
+# 2026-11-21 the Qwen3.8-27B file published in litert-community/Qwen3.8-27B (Qwen3.8-27B_wi4b32_32k.litertlm, Hub
+# commit 392f105a of 2026-11-20 22:53 UTC) on the Mac Studio (M4 Max) GPU: one dashboard-job sitting whose payload is
+# the platform's session anchor row alone (matrices/anchors.cells, byte-identical: the job re-judges the payload by the
+# anchor records in its own campaign), followed, inside the same Mac measurement window, by the file's protocol
+# launches. They cannot be a row here: the Mac runner (scripts/bench_matrix_mac.sh) runs the yardstick, whose LiteRT-LM
+# is the vendored release (v0.19.0), and the file's metadata asks for LiteRT-LM 0.20.0 (min_runtime_version), so the
+# launches run a LiteRT-LM main build as its CLI:
+#   build = litert_lm_advanced_main built for macos_arm64 at LiteRT-LM main 5dcf0602 (2026-11-20; the commit of the
+#           Android side build main-5dcf06020 in android/engine-pins.json) as the checkout builds it (bazel 7.6.1,
+#           -c opt, no source change): on macOS its GPU path is the ML Drift WebGPU accelerator compiled from source
+#           and linked in (log: "Statically linked GPU accelerator registered."), with the commit's prebuilt
+#           libGemmaModelConstraintProvider.dylib and libwebgpu_dawn.dylib beside it; the binary's sha256, otool -L and
+#           build info go into the campaign dir; the records stamp engineVersion main-5dcf06020;
+#   file  = Qwen3.8-27B_wi4b32_32k.litertlm (15,169,077,248 B, LFS sha256 94867fc2...99ded6) on the Mac's internal
+#           disk; the CLI writes its GPU caches beside the model (a program cache and a weight cache), and one launch
+#           before the window built them, so every launch in the window reads them;
+#   rows  = the Android command form (android/bench/run_cell.py engine_command): --backend=gpu --benchmark
+#           --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --async=false --max_num_tokens=2048,
+#           4 launches, one process each, 300 s between launches, a 5-s sampler of the other processes' CPU per
+#           launch and one retake of a launch another process overlapped;
+#   id    = litert-community/Qwen3.8-27B/wi4b32_32k (ios/BenchmarkApp/Sources/Models/ModelCatalog.swift).
+# The consoles become schema-v1 records in the payload dir's app-path-cli/ (scripts/import_litert_cli.py: the Android
+# route's parsers; the arm, the KV allocation's target_number and the overlap verdict per launch), with the console,
+# the sampler's lines and the manifest in its cli/ dir.
+# Estimate: one Mac window of about 22 min (the job about 4 min, the launches about 17 min), 27 min with one retake.
+# The job runs inside the window through a local wrapper, with these arguments:
+#   python3 scripts/dashboard_job.py m4max --cells matrices/qwen38-27b-main-mac.cells --suffix qwen38-27b --once --no-page-commit --no-post
+
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
