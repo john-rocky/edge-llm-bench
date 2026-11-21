@@ -22,17 +22,25 @@
 #   id    = litert-community/Qwen3.8-27B/wi4b32_32k (ios/BenchmarkApp/Sources/Models/ModelCatalog.swift).
 # Sitting 1 (campaign 2026-11-21-dashboard-v1-m4max-qwen38-27b-mac, 4 launches planned) holds no number: all five of
 # its tries were overlapped (cmux alone in four, NotificationCenter in one).
-# Sitting 2 (suffix qwen38-27b-s2), decided before its window: the sampler reads cmux (a terminal app on the Mac's
-# screen) as it reads WindowServer (sys=, never an overlap), and every sample line also records cmux's %cpu;
-# NotificationCenter, Chrome, rclone and every other process still overlap.
-# Sitting 2 plans 3 launches, the runs of a protocol row on the Android route (android/bench/run_campaign.py: a cell's
-# runs default to 3), and starts a launch only when the window still holds it and its retake.
+# Sittings 2 and 3 (suffixes qwen38-27b-s2 and qwen38-27b-s3), decided before sitting 2's window: the sampler reads
+# cmux (a terminal app on the Mac's screen) as it reads WindowServer (sys=, never an overlap), and every sample line
+# also records cmux's %cpu; NotificationCenter, Chrome, rclone and every other process still overlap. Each plans 3
+# launches, the runs of a protocol row on the Android route (android/bench/run_campaign.py: a cell's runs default to
+# 3), and starts a launch only when the window still holds it and its retake.
+# Sitting 2 holds no number: Docker Desktop's CLI plugin, already running when its window opened, overlapped both tries
+# of its first launch at 70-84 % CPU. Sitting 3's window opens only after 60 s of the sampler's readings outside it
+# (every 5 s) show no process above 30 % other than those it reads as sys= (kernel_task, WindowServer and cmux), and no
+# Docker VM runs.
+# The first launch in each of sitting 1's and sitting 2's windows ran at prefill 176.6 and 176.1 tok/s, and so did one
+# launch outside the windows (176.6), while the six other launches ran at 205.9-206.4. The cause is not known: a first
+# launch stays in the row as measured, and sitting 3's NOTES give the row's prefill spread.
 # The consoles become schema-v1 records in the payload dir's app-path-cli/ (scripts/import_litert_cli.py: the Android
 # route's parsers; the arm, the KV allocation's target_number and the overlap verdict per launch), with the console,
 # the sampler's lines and the manifest in its cli/ dir.
-# Estimate for sitting 2: one Mac window of about 13 min (the job about 1 min, the launches about 12 min), 24 min with
+# Estimate for sitting 3: one Mac window of about 13 min (the job about 1 min, the launches about 12 min), 24 min with
 # two retakes.
-# The jobs run inside the window through a local wrapper, with these arguments (sitting 2: --suffix qwen38-27b-s2):
+# The jobs run inside the window through a local wrapper, with these arguments (sittings 2 and 3: --suffix
+# qwen38-27b-s2, qwen38-27b-s3):
 #   python3 scripts/dashboard_job.py m4max --cells matrices/qwen38-27b-main-mac.cells --suffix qwen38-27b --once --no-page-commit --no-post
 
 mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
