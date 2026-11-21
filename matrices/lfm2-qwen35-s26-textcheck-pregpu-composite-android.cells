@@ -1,0 +1,13 @@
+# 2026-11-20, before the sitting of matrices/lfm2-qwen35-s26-pregpu-composite-android.cells: one launch per file of that
+# file on its build (v0.19.0-pregpu), task long-context-1024-gen256 (its fixed long prompt,
+# 1,746 prompt tokens on the LFM2 files and 1,359 on Qwen3.5 0.8B (the records' promptTokenCount); 256 tokens out,
+# context 2048; the form of matrices/lfm2-qwen35-s26-textcheck-public-android.cells): the reply text of every composite file on this
+# build (native-benchmark-1024x256 prints none; parsers.text_integrity + a person's read), and the launch that builds
+# each copy's GPU caches. Not page rows: campaign <date>-lfm2-qwen35-s26-textcheck-h2c-android (no `dashboard`). Same model
+# ids, files and build as the page file; size, Hub revision and LFS sha256 on its comments.
+# Run (from the repo root): BENCH_SITTING=1 BENCH_ANDROID_SERIAL=<serial> BENCH_CPU_MASK= COOLDOWN=30 CAMPAIGN=<campaign> python3 android/bench/run_campaign.py <this file>
+android litert-lm litert-community/LFM2.5-350M/int4_gpu_composite_v0190 long-context-1024-gen256 backend=gpu engine-build=v0.19.0-pregpu file=./.dashboard/lfm2-qwen35-models/LFM2.5-350M_int4_gpu_composite_v0190.litertlm context-tokens=2048 runs=1
+android litert-lm litert-community/LFM2-700M/int4_gpu_composite_v0190 long-context-1024-gen256 backend=gpu engine-build=v0.19.0-pregpu file=./.dashboard/lfm2-qwen35-models/LFM2-700M_int4_gpu_composite_v0190.litertlm context-tokens=2048 runs=1
+android litert-lm litert-community/Qwen3.5-0.8B/int8_gpu_composite_v0190 long-context-1024-gen256 backend=gpu engine-build=v0.19.0-pregpu file=./.dashboard/lfm2-qwen35-models/Qwen3.5-0.8B_int8_gpu_composite_v0190.litertlm context-tokens=2048 runs=1
+android litert-lm litert-community/LFM2-2.6B/int4_gpu_composite_v0190 long-context-1024-gen256 backend=gpu engine-build=v0.19.0-pregpu file=./.dashboard/lfm2-qwen35-models/LFM2-2.6B_int4_gpu_composite_v0190.litertlm context-tokens=2048 runs=1
+android litert-lm litert-community/LFM2-2.6B-Exp/int4_gpu_composite_v0190 long-context-1024-gen256 backend=gpu engine-build=v0.19.0-pregpu file=./.dashboard/lfm2-qwen35-models/LFM2-2.6B-Exp_int4_gpu_composite_v0190.litertlm context-tokens=2048 runs=1

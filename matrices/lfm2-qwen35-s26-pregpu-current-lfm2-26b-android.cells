@@ -1,0 +1,29 @@
+# 2026-11-21: the Galaxy S26 (SM-S942Q) LiteRT-LM GPU rows of two int4 / int8 Hub files, LFM2-2.6B int4 and
+# int8, one of three sittings (the five LFM2.5-350M / LFM2-700M / Qwen3.5 0.8B files:
+# matrices/lfm2-qwen35-s26-pregpu-current-small-android.cells; the two LFM2-2.6B-Exp files:
+# matrices/lfm2-qwen35-s26-pregpu-current-lfm2-26b-exp-android.cells),
+# on the side build v0.19.0-pregpu: LiteRT-LM v0.19.0 (771b06e1) with its prebuilt GPU accelerator
+# libLiteRtGpuAccelerator.so loaded at run time (android/engine-pins.json litert-lm.v0.19.0-pregpu), the build of the
+# weekly dashboard-text-v1 GPU rows and of matrices/lfm2-qwen35-s26-pregpu-composite-android.cells (the GPU-composite
+# files of the five models of the three sittings). Same model ids, files and cooldowns as these files' rows of
+# matrices/lfm2-qwen35-s26-public-android.cells, which ran them on LiteRT-LM's public prebuilt binaries (GPU accelerator
+# compiled in).
+# Task: native-benchmark-1024x256 = litert_lm_advanced_main --benchmark, prefill forced to exactly 1024 tokens,
+# decode 256, context 2048 (methodology/protocol-gemma4.md "The spec").
+# Files: the Hub files of 2026-11-20, each read at the repo revision on its comment line and checked against the Hub
+# API's LFS sha256 (size and sha256 below; the local copies hashed again on 2026-11-21); file= is the checked
+# copy's path from the repo root (the job runs the runner there; .dashboard/ is not in git).
+# First row = the Android llama.cpp session anchor row of matrices/anchors.cells byte for byte.
+# Cooldowns: cooldown=300 on every row (the weekly rows of the 2B-and-up models carry 300). No runs= (3 runs per
+# row, round by round).
+# Text check before the sitting: these two files' rows of matrices/lfm2-qwen35-s26-textcheck-pregpu-current-android.cells.
+# Run from the repo root with the phone reserved for the whole run (the job does not reserve or free it):
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py s26 --cells matrices/lfm2-qwen35-s26-pregpu-current-lfm2-26b-android.cells --suffix lfm2-26b --once --hold-held-by <pid that reserved the phone> --no-post
+# The campaign name holds `dashboard`; the page reads this file's rows only once the dashboard lists this file.
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+# litert-community/LFM2-2.6B at 9d26a1b461691905ecca7b06d1e9b9122d8c5acc:
+#   LFM2-2.6B_int4.litertlm 1,529,692,160 B, sha256 3fd0342054d6039763563946c954a6c192aae4a6d08e27021d5df39f88fc1e9f
+android litert-lm litert-community/LFM2-2.6B/int4 native-benchmark-1024x256 backend=gpu engine-build=v0.19.0-pregpu cooldown=300 file=./.dashboard/lfm2-qwen35-models/LFM2-2.6B_int4.litertlm context-tokens=2048
+# litert-community/LFM2-2.6B at 9d26a1b461691905ecca7b06d1e9b9122d8c5acc:
+#   LFM2-2.6B_int8.litertlm 2,723,921,920 B, sha256 971bc50080a6ff04e21cd33cd28a319919b3d47b7a05922fbb1e3a4902c5358b
+android litert-lm litert-community/LFM2-2.6B/int8 native-benchmark-1024x256 backend=gpu engine-build=v0.19.0-pregpu cooldown=300 file=./.dashboard/lfm2-qwen35-models/LFM2-2.6B_int8.litertlm context-tokens=2048

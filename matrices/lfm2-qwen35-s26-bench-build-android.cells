@@ -1,0 +1,34 @@
+# 2026-11-20, by hand on the Galaxy S26 (SM-S942Q), not page rows (no `dashboard` in the campaign
+# name): the GPU builds compared in one set of runs, on five of the files of matrices/lfm2-qwen35-s26-public-android.cells (the
+# four LFM2 int4 files and the Qwen3.5 0.8B int8 file; the same checked local copies, model ids and cooldowns as
+# there; size, Hub revision and LFS sha256 on that file's comment lines). Each file runs on three builds, back to
+# back in each round, 3 runs per row, no anchor row:
+#   public  = engine-build=public-0.19.0-20261029, LiteRT-LM's public prebuilt binaries (GPU accelerator compiled in):
+#             the binary of the page rows, here again so that the ratios below come from one set of runs;
+#   flat    = no engine-build= (the flat pinned build v0.19.0, LiteRT-LM v0.19.0 built here, the GPU accelerator
+#             built from source and linked statically): the GPU build of the protocol rows
+#             (matrices/dashboard-protocol1024-v1-android.cells);
+#   pregpu  = engine-build=v0.19.0-pregpu (the same v0.19.0 commit with its prebuilt GPU accelerator .so, loaded
+#             at run time): the GPU build of the weekly dashboard-text-v1 rows (matrices/dashboard-text-v1-android-*.cells)
+#             and of the page's current Qwen3.5 0.8B Galaxy S26 GPU row (results/raw/2026-11-07-dashboard-v1-s26-stress-android).
+# Task: native-benchmark-1024x256, context 2048 (methodology/protocol-gemma4.md "The spec").
+# Model ids: <Hub repo>/<variant>--<build> (--public-0.19.0-20261029, --v0.19.0 = the flat pin, --v0.19.0-pregpu):
+# the runner's cell and its capture names leave engine-build= out (run_campaign.cell_id, run_cell.capture_stem), so
+# one id on three builds would be one cell whose gate and records mix the builds; each id is its own pushed copy.
+# Run from the repo root with the phone reserved for the whole run (campaign <date>-lfm2-qwen35-s26-bench-build-android):
+#   BENCH_SITTING=1 BENCH_ANDROID_SERIAL=<serial> BENCH_CPU_MASK= CAMPAIGN=<campaign> python3 android/bench/run_campaign.py matrices/lfm2-qwen35-s26-bench-build-android.cells
+android litert-lm litert-community/LFM2.5-350M/int4--public-0.19.0-20261029 native-benchmark-1024x256 backend=gpu engine-build=public-0.19.0-20261029 file=./.dashboard/lfm2-qwen35-models/LFM2.5-350M_int4.litertlm context-tokens=2048
+android litert-lm litert-community/LFM2.5-350M/int4--v0.19.0 native-benchmark-1024x256 backend=gpu file=./.dashboard/lfm2-qwen35-models/LFM2.5-350M_int4.litertlm context-tokens=2048
+android litert-lm litert-community/LFM2.5-350M/int4--v0.19.0-pregpu native-benchmark-1024x256 backend=gpu engine-build=v0.19.0-pregpu file=./.dashboard/lfm2-qwen35-models/LFM2.5-350M_int4.litertlm context-tokens=2048
+android litert-lm litert-community/LFM2-700M/int4--public-0.19.0-20261029 native-benchmark-1024x256 backend=gpu engine-build=public-0.19.0-20261029 file=./.dashboard/lfm2-qwen35-models/LFM2-700M_int4.litertlm context-tokens=2048
+android litert-lm litert-community/LFM2-700M/int4--v0.19.0 native-benchmark-1024x256 backend=gpu file=./.dashboard/lfm2-qwen35-models/LFM2-700M_int4.litertlm context-tokens=2048
+android litert-lm litert-community/LFM2-700M/int4--v0.19.0-pregpu native-benchmark-1024x256 backend=gpu engine-build=v0.19.0-pregpu file=./.dashboard/lfm2-qwen35-models/LFM2-700M_int4.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3.5-0.8B/int8--public-0.19.0-20261029 native-benchmark-1024x256 backend=gpu engine-build=public-0.19.0-20261029 file=./.dashboard/lfm2-qwen35-models/Qwen3.5-0.8B_int8.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3.5-0.8B/int8--v0.19.0 native-benchmark-1024x256 backend=gpu file=./.dashboard/lfm2-qwen35-models/Qwen3.5-0.8B_int8.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3.5-0.8B/int8--v0.19.0-pregpu native-benchmark-1024x256 backend=gpu engine-build=v0.19.0-pregpu file=./.dashboard/lfm2-qwen35-models/Qwen3.5-0.8B_int8.litertlm context-tokens=2048
+android litert-lm litert-community/LFM2-2.6B/int4--public-0.19.0-20261029 native-benchmark-1024x256 backend=gpu engine-build=public-0.19.0-20261029 cooldown=300 file=./.dashboard/lfm2-qwen35-models/LFM2-2.6B_int4.litertlm context-tokens=2048
+android litert-lm litert-community/LFM2-2.6B/int4--v0.19.0 native-benchmark-1024x256 backend=gpu cooldown=300 file=./.dashboard/lfm2-qwen35-models/LFM2-2.6B_int4.litertlm context-tokens=2048
+android litert-lm litert-community/LFM2-2.6B/int4--v0.19.0-pregpu native-benchmark-1024x256 backend=gpu engine-build=v0.19.0-pregpu cooldown=300 file=./.dashboard/lfm2-qwen35-models/LFM2-2.6B_int4.litertlm context-tokens=2048
+android litert-lm litert-community/LFM2-2.6B-Exp/int4--public-0.19.0-20261029 native-benchmark-1024x256 backend=gpu engine-build=public-0.19.0-20261029 cooldown=300 file=./.dashboard/lfm2-qwen35-models/LFM2-2.6B-Exp_int4.litertlm context-tokens=2048
+android litert-lm litert-community/LFM2-2.6B-Exp/int4--v0.19.0 native-benchmark-1024x256 backend=gpu cooldown=300 file=./.dashboard/lfm2-qwen35-models/LFM2-2.6B-Exp_int4.litertlm context-tokens=2048
+android litert-lm litert-community/LFM2-2.6B-Exp/int4--v0.19.0-pregpu native-benchmark-1024x256 backend=gpu engine-build=v0.19.0-pregpu cooldown=300 file=./.dashboard/lfm2-qwen35-models/LFM2-2.6B-Exp_int4.litertlm context-tokens=2048

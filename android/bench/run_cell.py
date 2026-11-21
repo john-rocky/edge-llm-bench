@@ -2182,6 +2182,23 @@ ANDROID_QUANT_LABELS = {
     "minicpm_wi4b32_wi8_afp32_gpu_opt.litertlm": "wi4b32_wi8_afp32 (gpu-opt)",
     "LFM2.5-1.2B-Instruct_int4.litertlm": "int4 (litert-community descriptor)",
     "LFM2.5-1.2B-Instruct_int4_gpu.litertlm": "int4_gpu (litert-community descriptor)",
+    # litert-community LFM2.5-350M / LFM2-700M / LFM2-2.6B / LFM2-2.6B-Exp (2026-11-20): each card's file-table
+    # recipe words at Hub e693f9e6 / 4643b338 / 9d26a1b4 / 55c4a709 (the int4 strings are the iOS ModelCatalog's); a
+    # _gpu_composite_v0190 file is "the int4 recipe on an export with GPU composites" (the same cards)
+    "LFM2.5-350M_int4.litertlm": "int4 blockwise-32 + OCTAV on linears, int8 lm_head + embedding",
+    "LFM2.5-350M_int8.litertlm": "int8 dynamic on linears + int8 embedding, convs float",
+    "LFM2.5-350M_int4_gpu_composite_v0190.litertlm": "int4 + GPU composites (int4 blockwise-32 + OCTAV on linears, int8 lm_head + embedding)",
+    "LFM2-700M_int4.litertlm": "int4 blockwise-32 + OCTAV on linears, int8 lm_head + embedding, convs float",
+    "LFM2-700M_int8.litertlm": "int8 weights on linears, the 10 convolutions and the embedding (litert-torch's default export recipe dynamic_wi8_afp32), float activations",
+    "LFM2-700M_int4_gpu_composite_v0190.litertlm": "int4 + GPU composites (int4 blockwise-32 + OCTAV on linears, int8 lm_head + embedding, convs float)",
+    "LFM2-2.6B_int4.litertlm": "int4 blockwise-32 + OCTAV on linears, int8 lm_head + embedding",
+    "LFM2-2.6B_int8.litertlm": "int8 dynamic on linears + int8 embedding, convs float",
+    "LFM2-2.6B_int4_gpu_composite_v0190.litertlm": "int4 + GPU composites (int4 blockwise-32 + OCTAV on linears, int8 lm_head + embedding)",
+    "LFM2-2.6B-Exp_int4.litertlm": "int4 blockwise-32 + OCTAV on linears, int8 lm_head + embedding",
+    "LFM2-2.6B-Exp_int8.litertlm": "int8 dynamic on linears + int8 embedding, convs float",
+    "LFM2-2.6B-Exp_int4_gpu_composite_v0190.litertlm": "int4 + GPU composites (int4 blockwise-32 + OCTAV on linears, int8 lm_head + embedding)",
+    # litert-community/Qwen3.5-0.8B's GPU-composite file, the card's file-table words at Hub 8eb8a842
+    "Qwen3.5-0.8B_int8_gpu_composite_v0190.litertlm": "int8 + GPU composites (int8 dynamic on every fully connected weight, the 36 decay/gate projections included)",
     # litert-community/MiniCPM5-2B — labels are the repo manifest's recipe text,
     # the same strings as the Mac catalog entries (ModelCatalog liteRTLM).
     "MiniCPM5-2B_int8.litertlm": "INT8 (dynamic, linears + embedding; fp32 GPU activations declared)",
