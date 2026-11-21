@@ -1,7 +1,7 @@
 # 2026-11-21 the Qwen3.8-27B file published in litert-community/Qwen3.8-27B (Qwen3.8-27B_wi4b32_32k.litertlm, Hub
-# commit 392f105a of 2026-11-20 22:53 UTC) on the Mac Studio (M4 Max) GPU: one dashboard-job sitting whose payload is
+# commit 392f105a of 2026-11-20 22:53 UTC) on the Mac Studio (M4 Max) GPU: dashboard-job sittings whose payload is
 # the platform's session anchor row alone (matrices/anchors.cells, byte-identical: the job re-judges the payload by the
-# anchor records in its own campaign), followed, inside the same Mac measurement window, by the file's protocol
+# anchor records in its own campaign), each followed, inside the same Mac measurement window, by the file's protocol
 # launches. They cannot be a row here: the Mac runner (scripts/bench_matrix_mac.sh) runs the yardstick, whose LiteRT-LM
 # is the vendored release (v0.19.0), and the file's metadata asks for LiteRT-LM 0.20.0 (min_runtime_version), so the
 # launches run a LiteRT-LM main build as its CLI:
@@ -13,17 +13,26 @@
 #           build info go into the campaign dir; the records stamp engineVersion main-5dcf06020;
 #   file  = Qwen3.8-27B_wi4b32_32k.litertlm (15,169,077,248 B, LFS sha256 94867fc2...99ded6) on the Mac's internal
 #           disk; the CLI writes its GPU caches beside the model (a program cache and a weight cache), and one launch
-#           before the window built them, so every launch in the window reads them;
+#           before the first window built them, so every launch in a window reads them;
 #   rows  = the Android command form (android/bench/run_cell.py engine_command): --backend=gpu --benchmark
-#           --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --async=false --max_num_tokens=2048,
-#           4 launches, one process each, 300 s between launches, a 5-s sampler of the other processes' CPU per
-#           launch and one retake of a launch another process overlapped;
+#           --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --async=false --max_num_tokens=2048, one
+#           process per launch, 300 s between launches, a 5-s sampler of the other processes' CPU per launch (ps %cpu
+#           above 30 % outside the launch's process tree; kernel_task and WindowServer apart, as sys=) and one retake of
+#           a launch another process overlapped (a launch overlapped twice is no number);
 #   id    = litert-community/Qwen3.8-27B/wi4b32_32k (ios/BenchmarkApp/Sources/Models/ModelCatalog.swift).
+# Sitting 1 (campaign 2026-11-21-dashboard-v1-m4max-qwen38-27b-mac, 4 launches planned) holds no number: all five of
+# its tries were overlapped (cmux alone in four, NotificationCenter in one).
+# Sitting 2 (suffix qwen38-27b-s2), decided before its window: the sampler reads cmux (a terminal app on the Mac's
+# screen) as it reads WindowServer (sys=, never an overlap), and every sample line also records cmux's %cpu;
+# NotificationCenter, Chrome, rclone and every other process still overlap.
+# Sitting 2 plans 3 launches, the runs of a protocol row on the Android route (android/bench/run_campaign.py: a cell's
+# runs default to 3), and starts a launch only when the window still holds it and its retake.
 # The consoles become schema-v1 records in the payload dir's app-path-cli/ (scripts/import_litert_cli.py: the Android
 # route's parsers; the arm, the KV allocation's target_number and the overlap verdict per launch), with the console,
 # the sampler's lines and the manifest in its cli/ dir.
-# Estimate: one Mac window of about 22 min (the job about 4 min, the launches about 17 min), 27 min with one retake.
-# The job runs inside the window through a local wrapper, with these arguments:
+# Estimate for sitting 2: one Mac window of about 13 min (the job about 1 min, the launches about 12 min), 24 min with
+# two retakes.
+# The jobs run inside the window through a local wrapper, with these arguments (sitting 2: --suffix qwen38-27b-s2):
 #   python3 scripts/dashboard_job.py m4max --cells matrices/qwen38-27b-main-mac.cells --suffix qwen38-27b --once --no-page-commit --no-post
 
 mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
