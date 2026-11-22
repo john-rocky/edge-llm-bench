@@ -112,7 +112,10 @@ loudly instead of rebuilding the summary and looking like a capture.
    - Anchors run first; cross-session verdicts are anchor-normalized
      (`--anchors matrices/anchors.cells` is applied automatically). An anchor
      whose runtime is the engine under test is marked CONFOUNDED — that is why
-     `anchors.cells` carries a non-litert anchor per platform.
+     `anchors.cells` carries a non-litert anchor per platform. An anchor
+     normalizes a pair only when its rows carry the same engine_version,
+     harness_stamp and engine_artifact on both sides; with no such anchor the
+     verdict is INFO-ONLY.
    - Exit 1 = REGRESSION somewhere; read the report dir before believing or
      disbelieving it (UNRELIABLE = spread too wide, throw out and re-run).
 4. Quality gate (absolute, not anchor-relative):
