@@ -29,9 +29,9 @@ let package = Package(
         // the 2026-07-27 iPhone cells were measured on. mlx-swift is pinned alongside it
         // for the same reason.
         .package(url: "https://github.com/ml-explore/mlx-swift-lm",
-                 revision: "60bd0d7880c82980f9481f8be78862e9b63c58a3"),
+                 revision: "ca661dc6885f8603e911746838b60d312439a368"),
         .package(url: "https://github.com/ml-explore/mlx-swift",
-                 revision: "0bb916c67f4b9e5c682cbe02a42c701c93ab5021"),
+                 revision: "7ede4fd6d05f63305c1c0ebf4f8c1909a637c574"),
         .package(url: "https://github.com/huggingface/swift-huggingface", from: "0.8.1"),
         .package(url: "https://github.com/huggingface/swift-transformers", from: "1.0.0"),
         // LiteRT-LM ships a binary xcframework. SwiftPM rejects its
