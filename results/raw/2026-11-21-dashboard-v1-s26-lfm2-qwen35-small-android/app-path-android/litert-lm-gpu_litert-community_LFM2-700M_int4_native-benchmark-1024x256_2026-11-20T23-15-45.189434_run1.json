@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "id": "a8ce064b-e689-48cf-8cfd-6c7a8e55e3fd",
+  "runtime": "litert-lm-gpu",
+  "engineVersion": "v0.19.0",
+  "engineArtifact": "0827261d4edf6ddac350879d9336cdee914fc6fc2536122a7bc7d5f760c04712",
+  "model": {
+    "id": "litert-community/LFM2-700M/int4",
+    "quantization": "int4 blockwise-32 + OCTAV on linears, int8 lm_head + embedding, convs float",
+    "file": "litert-community_LFM2-700M_int4_LFM2-700M_int4.litertlm",
+    "sha256": "2366c6c032eafdf6aee60102f2b842a45c082ff61ef4176bcc921d5a48332fa9"
+  },
+  "task": "native-benchmark-1024x256",
+  "timestamp": "2026-11-20T23:15:45Z",
+  "device": {
+    "modelIdentifier": "SM-S942Q",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-08-05",
+    "soc": "SM8850",
+    "product": "m1q",
+    "batteryLevel": 0.8,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "none",
+    "cpusAllowedList": "0-7",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 3628.8,
+        "hw": 3628.8,
+        "cpus": "0-5"
+      },
+      "policy6": {
+        "min": 4742.4,
+        "hw": 4742.4,
+        "cpus": "6-7"
+      }
+    },
+    "contextTokens": 2048,
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "on-usb",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "2",
+    "elapsedSeconds": 6.7,
+    "exitCode": 0,
+    "engineBuild": "v0.19.0-pregpu",
+    "engineCommand": "LD_LIBRARY_PATH=/data/local/tmp/llmbench/engines/v0.19.0-pregpu /data/local/tmp/llmbench/engines/v0.19.0-pregpu/litert_lm_advanced_main --backend=gpu --model_path=/data/local/tmp/llmbench/engines/v0.19.0-pregpu/models/litert-community_LFM2-700M_int4_LFM2-700M_int4.litertlm --benchmark --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --async=false --max_num_tokens=2048",
+    "backendRegistered": [
+      "Choose backend: gpu",
+      "max_tokens: 2048",
+      "RegisterAccelerator: ptr=<addr>, name=LiteRT GPU",
+      "Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.",
+      "RegisterAccelerator: ptr=<addr>, name=CpuAccelerator",
+      "XNNPACK CPU accelerator registered.",
+      "Replacing 560 out of 560 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (prefill_1024).",
+      "Replacing 560 out of 560 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (prefill_512).",
+      "Replacing 560 out of 560 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 2 (prefill_256).",
+      "Replacing 560 out of 560 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 3 (prefill_128).",
+      "Replacing 560 out of 560 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 4 (prefill_64).",
+      "Replacing 560 out of 560 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 5 (prefill_32).",
+      "Replacing 560 out of 560 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 6 (prefill_16).",
+      "Replacing 560 out of 560 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 7 (prefill_8).",
+      "Replacing 560 out of 560 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 8 (prefill_4).",
+      "Replacing 560 out of 560 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 9 (prefill_2).",
+      "Replacing 501 out of 501 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 10 (prefill_1).",
+      "Replacing 519 out of 519 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 11 (decode)."
+    ],
+    "gpuAccelerator": "prebuilt-dynamic",
+    "gpuAcceleratorLine": "INFO: [gpu_registry.cc:146] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered."
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 420.0,
+    "promptTokensPerSecond": 2531.13,
+    "decodeTokensPerSecond": 71.37,
+    "promptTokenCount": 1024,
+    "generatedTokenCount": 256,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 534.14453125,
+    "memoryPeakResidentMB": 537.13671875
+  },
+  "provenance": {
+    "rawLog": "litert-lm-gpu_litert-community_LFM2-700M_int4_native-benchmark-1024x256_2026-11-20T23-15-45.189434_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024",
+    "modelShaSource": "device"
+  }
+}
