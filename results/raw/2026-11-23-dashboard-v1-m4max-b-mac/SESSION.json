@@ -1,0 +1,115 @@
+{
+ "campaign": "results/raw/2026-11-23-dashboard-v1-m4max-b-mac",
+ "phase": "payload",
+ "cells": "matrices/dashboard-text-v1-mac-b.cells",
+ "device_key": "m4max",
+ "device_display": "Mac Studio (M4 Max)",
+ "device_identifier": "Mac16,9",
+ "platform": "mac",
+ "attempt": 1,
+ "started": "2026-11-23 14:45:43",
+ "ended": "2026-11-23 17:03:21",
+ "admitted": true,
+ "verdict": "COMPLETED",
+ "reason": "anchor nominal, ratio 0.991 vs reference (ca661dc6885f8603e911746838b60d312439a368)",
+ "anchor": {
+  "regime": "warm",
+  "anchors": [
+   {
+    "cell": "mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat",
+    "primary": true,
+    "median": 516.7611160629209,
+    "n": 2,
+    "thermal": [
+     "nominal"
+    ],
+    "engine_version": "ca661dc6885f8603e911746838b60d312439a368",
+    "reference": {
+     "campaign": "results/raw/2026-11-23-dashboard-v1-m4max-b-anchor-mac",
+     "median": 521.6382425377018,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "ca661dc6885f8603e911746838b60d312439a368"
+    },
+    "reference_nominal": {
+     "campaign": "results/raw/2026-11-23-dashboard-v1-m4max-b-anchor-mac",
+     "median": 521.6382425377018,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "ca661dc6885f8603e911746838b60d312439a368"
+    },
+    "reference_any_version": {
+     "campaign": "results/raw/2026-11-23-dashboard-v1-m4max-b-anchor-mac",
+     "median": 521.6382425377018,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "ca661dc6885f8603e911746838b60d312439a368"
+    },
+    "ratio": 0.9906503663323182
+   },
+   {
+    "cell": "litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 short-chat",
+    "primary": false,
+    "median": null,
+    "n": 0,
+    "thermal": [],
+    "engine_version": null,
+    "reference": {
+     "campaign": "results/raw/2026-11-23-dashboard-v1-m4max-b-anchor-mac",
+     "median": 430.6252569160364,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.19.0"
+    },
+    "reference_nominal": {
+     "campaign": "results/raw/2026-11-23-dashboard-v1-m4max-b-anchor-mac",
+     "median": 430.6252569160364,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.19.0"
+    },
+    "reference_any_version": {
+     "campaign": "results/raw/2026-11-23-dashboard-v1-m4max-b-anchor-mac",
+     "median": 430.6252569160364,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.19.0"
+    },
+    "ratio": null
+   }
+  ]
+ },
+ "anchor_phase": "results/raw/2026-11-23-dashboard-v1-m4max-b-anchor-mac",
+ "runner_exit": 0,
+ "cells_expected": 24,
+ "cells_with_records": 24,
+ "part": "b",
+ "release_by": "2026-11-24 01:30",
+ "failures": [
+  "FAIL llama.cpp unsloth/Qwen3-4B-GGUF/Q4_K_M short-chat round=1",
+  "FAIL llama.cpp unsloth/Qwen3-4B-GGUF/Q4_K_M long-context-1024-gen256 ctx=2048 round=1",
+  "FAIL llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M short-chat round=1",
+  "FAIL llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M long-context-1024-gen256 ctx=2048 round=1"
+ ],
+ "skipped": [
+  "CELL_SKIP core-ai core-ai/gemma4-e4b-gpu short-chat reason=ple-bundle-needs-unpublished-engine-patch",
+  "CELL_SKIP executorch own-export/gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat reason=gemma4-runner-has-no-warm-regime",
+  "CELL_SKIP executorch own-export/gemma-4-E4B-it-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat reason=gemma4-exporter-has-no-mlx-path",
+  "CELL_SKIP executorch own-export/gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 reason=gemma4-runner-has-no-warm-regime",
+  "CELL_SKIP executorch own-export/gemma-4-E4B-it-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 reason=gemma4-exporter-has-no-mlx-path"
+ ],
+ "schema": "dashboard-job-session.v1",
+ "job": "dashboard-v1"
+}
