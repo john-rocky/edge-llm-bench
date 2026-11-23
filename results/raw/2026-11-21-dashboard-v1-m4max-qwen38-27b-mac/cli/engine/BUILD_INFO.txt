@@ -1,0 +1,16 @@
+what: litert_lm_advanced_main of LiteRT-LM main 5dcf060207bc6604255a86e2c8310e2d8d1944a0 for macos_arm64 (the host), as the checkout builds (no tree edit)
+commit: 5dcf060207bc6604255a86e2c8310e2d8d1944a0 (2026-11-20T11:24:01-08:00 Wire Qwen2.5-Omni and Any-to-Any options into omni_runner and omni_engine)
+remote: https://github.com/google-ai-edge/LiteRT-LM.git
+clone: git init + git fetch --depth 1 origin <sha> + checkout --detach FETCH_HEAD (GIT_LFS_SKIP_SMUDGE=1), git lfs pull --include=prebuilt/macos_arm64/*
+dirty: 0 tracked files changed
+bazel: 7.6.1 (bazelisk 1.29.0, the checkout's .bazelversion 7.6.1)
+startup: --batch --host_jvm_args=-Xmx2g --output_base=<a new output base, removed after the build>
+flags: -c opt --jobs=5 --local_resources=memory=HOST_RAM*.25 --disk_cache=~/.cache/bazel-disk-litertlm (plus the checkout's .bazelrc: build -c opt, --enable_platform_specific_config -> build:macos)
+target: //runtime/engine:litert_lm_advanced_main
+gpu accelerator: runtime/executor:default_gpu_accelerator -> default_static_gpu_accelerator -> @litert//litert/runtime/accelerators/gpu:ml_drift_webgpu_accelerator (macOS, gpu_accelerator_metal_requested unset)
+prebuilt beside the binary: libGemmaModelConstraintProvider.dylib libwebgpu_dawn.dylib (the checkout's prebuilt/macos_arm64, LFS)
+built: 2026-11-21 16:35:13 JST (2026-11-21 16:35:09 the bazel-bin mtime)
+host: macOS 27.0 (26A428), Mac16,9, arm64
+xcode: Xcode 27.0 Build version 27A266a (/Applications/Xcode-27.0.0-RC.app/Contents/Developer)
+clang: Apple clang version 21.0.0 (clang-2100.3.34.2)
+bazel lines: INFO: Elapsed time: 336.606s, Critical Path: 10.99s;INFO: 6653 processes: 1038 disk cache hit, 2094 internal, 3521 local.;INFO: Build completed successfully, 6653 total actions;

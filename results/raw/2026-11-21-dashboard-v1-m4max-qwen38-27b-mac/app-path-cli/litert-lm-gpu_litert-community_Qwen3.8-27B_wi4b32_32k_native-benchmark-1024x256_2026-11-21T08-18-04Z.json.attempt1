@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "id": "3299fef4-f900-4aa8-901e-b5655a61346f",
+  "runtime": "litert-lm-gpu",
+  "engineVersion": "main-5dcf06020",
+  "engineArtifact": "litert_lm_advanced_main (macos_arm64) sha256:8b08c7d4b6ce91b6f98ad6d28878fdc5eb47378cf244a1ac02ca7d47143116b8",
+  "model": {
+    "id": "litert-community/Qwen3.8-27B/wi4b32_32k",
+    "quantization": "INT4 (block-32 weights with FP16 scales, FP32 act) on every fully connected weight, the embedding and lm_head included; norms, the GatedDeltaNet short-conv weights and the gated-delta constants FP32",
+    "file": "Qwen3.8-27B_wi4b32_32k.litertlm",
+    "sha256": "94867fc29ccf3e1fe422ddede11f6c858ec063af181ce59251fc602c3e99ded6"
+  },
+  "task": "native-benchmark-1024x256",
+  "timestamp": "2026-11-21T08:18:04Z",
+  "device": {
+    "modelIdentifier": "Mac16,9",
+    "systemName": "macOS",
+    "systemVersion": "Version 27.0 (Build 26A428)",
+    "physicalMemoryMB": 131072,
+    "processorCount": 16,
+    "batteryLevel": -1,
+    "batteryState": "unknown",
+    "isLowPowerModeEnabled": false
+  },
+  "conditions": {
+    "instrument": "litert_lm_advanced_main --benchmark on macOS, one process per launch under gtimeout 240 /usr/bin/time -l, a 5-s sampler of the other processes (cli/runlog.txt)",
+    "launchIndex": 2,
+    "cellLaunch": 2,
+    "sampler": "engine-default",
+    "contextTokens": 2048,
+    "kvAllocation": [
+      {
+        "magicNumber": 32771,
+        "targetNumber": 2048
+      }
+    ],
+    "engineBuild": "litert_lm_advanced_main built for macos_arm64 at LiteRT-LM main 5dcf0602 (2026-11-20) as the checkout builds it (bazel 7.6.1, -c opt, no source change): its GPU accelerator is ML Drift WebGPU compiled from source and linked in, with the commit's prebuilt libGemmaModelConstraintProvider.dylib and libwebgpu_dawn.dylib beside the binary (cli/engine/)",
+    "engineCommand": "./litert_lm_advanced_main --backend=gpu --model_path=~/code/litertlm-main-5dcf06020-mac.noindex/models/Qwen3.8-27B_wi4b32_32k.litertlm --benchmark --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --async=false --max_num_tokens=2048",
+    "backendRegistered": [
+      "Choose backend: gpu",
+      "max_tokens: 2048",
+      "RegisterAccelerator: ptr=<addr>, name=GPU WebGPU",
+      "Statically linked GPU accelerator registered.",
+      "RegisterAccelerator: ptr=<addr>, name=CpuAccelerator",
+      "XNNPACK CPU accelerator registered.",
+      "Selected adapter: Apple M4 Max, arch=metal-3, vendor=apple, backend=Metal, adapterType=Integrated GPU"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 21.32,
+    "hostOverlap": {
+      "verdict": "superseded",
+      "samples": "results/raw/2026-11-21-dashboard-v1-m4max-qwen38-27b-mac/cli/q27b_gpu_l2.try1.samp"
+    },
+    "engineCache": "beside the model, before: Qwen3.8-27B_wi4b32_32k.litertlm_1795246741_15169077248_mldrift_program_cache.bin 22152792 2026-11-21T16:40:19 | Qwen3.8-27B_wi4b32_32k.litertlm_1795246741_15169077248_mldrift_weight_cache.bin 12811012120 2026-11-21T16:40:19 | ; after: Qwen3.8-27B_wi4b32_32k.litertlm_1795246741_15169077248_mldrift_program_cache.bin 22152792 2026-11-21T16:40:19 | Qwen3.8-27B_wi4b32_32k.litertlm_1795246741_15169077248_mldrift_weight_cache.bin 12811012120 2026-11-21T16:40:19 | ",
+    "protocolFlags": [],
+    "timePeakFootprintMB": 3569.6
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 5010.0,
+    "promptTokensPerSecond": 206.15,
+    "decodeTokensPerSecond": 25.84,
+    "promptTokenCount": 1024,
+    "generatedTokenCount": 256,
+    "coldRun": true,
+    "harnessStamp": "2026-10-mac-litert-cli-v1",
+    "memoryPeakResidentMB": 2748.1
+  },
+  "provenance": {
+    "rawLog": "results/raw/2026-11-21-dashboard-v1-m4max-qwen38-27b-mac/cli/q27b_gpu_l2.try1.log",
+    "harness": "scripts/import_litert_cli.py",
+    "rssBasis": "/usr/bin/time -l around the CLI process: maximum resident set size (bytes / 1048576) = memoryPeakResidentMB; peak memory footprint = conditions.timePeakFootprintMB"
+  }
+}
