@@ -96,12 +96,15 @@ if [ -d "${V}/llama.xcframework" ]; then
     fi
 fi
 
-# mlx-swift — the actual SwiftPM resolution when one exists (Package.resolved appears
-# after the first build); the project.yml pin otherwise (clean clone, pre-build).
-MLX_REV=""
-RESOLVED="BenchmarkApp.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
-if [ -f "${RESOLVED}" ]; then
-    MLX_REV="$(/usr/bin/python3 - "${RESOLVED}" <<'PY' 2>/dev/null || true
+# mlx-swift — the SwiftPM resolution of the project being built. Xcode runs this phase with
+# PROJECT_FILE_PATH set to that .xcodeproj and resolves its packages before the build phases,
+# so its Package.resolved names the mlx-swift-lm the app links. Each app spec pins its own
+# (project-ddp-mlx.yml builds BenchmarkApp-ddp-mlx.xcodeproj); reading BenchmarkApp.xcodeproj's
+# for every spec stamped an app built on another pin with the main app's revision. Outside an
+# Xcode build (bootstrap step 8), or for a project that resolves no mlx-swift-lm:
+# BenchmarkApp.xcodeproj's resolution, then the project.yml pin (clean clone, pre-build).
+mlx_rev() {  # mlx_rev <Package.resolved> -> the mlx-swift-lm revision it pins, or ""
+    /usr/bin/python3 - "$1" <<'PY' 2>/dev/null || true
 import json, sys
 d = json.load(open(sys.argv[1]))
 pins = d.get("pins") or d.get("object", {}).get("pins", [])
@@ -110,13 +113,26 @@ for p in pins:
         print(p.get("state", {}).get("revision", ""))
         break
 PY
-)"
-fi
+}
+MLX_REV=""
+MLX_FROM=""
+for RESOLVED in "${PROJECT_FILE_PATH:+${PROJECT_FILE_PATH}/project.xcworkspace/xcshareddata/swiftpm/Package.resolved}" \
+        "BenchmarkApp.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"; do
+    if [ -n "${RESOLVED}" ] && [ -f "${RESOLVED}" ]; then
+        MLX_REV="$(mlx_rev "${RESOLVED}")"
+        if [ -n "${MLX_REV}" ]; then
+            MLX_FROM="${RESOLVED}"
+            break
+        fi
+    fi
+done
 if [ -z "${MLX_REV}" ]; then
     MLX_REV="$(awk '/mlx-swift-lm:/{f=1} f && /revision:/{print $2; exit}' project.yml 2>/dev/null || true)"
+    MLX_FROM="project.yml"
 fi
 if [ -n "${MLX_REV}" ]; then
     add_pin "mlx-swift" "${MLX_REV}"
+    echo "engine pins: mlx-swift ${MLX_REV} from ${MLX_FROM}"
 fi
 
 # core-ai — git state of the (possibly symlinked) checkout, plus whether it carries the

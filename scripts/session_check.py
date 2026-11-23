@@ -621,8 +621,8 @@ def registry_pin(platform, runtime, pins, lock, day=None):
     reads the same way: the Mac's and the iPhones' arms.llama.cpp.mac / .ios when the block applies
     (block_applies; a block without since always does), else arms.llama.cpp.tag from the lock's
     since day on and its previous.tag before it (llama_before); Android, android_pins from that
-    since day on and previous.tag before it. MLX: the Mac's arms.mlx-swift-lm.mac.revision when that
-    block applies, else arms.mlx-swift-lm.revision (the iPhones always)."""
+    since day on and previous.tag before it. MLX: the Mac's and the iPhones' arms.mlx-swift-lm.mac /
+    .ios revision when that block applies, else arms.mlx-swift-lm.revision."""
     arms = (lock or {}).get("arms") or {}
     if platform == "android":
         ap = (pins or {}).get("android_pins") or {}
@@ -662,10 +662,10 @@ def registry_pin(platform, runtime, pins, lock, day=None):
         return llama_before(arms, day) or (llama.get("tag"), "environment.lock.json arms.llama.cpp.tag" + since)
     if runtime == "mlx-swift":
         mlx = arms.get("mlx-swift-lm") or {}
-        block = (mlx.get("mac") or {}) if platform == "mac" else {}
+        block = (mlx.get(platform) or {}) if platform in ("mac", "ios") else {}
         if block_applies(block, day) and block.get("revision"):
             at = f", registered at {block['registered_at']}" if block.get("registered_at") else ""
-            return block["revision"], (f"environment.lock.json arms.mlx-swift-lm.mac.revision "
+            return block["revision"], (f"environment.lock.json arms.mlx-swift-lm.{platform}.revision "
                                        f"(since {block.get('since')}{at})")
         return mlx.get("revision"), "environment.lock.json arms.mlx-swift-lm.revision"
     if runtime == "core-ai":

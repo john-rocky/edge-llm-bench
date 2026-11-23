@@ -145,7 +145,7 @@
       "source": "https://github.com/ml-explore/mlx-swift-lm",
       "pinned_by": "revision in ios/BenchmarkApp/project.yml (floating-branch incident documented there)",
       "revision": "60bd0d7880c82980f9481f8be78862e9b63c58a3",
-      "note": "The iPhones' pin, and the Mac's before mac.since: the revision the iPhone 18 Pro's weekly app resolved (with mlx-swift 0.31.6). project.yml pins the Mac block's revision; the other app specs (project-ios26.yml, project-executorch.yml, project-ddp-mlx.yml) and Package.swift keep this one.",
+      "note": "The iPhones' pin before ios.since, and the Mac's before mac.since: the revision the iPhone 18 Pro's weekly app resolved (with mlx-swift 0.31.6). The app specs that take the MLX packages (project.yml, project-ios26.yml, project-executorch.yml, project-ddp-mlx.yml), their checked-in projects and Package.swift pin the mac and ios blocks' revision (3.33.0) with mlx-swift 0.33.0: an app built from this tree links that revision, and ios/BenchmarkApp/scripts/stamp_engine_pins.sh stamps the one its own project resolved.",
       "mac": {
         "tag": "3.33.0",
         "revision": "ca661dc6885f8603e911746838b60d312439a368",
@@ -156,6 +156,17 @@
           "until": "2026-11-22"
         },
         "note": "From since on, the Mac yardstick's mlx-swift-lm is the 3.33.0 release (2026-11-17), with mlx-swift 0.33.0, the newest release in the range 3.33.0 declares (up to next minor from 0.33.0); project.yml pins both. The adapter clears the model's reasoning protocol at load, so every decoded token reaches the reply as on 60bd0d78 (3.33.0 sends a Qwen3 <think> block apart from the reply by default). An engine default that moved with the version: prefill chunks are balanced (60bd0d78: the remainder in the last chunk). The build resolved the other 37 SwiftPM packages to the versions of the Mac yardstick built 2026-11-16 (swift-jinja 2.4.2, swift-transformers 1.3.3, swift-huggingface 0.9.0 among them): the committed Package.resolved (ios/BenchmarkApp/BenchmarkApp.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved) holds them; without it a fresh resolution takes the newest release in each declared range (on 2026-11-21 swift-jinja 3.2.1, swift-transformers 1.4.0, swift-huggingface 0.13.0), which reaches the chat templates of the llama.cpp, MLX and Core AI arms. scripts/session_check.py registry_pin reads this block for a Mac sitting on or after since."
+      },
+      "ios": {
+        "tag": "3.33.0",
+        "revision": "ca661dc6885f8603e911746838b60d312439a368",
+        "since": "9999-12-31",
+        "mlx_swift": "0.33.0",
+        "previous": {
+          "revision": "60bd0d7880c82980f9481f8be78862e9b63c58a3",
+          "until": "9999-12-31"
+        },
+        "note": "From since on, the iPhones' pin: a weekly app built from this tree (3.33.0 with mlx-swift 0.33.0, as in the mac block). Before it an iPhone sitting reads the top revision, 60bd0d78, which the app installed on the iPhone 18 Pro on 2026-11-04 resolved (arms.litert-lm.ios.note). since is a placeholder no sitting reaches: the commit that registers the rebuilt app's install sets since and previous.until to the install day, and is on the main of the checkout the night job posts from before the first sitting on that app. scripts/dashboard_post.py runs scripts/session_check.py before it fast-forwards, and the checker reads the registry committed before a sitting began: against the top revision the rebuilt app's records are held (engine-stamp). scripts/session_check.py registry_pin reads this block for an iPhone sitting on or after since."
       }
     },
     "coreai-models": {

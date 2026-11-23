@@ -22,6 +22,10 @@
 5. run_ddp_ios_matrix.py: the cells plan, register_archive_builder, BENCH_RAW_ROOT, --no-keep-raw.
 6. native-benchmark-<P>x<D> rows: the app's argv and the refusals, the records the app writes for them
    through the billed path and build_summary, and a row's cool-wait= as --native-cool-wait.
+7. the archive's MLX stamp (BUILD_INFO engine_version = the app's engine-pins.json): a copy of
+   ios/BenchmarkApp/scripts/stamp_engine_pins.sh beside a stand-in app dir takes the mlx-swift-lm
+   revision of the project being built (PROJECT_FILE_PATH's Package.resolved), else
+   BenchmarkApp.xcodeproj's, else project.yml's.
 """
 import contextlib
 import csv
@@ -978,6 +982,54 @@ def check_native(tmp, archive, template):
        "load, and stamps a session without it")
 
 
+def check_stamp(tmp):
+    print("--- 7. the archive's MLX stamp: stamp_engine_pins.sh reads the built project's Package.resolved")
+    app = os.path.join(tmp, "stamp", "BenchmarkApp")
+    script = os.path.join(app, "scripts", "stamp_engine_pins.sh")
+    # a copy: the script writes Vendored/engine-pins.json under its own parent dir, never this tree's
+    with open(os.path.join(ROOT, "ios", "BenchmarkApp", "scripts", "stamp_engine_pins.sh")) as fh:
+        write(script, fh.read(), 0o755)
+    write(os.path.join(app, "project.yml"),
+          "packages:\n  mlx-swift-lm:\n    url: https://github.com/ml-explore/mlx-swift-lm\n    revision: yml0\n")
+
+    def resolved(project, rev):
+        pins = [{"identity": "swift-jinja", "kind": "remoteSourceControl", "state": {"revision": "j0"}}]
+        if rev:
+            pins.append({"identity": "mlx-swift-lm", "kind": "remoteSourceControl", "state": {"revision": rev}})
+        write(os.path.join(app, project, "project.xcworkspace", "xcshareddata", "swiftpm", "Package.resolved"),
+              json.dumps({"pins": pins, "version": 3}))
+
+    def stamp(project=None):
+        env = {k: v for k, v in os.environ.items() if k != "PROJECT_FILE_PATH"}
+        if project:
+            env["PROJECT_FILE_PATH"] = os.path.join(app, project)
+        p = subprocess.run(["bash", script], env=env, capture_output=True, text=True)
+        try:
+            with open(os.path.join(app, "Vendored", "engine-pins.json")) as fh:
+                version = (json.load(fh).get("mlx-swift") or {}).get("version")
+        except (OSError, ValueError):
+            version = None
+        return p.returncode, version, p.stdout
+
+    rc, version, _ = stamp()
+    ok(rc == 0 and version == "yml0", f"no Package.resolved anywhere: the project.yml pin ({rc}, {version})")
+    resolved("BenchmarkApp.xcodeproj", "main0")
+    resolved("BenchmarkApp-ddp-mlx.xcodeproj", "ddp1")
+    resolved("BenchmarkApp-ddp.xcodeproj", None)
+    os.makedirs(os.path.join(app, "BenchmarkApp-fresh.xcodeproj"))
+    runs = {p: stamp(p) for p in (None, "BenchmarkApp.xcodeproj", "BenchmarkApp-ddp-mlx.xcodeproj",
+                                  "BenchmarkApp-ddp.xcodeproj", "BenchmarkApp-fresh.xcodeproj")}
+    got = {p: r[:2] for p, r in runs.items()}
+    ok(got == {None: (0, "main0"), "BenchmarkApp.xcodeproj": (0, "main0"),
+               "BenchmarkApp-ddp-mlx.xcodeproj": (0, "ddp1"), "BenchmarkApp-ddp.xcodeproj": (0, "main0"),
+               "BenchmarkApp-fresh.xcodeproj": (0, "main0")},
+       f"the built project's mlx-swift-lm (PROJECT_FILE_PATH); outside Xcode, for a project that resolves no "
+       f"mlx-swift-lm and for one not resolved yet, BenchmarkApp.xcodeproj's ({got})")
+    line = f"engine pins: mlx-swift ddp1 from {os.path.join(app, 'BenchmarkApp-ddp-mlx.xcodeproj')}/"
+    ok(line in runs["BenchmarkApp-ddp-mlx.xcodeproj"][2],
+       f"the build log names the file the pin came from ({runs['BenchmarkApp-ddp-mlx.xcodeproj'][2].strip()!r})")
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix="ios-ddp-selftest-")
     try:
@@ -988,6 +1040,7 @@ def main():
         check_summary(tmp, camp, template)
         check_matrix(tmp, archive, shas, template)
         check_native(tmp, archive, template)
+        check_stamp(tmp)
     except Exception as exc:  # noqa: BLE001 — a crash is a failure with the temp dir kept
         import traceback
         traceback.print_exc()
