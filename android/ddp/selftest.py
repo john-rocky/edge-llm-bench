@@ -1545,7 +1545,7 @@ def check_side_build_row(tmp, ddp, plan_s, session):
     build to engines/<tag>/ beside the flat one, the job carries engineBuild = engineTag = the tag). With the unit's
     sha256 of engines/<tag>/'s tools and libs in provenance.txt (ddp_cell.sh reads them since r5) the witness names
     the entry's engine_version and the record the build; without them (a provenance.txt from the wrapper before r5,
-    the 2026-11-03 d449pg sitting's) the engine stays unknown and no build is named. The text check's parser goes by
+    the 2026-11-03 build-pregpu sitting's) the engine stays unknown and no build is named. The text check's parser goes by
     the engine: a LiteRT-LM chat launch of the side build is not text-checked, as the flat build's and run_cell's side
     build's (before r5 llama_cli_reply read it as an empty reply: text-fail on every run); a 1K launch's texts are
     checked; a llama.cpp side build's chat reply is still read by llama_cli_reply."""

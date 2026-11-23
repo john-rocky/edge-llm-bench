@@ -2550,7 +2550,7 @@ def main():
        f"main@b7c40ea81 1K: Prefill Turn 1's count and speed, not the second turn's (got {its2} {k2_checks})")
     # LiteRT-LM v0.19.0 (the release build, Galaxy S26, 2026-10-31): short chat runs two prefill turns too (Turn 2
     # = 148 tokens after the reply), the 1K task two per iteration (Turn 2 = 2 tokens) and an Aggregated block after
-    # them, the protocol path one; the values are the stored records' (results/raw/2026-10-31-d178-v0190-paths-s26-android)
+    # them, the protocol path one; the values are the stored records' (results/raw/2026-10-31-v0190-paths-s26-android)
     v19 = lambda task: lrd(f"s26-v0.19.0-gpu-qwen3-0.6b-{task}.console.txt")
     ok(rounded(parsers.parse_litert(v19("short-chat"))) == {
         "firstTokenLatencyMS": 150.0, "promptTokensPerSecond": 139.3, "decodeTokensPerSecond": 82.08,
