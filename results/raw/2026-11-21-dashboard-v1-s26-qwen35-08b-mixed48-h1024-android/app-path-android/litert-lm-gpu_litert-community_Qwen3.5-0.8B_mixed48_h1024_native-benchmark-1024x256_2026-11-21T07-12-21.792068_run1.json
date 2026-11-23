@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "id": "eee853f7-6798-4802-a48c-6d961c4de04f",
+  "runtime": "litert-lm-gpu",
+  "engineVersion": "main-5dcf06020",
+  "engineArtifact": "26a322658a28eb418ef8d3ef7fb545eabb9cfdbdd9210751a523a23b21543d39",
+  "model": {
+    "id": "litert-community/Qwen3.5-0.8B/mixed48_h1024",
+    "quantization": "mixed int4 / int8, Hadamard 1024 (qwen3_5_mixed48_h1024 + dynamic_wi8_afp32): int4 channelwise on the embedding / lm_head, in_proj, gate_up and qkv weights; int8 channelwise on down_proj, out_proj, o_proj and the 1024 x 1024 Hadamard matrices",
+    "file": "litert-community_Qwen3.5-0.8B_mixed48_h1024_Qwen3.5-0.8B_mixed48_h1024.litertlm",
+    "sha256": "61c65dbcaa86461184df1b60a82941c5d3e65fb535411d1b2192ccf222e98b35"
+  },
+  "task": "native-benchmark-1024x256",
+  "timestamp": "2026-11-21T07:12:21Z",
+  "device": {
+    "modelIdentifier": "SM-S942Q",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-08-05",
+    "soc": "SM8850",
+    "product": "m1q",
+    "batteryLevel": 0.79,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "none",
+    "cpusAllowedList": "0-7",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 3628.8,
+        "hw": 3628.8,
+        "cpus": "0-5"
+      },
+      "policy6": {
+        "min": 4742.4,
+        "hw": 4742.4,
+        "cpus": "6-7"
+      }
+    },
+    "contextTokens": 2048,
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "on-usb",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "2",
+    "elapsedSeconds": 5.7,
+    "exitCode": 0,
+    "engineBuild": "main-5dcf06020",
+    "engineCommand": "LD_LIBRARY_PATH=/data/local/tmp/llmbench/engines/main-5dcf06020 /data/local/tmp/llmbench/engines/main-5dcf06020/litert_lm_advanced_main --backend=gpu --model_path=/data/local/tmp/llmbench/engines/main-5dcf06020/models/litert-community_Qwen3.5-0.8B_mixed48_h1024_Qwen3.5-0.8B_mixed48_h1024.litertlm --benchmark --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --async=false --max_num_tokens=2048",
+    "backendRegistered": [
+      "Choose backend: gpu",
+      "max_tokens: 2048",
+      "RegisterAccelerator: ptr=<addr>, name=LiteRT GPU",
+      "Statically linked GPU accelerator registered.",
+      "RegisterAccelerator: ptr=<addr>, name=CpuAccelerator",
+      "XNNPACK CPU accelerator registered.",
+      "Replacing 503 out of 503 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (prefill_128).",
+      "Replacing 503 out of 503 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (prefill_1024).",
+      "Replacing 509 out of 509 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 2 (decode)."
+    ],
+    "gpuAccelerator": "static-source",
+    "gpuAcceleratorLine": "INFO: [gpu_registry.cc:121] Statically linked GPU accelerator registered."
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 860.0,
+    "promptTokensPerSecond": 1209.8,
+    "decodeTokensPerSecond": 83.02,
+    "promptTokenCount": 1024,
+    "generatedTokenCount": 256,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 372.71484375,
+    "memoryPeakResidentMB": 704.71875
+  },
+  "provenance": {
+    "rawLog": "litert-lm-gpu_litert-community_Qwen3.5-0.8B_mixed48_h1024_native-benchmark-1024x256_2026-11-21T07-12-21.792068_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024",
+    "modelShaSource": "device"
+  }
+}
