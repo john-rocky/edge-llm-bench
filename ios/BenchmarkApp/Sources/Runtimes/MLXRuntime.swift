@@ -103,8 +103,7 @@ public actor MLXRuntime: LLMRuntime {
                         default:
                             // 3.33.0's other events (reasoning, rejected tool calls,
                             // steering); none carries text once the reasoning protocol is
-                            // cleared at load. `default` keeps this file building on the
-                            // 60bd0d78 pin of the other app specs, which lack these cases.
+                            // cleared at load.
                             break
                         }
                     }
