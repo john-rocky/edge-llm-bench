@@ -133,6 +133,14 @@ LiteRT-LM short-chat cells at v0.18.0, dad937b1, and at v0.19.0, cde05ae1: the D
 none; one line per tag, taken after a pin move once one log reads as a whole reply), and per-dir
 lines for committed sittings whose commit message explained the finding.
 
+One more known exception that holds for any dir: `prefill-drop` in the LiteRT-LM CPU short-chat
+prefill of Gemma 4 E2B (file 181938105e0e) and Qwen3 1.7B (file e40599625f3e) on the Pixel 11 Pro on
+v0.19.0. First-ever runs left out, each launch of either model reads one of two prefill speeds, and
+both speeds have occurred within one night, on the same file, prompt, LiteRT-LM build and CPUs. A
+night's median moves with how many of its launches read each speed. What sets a launch's speed is
+not known. One allow-list line excuses this `prefill-drop` in any dir matching
+`*-dashboard-v1-pixel11pro-*-android` and names the commit that added this paragraph.
+
 ## The text screen (`text_screen.json`, 2026-10-19)
 
 The Mac and iPhone runners store each run's reply (`outputSample`) and write no text check; the
