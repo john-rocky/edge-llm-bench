@@ -289,6 +289,29 @@ public struct Metrics: Codable, Sendable {
     public let memoryMedianMB: Double?
     public let memoryMedianResidentMB: Double?
     public let memoryFinalResidentMB: Double?
+    /// Memory in three places over the same window as
+    /// `memoryPeakDuringDecodeMB` (`methodology/memory.md` "Three places",
+    /// `MemoryMonitor`), MiB, nil on records from an older binary: the peak and median of
+    /// LiteRT memory_profiling's figures (accelerator present / attributed, resident in RAM =
+    /// host resident + accelerator present), of `external` (mapped file pages in the page
+    /// table) and of the total that counts each page once (phys_footprint + external + GPU-wrapped
+    /// pages in RAM - their two measured overlaps); the whole reading at the total's peak; the
+    /// definition's name; and the overlap queries the window ran.
+    public let memoryAccountingBasis: String?
+    public let memoryPeakTotalMB: Double?
+    public let memoryMedianTotalMB: Double?
+    public let memoryPeakExternalMB: Double?
+    public let memoryMedianExternalMB: Double?
+    public let memoryPeakAcceleratorPresentMB: Double?
+    public let memoryMedianAcceleratorPresentMB: Double?
+    public let memoryPeakAcceleratorAttributedMB: Double?
+    public let memoryMedianAcceleratorAttributedMB: Double?
+    public let memoryPeakResidentInRAMRecomputedMB: Double?
+    public let memoryMedianResidentInRAMRecomputedMB: Double?
+    public let memoryAtTotalPeak: MemoryBreakdown?
+    public let memoryOverlapQueries: Int?
+    public let memoryOverlapQueryMS: Double?
+    public let memoryOverlapFailedQueries: Int?
     /// The context (KV) budget this run was actually given, i.e. the value handed to
     /// `LLMRuntime.prepareContext`. Either the runner's prompt+output estimate or the
     /// `--context-tokens` override. Recorded because it is not derivable from anything
@@ -386,7 +409,8 @@ public struct Metrics: Codable, Sendable {
         energySource: String? = nil,
         energyTickCount: Int? = nil,
         energyWindowTokenCount: Int? = nil,
-        batteryTickTimestamps: [Double]? = nil
+        batteryTickTimestamps: [Double]? = nil,
+        memoryAccounting: MemoryAccounting? = nil
     ) {
         self.coldRun = coldRun
         self.loadTimeSeconds = loadTimeSeconds
@@ -428,6 +452,21 @@ public struct Metrics: Codable, Sendable {
         self.energyTickCount = energyTickCount
         self.energyWindowTokenCount = energyWindowTokenCount
         self.batteryTickTimestamps = batteryTickTimestamps
+        self.memoryAccountingBasis = memoryAccounting == nil ? nil : MemoryAccounting.basis
+        self.memoryPeakTotalMB = memoryAccounting?.peakTotalMB
+        self.memoryMedianTotalMB = memoryAccounting?.medianTotalMB
+        self.memoryPeakExternalMB = memoryAccounting?.peakExternalMB
+        self.memoryMedianExternalMB = memoryAccounting?.medianExternalMB
+        self.memoryPeakAcceleratorPresentMB = memoryAccounting?.peakAcceleratorPresentMB
+        self.memoryMedianAcceleratorPresentMB = memoryAccounting?.medianAcceleratorPresentMB
+        self.memoryPeakAcceleratorAttributedMB = memoryAccounting?.peakAcceleratorAttributedMB
+        self.memoryMedianAcceleratorAttributedMB = memoryAccounting?.medianAcceleratorAttributedMB
+        self.memoryPeakResidentInRAMRecomputedMB = memoryAccounting?.peakResidentInRAMMB
+        self.memoryMedianResidentInRAMRecomputedMB = memoryAccounting?.medianResidentInRAMMB
+        self.memoryAtTotalPeak = memoryAccounting?.atTotalPeak
+        self.memoryOverlapQueries = memoryAccounting?.overlapQueries
+        self.memoryOverlapQueryMS = memoryAccounting?.overlapQueryMS
+        self.memoryOverlapFailedQueries = memoryAccounting?.overlapFailedQueries
     }
 }
 
@@ -448,6 +487,29 @@ public struct NativeBenchmarkRecord: Encodable, Sendable {
         public let memoryMedianResidentMB: Double?
         public let memorySampleCount: Int
         public let memoryPostTeardownFootprintMB: Double
+        /// Memory in three places over the same window as
+        /// `memoryPeakDuringDecodeMB` (`methodology/memory.md` "Three places",
+        /// `MemoryMonitor`), MiB, nil on records from an older binary: the peak and median of
+        /// LiteRT memory_profiling's figures (accelerator present / attributed, resident in RAM =
+        /// host resident + accelerator present), of `external` (mapped file pages in the page
+        /// table) and of the total that counts each page once (phys_footprint + external + GPU-wrapped
+        /// pages in RAM - their two measured overlaps); the whole reading at the total's peak; the
+        /// definition's name; and the overlap queries the window ran.
+        public let memoryAccountingBasis: String?
+        public let memoryPeakTotalMB: Double?
+        public let memoryMedianTotalMB: Double?
+        public let memoryPeakExternalMB: Double?
+        public let memoryMedianExternalMB: Double?
+        public let memoryPeakAcceleratorPresentMB: Double?
+        public let memoryMedianAcceleratorPresentMB: Double?
+        public let memoryPeakAcceleratorAttributedMB: Double?
+        public let memoryMedianAcceleratorAttributedMB: Double?
+        public let memoryPeakResidentInRAMRecomputedMB: Double?
+        public let memoryMedianResidentInRAMRecomputedMB: Double?
+        public let memoryAtTotalPeak: MemoryBreakdown?
+        public let memoryOverlapQueries: Int?
+        public let memoryOverlapQueryMS: Double?
+        public let memoryOverlapFailedQueries: Int?
         public let contextTokensConfigured: Int
         public let wallSeconds: Double
         public let initialThermalState: String
@@ -472,7 +534,8 @@ public struct NativeBenchmarkRecord: Encodable, Sendable {
             wallSeconds: Double,
             initialThermalState: String,
             finalThermalState: String,
-            harnessStamp: String
+            harnessStamp: String,
+            memoryAccounting: MemoryAccounting? = nil
         ) {
             self.coldRun = coldRun
             self.promptTokenCount = promptTokenCount
@@ -492,6 +555,21 @@ public struct NativeBenchmarkRecord: Encodable, Sendable {
             self.initialThermalState = initialThermalState
             self.finalThermalState = finalThermalState
             self.harnessStamp = harnessStamp
+            self.memoryAccountingBasis = memoryAccounting == nil ? nil : MemoryAccounting.basis
+            self.memoryPeakTotalMB = memoryAccounting?.peakTotalMB
+            self.memoryMedianTotalMB = memoryAccounting?.medianTotalMB
+            self.memoryPeakExternalMB = memoryAccounting?.peakExternalMB
+            self.memoryMedianExternalMB = memoryAccounting?.medianExternalMB
+            self.memoryPeakAcceleratorPresentMB = memoryAccounting?.peakAcceleratorPresentMB
+            self.memoryMedianAcceleratorPresentMB = memoryAccounting?.medianAcceleratorPresentMB
+            self.memoryPeakAcceleratorAttributedMB = memoryAccounting?.peakAcceleratorAttributedMB
+            self.memoryMedianAcceleratorAttributedMB = memoryAccounting?.medianAcceleratorAttributedMB
+            self.memoryPeakResidentInRAMRecomputedMB = memoryAccounting?.peakResidentInRAMMB
+            self.memoryMedianResidentInRAMRecomputedMB = memoryAccounting?.medianResidentInRAMMB
+            self.memoryAtTotalPeak = memoryAccounting?.atTotalPeak
+            self.memoryOverlapQueries = memoryAccounting?.overlapQueries
+            self.memoryOverlapQueryMS = memoryAccounting?.overlapQueryMS
+            self.memoryOverlapFailedQueries = memoryAccounting?.overlapFailedQueries
         }
     }
 

@@ -295,6 +295,7 @@ public actor BenchmarkRunner {
         let memoryMedian = await memorySampler.medianMB
         let memoryMedianResident = await memorySampler.medianResidentMB
         let memoryFinalResident = await memorySampler.finalResidentMB
+        let memoryAccounting = await memorySampler.accounting
         let energy = await energyMonitor.snapshot()
 
         // Refresh battery fields to end-of-run: a launch-then-unplug energy run
@@ -391,7 +392,8 @@ public actor BenchmarkRunner {
             energyWindowTokenCount: tickWindowTokens,
             batteryTickTimestamps: tick.map { w in
                 w.transitionTimes.map { ($0 - generationStart) }
-            }
+            },
+            memoryAccounting: memoryAccounting
         )
 
         emit(.done)
