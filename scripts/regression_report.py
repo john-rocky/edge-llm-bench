@@ -12,7 +12,7 @@ verbatim. Output dir: results/regression-reports/<date>-<engine>-<version>/
   invocation.txt  the exact command, for provenance
 The committed verdicts.json files are the append-only canon behind
 results/summary/history.csv (build_summary.py regenerates it from them).
-Exit code mirrors regression_diff (1 = REGRESSION somewhere).
+Exit code mirrors regression_diff (1 = REGRESSION or candidate TEXT-FAIL).
 """
 import argparse
 import datetime

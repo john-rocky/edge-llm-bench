@@ -13,6 +13,8 @@ fairness rules applied as code, not discipline:
            same pins measured 126-133 tok/s in June and 159-180 in July.
            Only same-session pairs
            (e.g. the resident A/B design) earn a REGRESSION/OK verdict.
+  text-check-rule    a run whose decoded text failed the text check counts in no cell; a
+           cell whose runs all failed on one side is printed TEXT-FAIL, never scored.
 
 Quality (GSM8K) pairs join on tag; device cells join on
 (device, runtime, model_id, task, context_tokens, cold/warm) split by the requested selectors —
@@ -33,7 +35,8 @@ Usage:
       --baseline campaign:2026-07-30-gemma4-e2b-protocol \
       --candidate campaign:2026-08-04-litert-0150-iphone
 
-Exit code 1 iff any cell's verdict is REGRESSION (loop/CI-usable). Reads
+Exit code 1 iff any cell's verdict is REGRESSION or a candidate cell is TEXT-FAIL
+(loop/CI-usable). Reads
 results/summary/*.csv, regenerating them first via build_summary.py (--no-rebuild
 to skip). ./reproduce <platform> <table> --regress drives the capture+diff loop.
 """
@@ -232,6 +235,8 @@ def counted(r, metric):
         return None
     if r.get("first_ever") == "True":
         return None  # engine-cache build run (cold-warm-split) — never pooled
+    if (r.get("text_check") or "").startswith("FAIL"):
+        return None  # methodology §12 (text-check-rule): failed text is not a measurement
     return float(v)
 
 
@@ -357,6 +362,30 @@ def run_device(args):
     worst = 0
     b_quants, c_quants = quants(base_rows), quants(cand_rows)
     anchors = load_anchor_cells(args.anchors) if args.anchors else []
+
+    def text_checks(selection):
+        by_cell = {}
+        for row in selection:
+            key = tuple(row[k] for k in GROUP)
+            by_cell.setdefault(key, []).append(row.get("text_check") or "")
+        return {key: (len(checks), [check for check in checks if check.startswith("FAIL")])
+                for key, checks in by_cell.items()}
+
+    b_checks, c_checks = text_checks(base_rows), text_checks(cand_rows)
+    for key in sorted(b_checks.keys() & c_checks.keys()):
+        for side, (total, failed) in (("baseline", b_checks[key]), ("candidate", c_checks[key])):
+            if len(failed) != total:
+                continue
+            flags = sorted({flag for check in failed for flag in check.partition(":")[2].split(",") if flag})
+            label = fmt_key(key)
+            note = (f"[{side}: {len(failed)} of {total} runs failed the text check "
+                    f"({', '.join(flags) or 'no flags reported'}) — no verdict]")
+            print(f"{'TEXT-FAIL':16} {label}  {note}")
+            record("device", "TEXT-FAIL", label, note, side=side,
+                   failed_runs=len(failed), total_runs=total)
+            if side == "candidate":
+                worst = 1
+
     any_common = False
     # ttft/memory: lower is better; both were columns without a diff until 2026-08-17
     for metric, higher_is_better in (("decode_tps", True), ("prefill_tps", True),
@@ -383,6 +412,11 @@ def run_device(args):
             if b_quants.get(key, set()) != c_quants.get(key, set()):
                 note += (f"  [quant label: {'/'.join(sorted(b_quants.get(key, set())))} vs "
                          f"{'/'.join(sorted(c_quants.get(key, set())))}]")
+            b_total, b_failed = b_checks[key]
+            c_total, c_failed = c_checks[key]
+            if b_failed or c_failed:
+                note += (f" [text check FAIL left out: baseline {len(b_failed)}/{b_total}, "
+                         f"candidate {len(c_failed)}/{c_total}]")
             b_dates = {d for _, d in b_cells[key] if d}
             c_dates = {d for _, d in c_cells[key] if d}
             # no-cherry-pick rule: a verdict needs n>=MIN_N per side; a single
@@ -453,7 +487,7 @@ def run_device(args):
             record("device", verdict, label, note, **base_rec)
             if worse:
                 worst = 1
-    if not any_common:
+    if not any_common and not worst:
         # show why nothing joined (e.g. a task rename) instead of exiting silently
         print("no common cells between the two selections; distinct cell keys:")
         for side, sel_rows in (("baseline", base_rows), ("candidate", cand_rows)):

@@ -10,7 +10,7 @@ below produces *wrong-looking-right* numbers, which is worse than an error.
 ./bench doctor            # preflight; every FAIL prints its fix command; exit 1 on failure
 ./bench release-watch     # upstream releases vs environment.lock.json pins
 ./bench matrix  <cells>   # capture -> summary -> LEADERBOARD; exit 2 if zero cells matched
-./bench regress <cells> --engine <arm> --version <v> --baseline <sel>   # exit 1 = REGRESSION somewhere
+./bench regress <cells> --engine <arm> --version <v> --baseline <sel>   # exit 1 = REGRESSION or candidate TEXT-FAIL
 ```
 
 First-time setup and honest per-lane durations: README "Setup" (Mac ~45 min,

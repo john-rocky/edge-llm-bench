@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Device- and network-free selftest of the session-anchor rule in scripts/regression_diff.py (CI).
+"""Device- and network-free selftest of the session-anchor and text-check rules in scripts/regression_diff.py (CI).
 
 Synthetic device-runs rows stand in for results/summary/device-runs.csv: one Mac payload cell of
 the engine under test (llama.cpp, 100 -> 80 tok/s across two sittings on two days) and two anchor
@@ -23,6 +23,9 @@ only when its rows carry the same engine version, harness stamp and engine artif
   (j) the engine under test's own anchor stays excluded (an mlx-swift payload goes through the
       litert-lm anchor even when the mlx-swift anchor did not move)
   (k) a same-day pair takes no anchor: the raw delta is the verdict
+  (l) every candidate run failed the text check -> TEXT-FAIL, exit 1
+  (m) one failed candidate outlier beside three passing runs -> OK from the three, the left-out
+      count printed
 
   python3 scripts/regression_diff_selftest.py     # exit 0 = pass
 """
@@ -207,6 +210,23 @@ def main():
     rc, rec, line = run(world(same, (MLX_V2, STAMP, ""), cand_day=BASE_DAY), anchors_path)
     ok(rec and rec["verdict"] == "REGRESSION" and "anchor" not in rec and rc == 1,
        f"the raw -20 % is the verdict, exit 1 ({rec and rec['verdict']}, rc {rc})")
+
+    print("--- (l) all candidate runs failed the text check")
+    base = [dict(row("camp-base-mac", BASE_DAY, PAYLOAD, v, same), text_check="PASS")
+            for v in (100, 101, 102)]
+    cand = [dict(row("camp-cand-mac", BASE_DAY, PAYLOAD, v, same), text_check="FAIL:off-task")
+            for v in (100, 101, 102)]
+    rc, _, line = run(base + cand, None)
+    ok(rc == 1 and line.startswith("TEXT-FAIL") and "candidate: 3 of 3" in line,
+       "TEXT-FAIL for the candidate, exit 1")
+
+    print("--- (m) one candidate outlier failed the text check")
+    cand = [dict(r, text_check="PASS") for r in cand]
+    outlier = dict(cand[0], decode_tps="150", text_check="FAIL:off-task")
+    rc, rec, line = run(base + cand + [outlier], None)
+    ok(rc == 0 and rec and rec["verdict"] == "OK" and rec["cand_n"] == 3
+       and "text check FAIL left out: baseline 0/3, candidate 1/4" in line,
+       "OK from the three passing candidate runs, with the exclusion printed")
 
     if _fails:
         print(f"\n{len(_fails)} failure(s); temp dir kept: {tmp}")
