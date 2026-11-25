@@ -61,7 +61,7 @@ long-context S26 ladder); the Android short-chat rows before that date have none
 and none is reconstructed from them. Runs from 2026-10-06 on read it on every launch.
 
 Aggregation: `render_leaderboard.arm_row` gives `mem_peak` = the median over the
-session's runs, first-ever runs (the engine-cache build) left out, of each run's
+session's runs of each run's
 footprint peak, else its resident peak (the same per-row basis choice as `mem`),
 and `mem_peak_n` = the runs that had one; process-cold and warm runs pool in it.
 The dashboard shows it as "mem peak MB".
@@ -70,25 +70,25 @@ A footprint peak does not compare across runtimes, even on one platform: each
 runtime keeps its weights in a different place. MLX allocates them, so they are
 in the footprint; llama.cpp and LiteRT-LM map them from a file (the GGUF,
 LiteRT-LM's weight cache), so they sit in the page table or in memory the GPU
-wraps, outside the footprint. Across runtimes, read the total of the next
-section. The Apple and Android windows differ as well (load
-outside / inside), so no peak compares across platforms.
+wraps, outside the footprint. Across runtimes on macOS, read the total of the
+next section. The Apple and Android windows differ as well, so no peak compares
+across platforms.
 
 ## Three places and a total (Apple, 2026-11-14)
 
-macOS only for now: on iOS the sampler keeps its earlier reads (`task_info` alone, no Metal figure,
-no region query) and the records carry none of the fields below, until this has run on an iPhone.
+macOS only: on iOS the sampler reads `phys_footprint` and `resident_size` as before, now from
+one `task_info(TASK_VM_INFO)` call, and the records carry none of the fields below.
 
 A run's memory can sit in three places, and which ones depends on the runtime:
 
 | place | what is in it | read from |
 |---|---|---|
-| 1. `phys_footprint` | dirty and compressed memory, and the Metal buffers a runtime allocates (MLX keeps its weights there) | `task_info(TASK_VM_INFO)` |
+| 1. `phys_footprint` | anonymous memory the CPU has touched, in RAM or compressed, and the Metal buffers a runtime allocates (MLX keeps its weights there) | `task_info(TASK_VM_INFO)` |
 | 2. mapped file pages in the page table (`external`) | a mapped model or weight cache the CPU has read (llama.cpp's GGUF, LiteRT-LM's CPU weight cache) | the same call |
-| 3. memory the GPU wraps without a copy | a mapped model file or anonymous memory handed to the GPU with `newBufferWithBytesNoCopy`, which the OS charges to nobody (LiteRT-LM's GPU weight cache; llama.cpp's GGUF, KV cache and compute buffers) | the pages in RAM of the VM objects behind the wrapped regions (full VM region query) |
+| 3. memory the GPU wraps without a copy | a mapped model file or anonymous memory handed to the GPU with `newBufferWithBytesNoCopy` (LiteRT-LM's GPU weight cache; llama.cpp's GGUF, KV cache and compute buffers) | the pages in RAM of the VM objects behind the regions that look wrapped by the GPU (full VM region query; see below) |
 
 Place 3 overlaps the other two wherever the CPU has touched wrapped memory too.
-Measured on an Apple M4 Max under macOS 27 with 256 MB test buffers:
+Measured on an Apple M4 Max under macOS 27 with test buffers:
 
 - a file mapped shared (`MAP_SHARED`, as llama.cpp maps its GGUF): the pages
   the CPU has read stay in the page table, so they are in places 2 and 3;
@@ -105,42 +105,45 @@ The total counts each page once:
     total = place 1 + place 2 + place 3 - overlap(2, 3) - overlap(1, 3)
 
 Both overlaps are measured, not assumed: they are the wrapped regions' pages in
-the page table (the region query answers from the page table in footprint mode,
-`vm.self_region_footprint`). So the total adds, beyond `phys_footprint` and
-`external`, exactly the wrapped pages outside the page table, the pages only the
-GPU holds (`wrappedGPUOnlyMB`).
+the page table (for these regions the region query answers from the page table
+in footprint mode, `vm.self_region_footprint`). So the total adds, beyond
+`phys_footprint` and
+`external`, the wrapped pages outside the page table
+(`wrappedGPUOnlyMB`).
 
-A wrap shows in the VM region query: the region turns "true shared" and its VM
-object gains a reference (a shared file mapping 2 → 3, anonymous memory 1 → 2; a
-private file mapping's top VM object turns anonymous and true shared at the
-GPU's first read). The sampler (`MemoryMonitor.measureOverlap`) finds those
+A wrap shows in the VM region query: a shared file mapping's VM object gains a
+reference (a third with one buffer), and the
+region turns "true shared" at the GPU's first read; anonymous memory turns true
+shared with a second reference; a private file mapping's top VM object turns
+anonymous and true shared at the GPU's first read.
+`MemoryMonitor.measureOverlap` finds those
 regions and walks their pages. A runtime may wrap only part of a mapping:
 llama.cpp leaves the tensors the CPU computes out of its GPU buffers but maps the
-whole GGUF. Counting the whole VM object needs no knowledge of which part is
-wrapped, because whatever of it is in the page table is subtracted again. So
+whole GGUF. So
 place 3 alone is not what the GPU holds: for llama.cpp it counts the whole GGUF's
-VM object, and the total subtracts the part in the page table. The
-error left: file pages of a wrapped region that stay cached in RAM, outside the
-page table and outside the wrapped part, count as GPU-held. A file mapped shared
+VM object.
+File pages of a wrapped region that stay cached in RAM, outside
+the page table and outside the wrapped part, count in the total. Memory the GPU
+does not wrap can look wrapped too, and its pages outside the page table count
+in the total too.
+A file mapped shared
 by plain mappings of other processes reads "shared", not "true shared", and is
-left out. Confirming a wrapped private file mapping takes the full region query,
-which walks every page of the mapping (10-38 ms for a 3.7 GB model file mapped in
-pieces), so the sampler runs it only while Metal's figure beyond the ledger
-exceeds the sizes of the regions already found by 32 MiB, that is while the GPU
-holds memory not located yet.
+left out. Confirming a wrapped private file mapping takes the full region query;
+the sampler runs it only while Metal's figure beyond the ledger
+(`mappedWeightsMB`, described below) exceeds the sizes of the regions already
+found by 32 MiB, that is while the GPU holds memory not located yet.
 
-The sampler measures at the first tick, again once `external`, `internal` or
+The sampler measures at the start, again once `external`, `internal` or
 Metal's figure beyond the ledger has moved by 16 MiB, or place 3 itself moved by
 16 MiB at the last measurement (250 ms apart at least: a wrapped file the GPU
-reads for the first time pages in over seconds), and every 2 s while the process
+reads for the first time is paged in over seconds), and every 2 s while the process
 has wrapped regions (the GPU touching a wrapped page moves none of those
-counters). A measurement takes about 0.7 ms per 600 regions plus 0.7-0.8 ms
-per 512 MB walked, twice per wrapped region; the record carries the count and
+counters). A measurement is one query per region of the process plus the page
+walks, twice per wrapped region; the record carries the count and
 the time (`memoryOverlapQueries`, `memoryOverlapQueryMS`). A sample between two
-measurements uses the last one. A measurement that fails (a region on the list
-cannot be read again) counts in `memoryOverlapQueries` and in
-`memoryOverlapFailedQueries`, leaves the last measurement in use the same way,
-and is tried again at the same pace.
+measurements uses the last one. A measurement that fails counts in
+`memoryOverlapQueries` and in `memoryOverlapFailedQueries`, leaves the last
+measurement in use the same way, and is tried again at the same pace.
 
 `memoryAtTotalPeak` also carries Metal's own figure, `MTLDevice.currentAllocatedSize`,
 as `metalAllocatedMB`, and the part of it beyond
@@ -157,7 +160,7 @@ Record fields and `results/summary/device-runs.csv` columns, all over the window
 of `memoryPeakDuringDecodeMB`, MiB, empty on records from an older binary (no
 `memoryAccountingBasis`). That window starts
 after the model load in `BenchmarkRunner`; in the yardstick's native paths it is
-the whole native call, and LiteRT-LM's `benchmark()` builds its engine inside it.
+the whole native call, and LiteRT-LM's `benchmark()` creates its `Engine` inside it.
 
 | record field | column |
 |---|---|
@@ -165,14 +168,15 @@ the whole native call, and LiteRT-LM's `benchmark()` builds its engine inside it
 | `memory{Median,Peak}ExternalMB` | `mem_external_{median,peak}_mb` |
 | `memoryAtTotalPeak.overlapMB` (both overlaps) | `mem_overlap_at_total_peak_mb` |
 
-`memoryAtTotalPeak` holds the whole reading at the total's peak, every part in
-MiB, so the parts add up to it (`hostAttributedMB` + `externalMB` +
-`wrappedResidentMB` - `overlapExternalMB` - `overlapFootprintMB` = `totalMB`);
-`memoryAccountingBasis` names this definition (`apple-vm-wrapped-pages-v1`). The
-total is empty when the measurement at the first tick fails: a sample before the
-first measurement has no total. Which number answers what: the total for "does it fit in RAM",
+`memoryAtTotalPeak` holds the reading at the total's peak, every part in
+MiB, so the parts add up to it: `hostAttributedMB` (`phys_footprint`) +
+`externalMB` + `wrappedResidentMB` - `overlapExternalMB` -
+`overlapFootprintMB` = `totalMB`. `memoryAccountingBasis` names this
+definition (`apple-vm-wrapped-pages-v1`). The total is empty when the
+measurement at the start fails, even if a later one succeeds. Which number
+answers what: the total for "does it fit in RAM",
 across runtimes; `phys_footprint` for "will iOS kill it" (jetsam charges the
-footprint, not mapped clean pages or pages only the GPU holds).
+footprint, not file-backed pages or pages only the GPU holds).
 
 ## `phys_footprint` vs `resident_size` vs `os_proc_available_memory()`
 

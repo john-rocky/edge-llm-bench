@@ -9,37 +9,38 @@ import Metal
 /// A run's memory sits in up to three places, and which ones depends on the runtime:
 ///
 /// 1. **`phys_footprint`** (`TASK_VM_INFO`): the byte count the OS charges the
-///    process, the figure iOS enforces its per-process limit (jetsam) against
-///    and Activity Monitor's "Memory" column. It counts dirty, compressed and
-///    IOKit memory, which on Apple silicon includes the Metal buffers a runtime
-///    allocates (MLX keeps its weights there). It does not count clean
-///    file-backed pages: a model the runtime memory-maps and never writes.
+///    process, the figure iOS enforces its per-process limit (jetsam) against.
+///    It counts the anonymous memory the CPU has touched, in RAM or compressed (a
+///    page the CPU writes through a private file mapping is anonymous), and IOKit
+///    memory, which on Apple silicon includes the Metal buffers a runtime allocates
+///    (MLX keeps its weights there). It does not count file-backed pages: a model
+///    the runtime memory-maps and never writes, or a file mapped shared that the
+///    CPU writes.
 /// 2. **Mapped file pages in the process's page table** (`external`, the
 ///    file-backed part of `resident_size`): where a memory-mapped model sits once
 ///    the CPU has read it (llama.cpp's GGUF, LiteRT-LM's weight cache on the CPU
 ///    backend).
-/// 3. **Memory the GPU wraps without a copy** (`newBufferWithBytesNoCopy`), which
-///    the OS charges to nobody: a mapped model file (LiteRT-LM's GPU weight cache,
+/// 3. **Memory the GPU wraps without a copy** (`newBufferWithBytesNoCopy`):
+///    a mapped model file (LiteRT-LM's GPU weight cache,
 ///    llama.cpp's GGUF) or anonymous memory the runtime allocates (llama.cpp's KV
 ///    cache and compute buffers on Apple silicon). Measured as the pages in RAM of
-///    the VM objects behind the regions the GPU wraps (`measureOverlap(metalBeyondLedger:)`).
+///    the VM objects behind the regions that look wrapped by the GPU in the region
+///    query (`measureOverlap(metalBeyondLedger:)`). Memory the GPU does not wrap can
+///    look wrapped too: its pages in RAM then count in place 3, and those outside the
+///    page table count in the total.
 ///
 /// Place 3 overlaps the other two wherever the CPU has touched wrapped memory too:
 /// a file mapped shared keeps the pages the CPU read in the page table (place 2);
-/// anonymous memory, and a file mapped private (copied into anonymous memory at the
-/// GPU's first read), keep the pages the CPU touched in `phys_footprint` (place 1).
-/// Pages only the GPU has touched are in place 3 alone. The overlaps are measured,
-/// not assumed: they are the wrapped regions' pages in the page table (the region
-/// query in footprint mode answers from the page table), so the total adds only the
-/// wrapped pages outside it.
+/// anonymous memory, and a file mapped private (its top VM object turns anonymous
+/// at the GPU's first read), keep the pages the CPU touched in `phys_footprint`
+/// (place 1). The overlaps are measured, not assumed: they are the wrapped regions'
+/// pages in the page table (for these regions the region query in footprint mode
+/// answers from the page table), so the total adds only the wrapped pages outside it.
 ///
-/// The wrap shows in the region query: the region turns "true shared" and its VM
-/// object gains a reference (a shared file mapping 2 -> 3, anonymous memory 1 -> 2;
-/// a private file mapping's top object turns anonymous and true shared at the GPU's
-/// first read). A runtime may wrap only part of a mapping (llama.cpp leaves the
+/// A runtime may wrap only part of a mapping (llama.cpp leaves the
 /// tensors the CPU computes out of its GPU buffers); counting whole VM objects needs
-/// no knowledge of the parts, because whatever of the region is in the page table is
-/// subtracted again.
+/// no knowledge of the parts, but file pages outside the page table and outside the
+/// wrapped part count in the total.
 ///
 /// Metal's own figure (`MTLDevice.currentAllocatedSize`) beyond the kernel ledger's
 /// graphics and neural parts of `phys_footprint` (`Reading.mappedWeightsBytes`) is kept
@@ -65,8 +66,8 @@ public enum MemoryMonitor {
 
     static let mib = 1024.0 * 1024.0
 
-    /// One reading: every counter of one `task_info(TASK_VM_INFO)` call, and Metal's
-    /// figure read right after it.
+    /// One reading: the counters below from one `task_info(TASK_VM_INFO)` call, and
+    /// Metal's figure read right after it when `includeMetal` is true.
     public struct Reading: Sendable {
         /// `resident_size`: pages in the process's page table.
         public var residentBytes: UInt64 = 0
@@ -93,11 +94,11 @@ public enum MemoryMonitor {
         public var graphicsNoFootprintBytes: UInt64 = 0
         public var neuralNoFootprintBytes: UInt64 = 0
         /// Sum of `MTLDevice.currentAllocatedSize` over the process's Metal devices
-        /// (macOS: every device, iOS: the default one); nil without a device.
+        /// (macOS: every device, iOS: the default one); nil without a device or when
+        /// `includeMetal` is false.
         public var metalAllocatedBytes: UInt64?
-        /// The GPU-wrapped regions as `measureOverlap(metalBeyondLedger:)` last measured them (the
-        /// sampler fills it in; `read()` leaves it empty); nil when it was needed and no
-        /// measurement had succeeded yet in the window.
+        /// The regions that look wrapped by the GPU, as `measureOverlap(metalBeyondLedger:)`
+        /// last measured them (`read()` leaves it at zero).
         public var overlap: Overlap? = Overlap()
 
         public init() {}
@@ -111,21 +112,22 @@ public enum MemoryMonitor {
         }
 
         /// The two overlaps, place 3's with place 2 and with place 1, together. Nil when
-        /// the wrapped regions could not be measured.
+        /// `overlap` is nil.
         public var overlapCountedBytes: UInt64? {
             overlap.map { $0.externalBytes &+ $0.footprintBytes }
         }
 
         /// Every page once: `phys_footprint` + `external` + place 3 − its two overlaps,
         /// which is the wrapped pages outside the page table (`Overlap.gpuOnlyBytes`).
-        /// Nil when the wrapped regions could not be measured.
+        /// Nil when `overlap` is nil.
         public var totalBytes: UInt64? {
             guard let o = overlap else { return nil }
             return footprintBytes &+ externalBytes &+ o.gpuOnlyBytes
         }
     }
 
-    /// The GPU-wrapped regions at one instant (`measureOverlap(metalBeyondLedger:)`), in bytes.
+    /// The regions that look wrapped by the GPU, at one instant
+    /// (`measureOverlap(metalBeyondLedger:)`), in bytes.
     public struct Overlap: Sendable {
         /// Place 3: the pages in RAM of the VM objects behind the wrapped regions.
         public var residentBytes: UInt64 = 0
@@ -134,8 +136,7 @@ public enum MemoryMonitor {
         /// The part of it in the page table through anonymous memory or a private file
         /// mapping: anonymous pages, in place 1.
         public var footprintBytes: UInt64 = 0
-        /// The rest, in neither the page table nor the footprint: the pages only the GPU
-        /// holds, which the total adds.
+        /// The rest, in neither the page table nor the footprint, which the total adds.
         public var gpuOnlyBytes: UInt64 = 0
         /// The wrapped regions' sizes.
         public var locatedBytes: UInt64 = 0
@@ -143,9 +144,6 @@ public enum MemoryMonitor {
         public init() {}
     }
 
-    /// Reads every counter. `includeMetal: false` skips Metal's figure (the two
-    /// single-number helpers above). Nil when `task_info` fails. The overlap is left
-    /// at 0; `MemorySampler` measures it when places 2 and 3 are both non-zero.
     public static func read(includeMetal: Bool = true) -> Reading? {
         var info = task_vm_info_data_t()
         var count = mach_msg_type_number_t(
@@ -194,9 +192,7 @@ public enum MemoryMonitor {
     }
 
     #if canImport(Metal)
-    /// The process's Metal devices, enumerated once (creating the device objects if
-    /// nothing else in the process has). macOS: every device, since the figure is per
-    /// process and a device this process does not use reads zero; iOS: the default one.
+    /// The process's Metal devices, enumerated once.
     nonisolated(unsafe) private static let metalDevices: [any MTLDevice] = {
         #if os(macOS)
         let all = MTLCopyAllDevices()
@@ -215,7 +211,7 @@ public enum MemoryMonitor {
     static func metalAllocatedBytes() -> UInt64? { nil }
     #endif
 
-    // MARK: - The overlap of places 2 and 3
+    // MARK: - The overlaps of place 3 with places 1 and 2
 
     /// One VM region as the short region query describes it.
     struct Region {
@@ -239,19 +235,20 @@ public enum MemoryMonitor {
     }
 
     /// What a GPU buffer made on a region without a copy (`newBufferWithBytesNoCopy`)
-    /// does to the region query (measured on an Apple M4 Max, macOS 27, 256 MB test
-    /// buffers): a file mapped shared turns "true shared" and its VM object gains a third
-    /// reference (the file's cache, the mapping, the GPU); anonymous memory turns true
+    /// does to the region query (measured on an Apple M4 Max, macOS 27, with test
+    /// buffers): the VM object of a file mapped shared gains a reference
+    /// (a third with one buffer), and the region turns
+    /// "true shared" at the GPU's first read; anonymous memory turns true
     /// shared with a second reference; a file mapped private keeps its short-query
-    /// look (copy-on-write, the file's pager) but at the GPU's first read its pages move
-    /// into an anonymous VM object, true shared, which the full query reports. Memory
-    /// Metal allocates itself carries the IOAccelerator / IOKit / IOSurface tags and is
+    /// look (copy-on-write, the file's pager) but at the GPU's first read its top VM
+    /// object turns anonymous and true shared, which the full query reports. Memory
+    /// Metal allocates itself carries the IOAccelerator tag and is
     /// charged to the ledger instead. A file shared by plain mappings of other
     /// processes is "shared", not "true shared", and is left out.
     enum Wrap { case sharedFile, anonymous, privateFile }
 
-    /// The kind of wrap the short query shows, or `.privateFile` for a private file
-    /// mapping that may be wrapped (the full query decides).
+    /// The kind of wrap a region looks like to the short query, or `.privateFile` for a
+    /// private file mapping that may be wrapped (the full query decides).
     static func wrapCandidate(_ info: vm_region_submap_short_info_data_64_t) -> Wrap? {
         guard info.is_submap == 0 else { return nil }
         switch Int32(info.user_tag) {
@@ -268,15 +265,14 @@ public enum MemoryMonitor {
         return info.share_mode == SM_TRUESHARED && info.ref_count >= 2 ? .anonymous : nil
     }
 
-    /// Finds the GPU-wrapped regions and measures them: the pages of their VM objects in
-    /// RAM (place 3, the full region query in normal mode), the part of those in the page
+    /// Finds the regions that look wrapped by the GPU (`wrapCandidate(_:)`) and measures
+    /// them: the pages of their VM objects in RAM (place 3, the full region query in
+    /// normal mode), the part of those in the page
     /// table (footprint mode; the overlaps), and the regions' sizes. Nil when the
-    /// page-table query is refused (`vm.self_region_footprint`). Costs one short query per
-    /// region and two page walks of each wrapped region (measured on an M4 Max: 0.7 ms for
-    /// 620 regions, 0.7-0.8 ms per 512 MB walked).
+    /// page-table query is refused (`vm.self_region_footprint`) or a region on the list
+    /// cannot be read again.
     ///
-    /// Confirming a private file mapping takes the full query, which walks every page of
-    /// the mapping (a model file mapped in pieces: 10-38 ms for 3.7 GB), so it runs only while
+    /// Confirming a private file mapping takes the full query; it runs only while
     /// Metal's figure beyond the ledger (`metalBeyondLedger`) exceeds the sizes of the
     /// regions already found by 32 MiB: memory the GPU holds that is not located yet.
     static func measureOverlap(metalBeyondLedger: UInt64) -> Overlap? {
@@ -332,8 +328,8 @@ public enum MemoryMonitor {
     }
 
     /// Pages of the region at `address` from the full region query, in bytes: resident
-    /// (normal mode: the pages of its VM object in RAM; footprint mode: the pages in this
-    /// process's page table), dirtied, and compressed or swapped out.
+    /// (normal mode: the pages of its VM object in RAM),
+    /// dirtied, and compressed or swapped out.
     static func pages(at address: UInt64) -> (resident: UInt64, dirty: UInt64, compressed: UInt64)? {
         var a = address
         var size: UInt64 = 0
@@ -344,9 +340,8 @@ public enum MemoryMonitor {
                 UInt64(info.pages_swapped_out) * page)
     }
 
-    /// Footprint mode for this process's own region queries (`vm.self_region_footprint`,
-    /// the switch `vmmap` and `footprint` use): on, the full region query counts the
-    /// pages of the process's page table.
+    /// Footprint mode for this process's own region queries
+    /// (`vm.self_region_footprint`).
     static func setFootprintMode(_ on: Bool) -> Bool {
         var value: Int32 = on ? 1 : 0
         return sysctlbyname("vm.self_region_footprint", nil, nil, &value, MemoryLayout<Int32>.size) == 0
@@ -398,23 +393,23 @@ public enum MemoryMonitor {
     }
 }
 
-/// One sampler window's memory in the terms of `MemoryMonitor.Reading`, in MiB
-/// (bytes / 2^20): each series' peak and median over the window, and the whole
-/// reading at the sample where the total peaked (its parts add up to it).
+/// One sampler window's memory in the terms of `MemoryMonitor.Reading`, in MiB:
+/// each series' peak and median over the window, and the reading at the total's
+/// peak (its parts add up to it).
 public struct MemoryAccounting: Sendable {
-    /// Names the definition the fields follow (`methodology/memory.md` "Three places").
+    /// Names the definition the fields follow (`methodology/memory.md` "Three places and a total").
     public static let basis = "apple-vm-wrapped-pages-v1"
 
     public var peakExternalMB: Double
     public var medianExternalMB: Double
-    /// Nil when a sample needed the overlap before any measurement of it had succeeded.
+    /// Nil when the first measurement in the window failed.
     public var peakTotalMB: Double?
     public var medianTotalMB: Double?
     public var atTotalPeak: MemoryBreakdown?
     /// The overlap queries the window ran and the time they took.
     public var overlapQueries: Int
     public var overlapQueryMS: Double
-    /// Of those queries, the ones that failed; the last measurement stayed in use.
+    /// Of those queries, the ones that failed.
     public var overlapFailedQueries: Int
 }
 
@@ -432,8 +427,8 @@ public struct MemoryBreakdown: Codable, Sendable {
     public let metalAllocatedMB: Double?
     public let mappedWeightsMB: Double?
     /// Place 3 as measured (`MemoryMonitor.Overlap`): the wrapped pages in RAM; both
-    /// overlaps, then each (with `external`, with the footprint); the pages only the GPU
-    /// holds (place 3 less the overlaps, what the total adds); the wrapped regions' sizes.
+    /// overlaps, then each (with `external`, with the footprint); the rest (place 3 less
+    /// the overlaps, what the total adds); the wrapped regions' sizes.
     public let wrappedResidentMB: Double?
     public let overlapMB: Double?
     public let overlapExternalMB: Double?
@@ -467,22 +462,22 @@ public struct MemoryBreakdown: Codable, Sendable {
 
 /// Records peak physical footprint across a sliding window.
 ///
-/// Every tick takes one `MemoryMonitor.read()`, so all the series below describe
-/// the same instants. `phys_footprint` is what jetsam charges the process and it
+/// Every tick takes one `MemoryMonitor.read()`.
+/// `phys_footprint` is what jetsam charges the process and it
 /// does **not** count clean file-backed pages, so a runtime that memory-maps its
 /// weights (LiteRT-LM maps its model, llama.cpp maps the whole GGUF) reads far
 /// lower than one that allocates them (MLX) — the asymmetry that makes a raw
 /// footprint column non-comparable across runtimes. `resident_size` counts the
 /// mapped pages while they are in the page table, and a GPU that holds a mapped
-/// file's pages outside the page table shows in Metal's figure alone; `accounting`
+/// file's pages outside the page table shows in neither `phys_footprint` nor
+/// `resident_size`; `accounting`
 /// carries every place and a total that counts each page once. Prefer medians to
 /// resident peaks: mapped pages fault in and out, so peak resident is page-cache
 /// noise (66-281% run-to-run, measured 2026-07-26).
 ///
-/// Place 3 and its overlaps are measured at the first tick, again once `external`,
+/// Place 3 and its overlaps are measured at the start, again once `external`,
 /// `internal` or Metal's figure beyond the ledger has moved by 16 MiB (250 ms apart at
-/// least) or while place 3 itself moved 16 MiB at the last measurement (a wrapped file
-/// the GPU reads for the first time pages in over seconds), and every 2 s while the
+/// least) or while place 3 itself moved 16 MiB at the last measurement, and every 2 s while the
 /// process has wrapped regions, since the GPU touching a wrapped page moves none of
 /// those counters.
 public actor MemorySampler {
@@ -524,11 +519,11 @@ public actor MemorySampler {
 
     public var sampleCount: Int { footprintSamples.count }
 
-    /// Every place over the window (`MemoryMonitor`), or nil before the first sample.
+    /// The window's peak and median of `external` and of the total, every place in the
+    /// reading at the total's peak, and the count, time and failures of its overlap
+    /// measurements; nil on iOS and before the first sample.
     public var accounting: MemoryAccounting? {
         #if !os(macOS)
-        // The three places and the total are macOS only until they have run on an iPhone:
-        // an iOS record keeps the fields it had before them.
         return nil
         #else
         guard !footprintSamples.isEmpty else { return nil }
@@ -585,8 +580,7 @@ public actor MemorySampler {
         note(withOverlap(r), asSample: true)
     }
 
-    /// macOS reads Metal's figure every tick (place 3); iOS reads `task_info` alone, as the sampler did before
-    /// the three places (then two calls: `TASK_VM_INFO` and `MACH_TASK_BASIC_INFO`; now the one `TASK_VM_INFO`).
+    /// macOS reads Metal's figure every tick.
     #if os(macOS)
     private static let readsMetal = true
     #else
@@ -597,7 +591,6 @@ public actor MemorySampler {
     /// taken again when due (see the type's note).
     private func withOverlap(_ reading: MemoryMonitor.Reading) -> MemoryMonitor.Reading {
         #if !os(macOS)
-        // No region query on iOS until it has run on an iPhone (its cost there is unmeasured).
         return reading
         #else
         var r = reading
@@ -627,11 +620,8 @@ public actor MemorySampler {
                 overlapCache = measured
                 overlapAt = (r.externalBytes, r.internalBytes, mapped, now)
             } else {
-                // A failed measurement (a region on the list could not be read again: seen at the
-                // end of Qwen3-14B GPU runs) keeps the last one, as between two measurements, and
-                // is tried again at the same pace: the counters stay those of the last measurement,
-                // the time is this attempt's. Before the first measurement there is none to keep,
-                // so a sample has no total until one succeeds.
+                // A failed measurement keeps the last one, as between two measurements, and is
+                // tried again at the same pace, counted from this attempt.
                 overlapFailedQueries += 1
                 let at = overlapAt
                 overlapAt = (at?.external ?? r.externalBytes, at?.internal ?? r.internalBytes,
@@ -736,10 +726,11 @@ final class MemoryTrace: @unchecked Sendable {
 
     /// Every region at one instant, by class (IOAccelerator / IOKit / IOSurface tags; the
     /// short query's wrap candidates (`MemoryMonitor.wrapCandidate(_:)`: shared file,
-    /// anonymous, private file); other file mappings; other anonymous memory): pages in the
-    /// page table (footprint mode) and compressed, their sum against `resident_size`, and
-    /// one line per region of 16 MiB or more with its pages in the page table and in the
-    /// VM object (normal mode).
+    /// anonymous, private file); other file mappings; other anonymous memory): pages
+    /// (footprint mode) and compressed, their sum against `resident_size`, and
+    /// one line per region of 16 MiB or more with its attributes, its pages
+    /// (footprint mode) and compressed, and the pages of its VM object in RAM
+    /// (normal mode).
     func regions(overlap: MemoryMonitor.Overlap?, resident: UInt64) {
         typealias Pages = (resident: UInt64, dirty: UInt64, compressed: UInt64)
         let t = String(format: "%.3f", Date().timeIntervalSince(start))

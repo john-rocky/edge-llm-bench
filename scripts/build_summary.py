@@ -497,7 +497,7 @@ def device_row(f, d, screens, campaign=None, raw_dirs=None):
         # a llama.cpp side build's device lines (2026-10-07), appended after them:
         # a run off the cell's device is a row, never a measurement
         "backend_registered": backend_registered_of(d),
-        # how far the engine CPUs' clock ceiling fell (2026-10-08), appended last: a
+        # how far the engine CPUs' clock ceiling fell, appended after it: a
         # capped run within the line pools, counted (cpu-cap-rule)
         "cpu_cap_drop_pct": cpu_cap_drop_of(d),
         # memory in three places (2026-11-14, Mac only), appended last: the Apple sampler's
