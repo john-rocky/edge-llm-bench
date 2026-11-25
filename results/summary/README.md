@@ -68,13 +68,22 @@ llama.cpp side build's own device lines (`conditions.backendRegistered`; the
 (`render_leaderboard.arm_row`; `docs/dashboard-cells-v1.md` "NPU and Android GPU
 rows").
 
-`cpu_cap_drop_pct` (the last column, 2026-10-08) is how far the clock ceiling of the
+`cpu_cap_drop_pct` (after `backend_registered`, 2026-10-08) is how far the clock ceiling of the
 CPUs the engine ran on fell during the run: the largest `(1 - min / hw) x 100` over the
 cpufreq policies of those CPUs (`conditions.cpusAllowedList`, else the launch mask,
 else every CPU), one decimal; `0.0` where the caps were read and none of them fell,
 empty where they were not read. `render_leaderboard.arm_row` keeps a `cpu_capped`
 `true` run out of every number when it is above `CPU_CAP_MAX_DROP_PCT` (15) and pools
 it, counted, when it is not (`methodology/fairness-rules.md` cpu-cap-rule).
+
+Memory in three places (written only on the Mac, by `BenchmarkRunner` and the yardstick's LiteRT-LM,
+MLX and llama.cpp native paths; empty on rows from an older binary and on every other writer): `mem_total_*` =
+`memory{Median,Peak}TotalMB`, the sampler's total that counts each page once (phys_footprint +
+mapped file pages in the page table + the pages in RAM of the regions that look wrapped by the GPU,
+minus their measured overlaps with the first two); `mem_external_*` =
+`memory{Median,Peak}ExternalMB`, the mapped file pages in the page table;
+`mem_overlap_at_total_peak_mb` = the overlaps subtracted at the total's peak
+(`memoryAtTotalPeak.overlapMB`). Definitions: `methodology/memory.md` "Three places and a total".
 
 Release-regression diffing over this layer: `scripts/regression_diff.py`
 (quality joins on tag; device cells join on device/runtime/model/task/cold-warm

@@ -65,8 +65,10 @@ FIELDS = ["source", "campaign", "platform", "timestamp", "runtime", "schema_vers
 CPU_FIELDS = ["cpu_capped", "cpu_max_freq"]
 # appended after them the same day (a llama.cpp side build's device lines)
 BACKEND_FIELDS = ["backend_registered"]
-# appended last on 2026-10-08 (the cpu-cap-rule line)
+# appended on 2026-10-08 (the cpu-cap-rule line)
 DROP_FIELDS = ["cpu_cap_drop_pct"]
+MEMORY_FIELDS = ["mem_total_median_mb", "mem_total_peak_mb", "mem_external_median_mb", "mem_external_peak_mb",
+                 "mem_overlap_at_total_peak_mb"]
 
 
 def setUpModule():
@@ -180,7 +182,7 @@ class SummaryColumn(unittest.TestCase):
         self.assertEqual(n, 4)
         # appended: every earlier column keeps its place (text_check, then the CPU cap pair,
         # then backend_registered, then the cap's drop)
-        self.assertEqual(header, FIELDS + CPU_FIELDS + BACKEND_FIELDS + DROP_FIELDS)
+        self.assertEqual(header, FIELDS + CPU_FIELDS + BACKEND_FIELDS + DROP_FIELDS + MEMORY_FIELDS)
         by_name = {os.path.basename(r["source"]): r["text_check"] for r in got}
         self.assertEqual(by_name, {"pass.json": "PASS",
                                    "fail.json": "FAIL:text-empty-or-degenerate,text-off-task-screen",

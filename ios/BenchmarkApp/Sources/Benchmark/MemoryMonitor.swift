@@ -42,27 +42,13 @@ import Metal
 /// subtracted again.
 ///
 /// Metal's own figure (`MTLDevice.currentAllocatedSize`) beyond the kernel ledger's
-/// graphics and neural part of `phys_footprint` is LiteRT's estimate of place 3
-/// ("mapped weights") and is kept beside it. It counts a wrapped buffer at its length,
-/// touched or not, and allocated resources before their pages are charged, and it
-/// falls short by any graphics memory the ledger holds outside Metal's figure.
+/// graphics and neural parts of `phys_footprint` (`Reading.mappedWeightsBytes`) is kept
+/// beside place 3. Read as place 3, it counts a wrapped buffer at its length, touched
+/// or not, and allocated resources before their pages are charged.
 ///
-/// `read()` takes one `TASK_VM_INFO` reading and Metal's figure and derives the
-/// quantities of LiteRT's own memory profiler (google-ai-edge/LiteRT,
-/// `litert/core/util/memory_profiling/`: `host_memory_apple.cc`,
-/// `accelerator_memory_apple.mm`, `memory_snapshot.h`), under the same names:
-///
-/// - host resident = `resident_size`; host attributed = `phys_footprint`;
-/// - accelerator attributed = the ledger's graphics + neural parts of
-///   `phys_footprint`, compressed pages included;
-/// - accelerator present = the ledger's graphics + neural pages in RAM, plus
-///   what Metal has allocated beyond the whole ledger ("mapped weights");
-/// - resident in RAM = host resident + accelerator present, attributed by OS =
-///   `phys_footprint` (their `MemorySnapshot`). Resident in RAM counts a page
-///   twice when it is in the page table and also accelerator memory.
-///
-/// and `totalBytes`, which counts each page once: place 1 + place 2 + place 3 −
-/// the two overlaps (`methodology/memory.md` "Three places").
+/// With place 3 and the overlaps that `MemorySampler` fills in (`Reading.overlap`),
+/// `Reading.totalBytes` counts each page once: place 1 + place 2 + place 3 − the two
+/// overlaps (`methodology/memory.md` "Three places and a total").
 public enum MemoryMonitor {
     /// Current physical footprint in megabytes — the jetsam-relevant figure.
     /// Returns 0 on failure.
@@ -103,7 +89,7 @@ public enum MemoryMonitor {
         public var neuralCompressedBytes: UInt64 = 0
         /// `ledger_tag_graphics_nofootprint` / `ledger_tag_neural_nofootprint` (+ their
         /// compressed parts): GPU / Neural Engine memory tagged to the process but kept
-        /// out of `phys_footprint`. Not in LiteRT's figures; recorded to see it.
+        /// out of `phys_footprint`. `totalBytes` does not use it.
         public var graphicsNoFootprintBytes: UInt64 = 0
         public var neuralNoFootprintBytes: UInt64 = 0
         /// Sum of `MTLDevice.currentAllocatedSize` over the process's Metal devices
@@ -116,31 +102,12 @@ public enum MemoryMonitor {
 
         public init() {}
 
-        /// The part of `phys_footprint` the kernel charges to the GPU and the Neural
-        /// Engine, in RAM or compressed (LiteRT: accelerator `attributed_bytes`).
-        public var acceleratorAttributedBytes: UInt64 {
-            graphicsBytes &+ graphicsCompressedBytes &+ neuralBytes &+ neuralCompressedBytes
-        }
-
-        /// What Metal has allocated beyond the whole ledger (LiteRT's estimate of place
-        /// 3: the "mapped weights" breakdown entry). Without the ledger all of Metal's
-        /// figure lands here, as in LiteRT.
+        /// Metal's figure beyond the ledger: `metalAllocatedBytes` less the ledger's graphics
+        /// and neural parts of `phys_footprint`, in RAM and compressed, never below 0.
         public var mappedWeightsBytes: UInt64 {
             guard let metal = metalAllocatedBytes else { return 0 }
-            let charged = acceleratorAttributedBytes
+            let charged = graphicsBytes &+ graphicsCompressedBytes &+ neuralBytes &+ neuralCompressedBytes
             return metal > charged ? metal - charged : 0
-        }
-
-        /// Accelerator memory present now: the ledger's pages in RAM plus the mapped
-        /// weights (LiteRT: accelerator `total_bytes`).
-        public var acceleratorPresentBytes: UInt64 {
-            graphicsBytes &+ neuralBytes &+ mappedWeightsBytes
-        }
-
-        /// LiteRT's `MemorySnapshot.resident_in_ram` total: host resident + accelerator
-        /// present (their CPU part is the whole host resident figure).
-        public var residentInRAMBytes: UInt64 {
-            residentBytes &+ acceleratorPresentBytes
         }
 
         /// The two overlaps, place 3's with place 2 and with place 1, together. Nil when
@@ -440,12 +407,6 @@ public struct MemoryAccounting: Sendable {
 
     public var peakExternalMB: Double
     public var medianExternalMB: Double
-    public var peakAcceleratorPresentMB: Double?
-    public var medianAcceleratorPresentMB: Double?
-    public var peakAcceleratorAttributedMB: Double?
-    public var medianAcceleratorAttributedMB: Double?
-    public var peakResidentInRAMMB: Double?
-    public var medianResidentInRAMMB: Double?
     /// Nil when a sample needed the overlap before any measurement of it had succeeded.
     public var peakTotalMB: Double?
     public var medianTotalMB: Double?
@@ -479,14 +440,10 @@ public struct MemoryBreakdown: Codable, Sendable {
     public let overlapFootprintMB: Double?
     public let wrappedGPUOnlyMB: Double?
     public let wrappedLocatedMB: Double?
-    public let acceleratorPresentMB: Double?
-    public let acceleratorAttributedMB: Double?
-    public let residentInRAMRecomputedMB: Double?
     public let totalMB: Double?
 
     public init(_ r: MemoryMonitor.Reading) {
         func mb(_ bytes: UInt64) -> Double { Double(bytes) / MemoryMonitor.mib }
-        let accelerator = r.hasLedger || r.metalAllocatedBytes != nil
         hostResidentMB = mb(r.residentBytes)
         hostAttributedMB = mb(r.footprintBytes)
         externalMB = mb(r.externalBytes)
@@ -504,9 +461,6 @@ public struct MemoryBreakdown: Codable, Sendable {
         overlapFootprintMB = r.overlap.map { mb($0.footprintBytes) }
         wrappedGPUOnlyMB = r.overlap.map { mb($0.gpuOnlyBytes) }
         wrappedLocatedMB = r.overlap.map { mb($0.locatedBytes) }
-        acceleratorPresentMB = accelerator ? mb(r.acceleratorPresentBytes) : nil
-        acceleratorAttributedMB = r.hasLedger ? mb(r.acceleratorAttributedBytes) : nil
-        residentInRAMRecomputedMB = accelerator ? mb(r.residentInRAMBytes) : nil
         totalMB = r.totalBytes.map(mb)
     }
 }
@@ -537,19 +491,11 @@ public actor MemorySampler {
     private var footprintSamples: [Double] = []
     private var residentSamples: [Double] = []
     private var externalSamples: [Double] = []
-    private var presentSamples: [Double] = []
-    private var attributedSamples: [Double] = []
-    private var residentInRAMSamples: [Double] = []
     private var totalSamples: [Double] = []
     private var peakExternal: Double = 0
-    private var peakPresent: Double = 0
-    private var peakAttributed: Double = 0
-    private var peakResidentInRAM: Double = 0
     private var peakTotal: Double = -1
     private var totalPeakReading: MemoryMonitor.Reading?
     private var totalMissing = false
-    private var ledgerSeen = false
-    private var acceleratorSeen = false
     private var overlapCache: MemoryMonitor.Overlap?
     private var overlapAt: (external: UInt64, internal: UInt64, mapped: UInt64, uptimeNS: UInt64)?
     private var placeThreeMoving = false
@@ -590,12 +536,6 @@ public actor MemorySampler {
         return MemoryAccounting(
             peakExternalMB: peakExternal,
             medianExternalMB: Self.median(externalSamples),
-            peakAcceleratorPresentMB: acceleratorSeen ? peakPresent : nil,
-            medianAcceleratorPresentMB: acceleratorSeen ? Self.median(presentSamples) : nil,
-            peakAcceleratorAttributedMB: ledgerSeen ? peakAttributed : nil,
-            medianAcceleratorAttributedMB: ledgerSeen ? Self.median(attributedSamples) : nil,
-            peakResidentInRAMMB: acceleratorSeen ? peakResidentInRAM : nil,
-            medianResidentInRAMMB: acceleratorSeen ? Self.median(residentInRAMSamples) : nil,
             peakTotalMB: total ? peakTotal : nil,
             medianTotalMB: total ? Self.median(totalSamples) : nil,
             atTotalPeak: total ? totalPeakReading.map(MemoryBreakdown.init) : nil,
@@ -610,21 +550,13 @@ public actor MemorySampler {
         footprintSamples.removeAll()
         residentSamples.removeAll()
         externalSamples.removeAll()
-        presentSamples.removeAll()
-        attributedSamples.removeAll()
-        residentInRAMSamples.removeAll()
         totalSamples.removeAll()
         peakMB = 0
         peakResidentMB = 0
         peakExternal = 0
-        peakPresent = 0
-        peakAttributed = 0
-        peakResidentInRAM = 0
         peakTotal = -1
         totalPeakReading = nil
         totalMissing = false
-        ledgerSeen = false
-        acceleratorSeen = false
         overlapCache = nil
         overlapAt = nil
         placeThreeMoving = false
@@ -720,17 +652,9 @@ public actor MemorySampler {
         let footprint = Double(r.footprintBytes) / mb
         let resident = Double(r.residentBytes) / mb
         let external = Double(r.externalBytes) / mb
-        let present = Double(r.acceleratorPresentBytes) / mb
-        let attributed = Double(r.acceleratorAttributedBytes) / mb
-        let residentInRAM = Double(r.residentInRAMBytes) / mb
-        if r.hasLedger { ledgerSeen = true }
-        if r.hasLedger || r.metalAllocatedBytes != nil { acceleratorSeen = true }
         peakMB = max(peakMB, footprint)
         peakResidentMB = max(peakResidentMB, resident)
         peakExternal = max(peakExternal, external)
-        peakPresent = max(peakPresent, present)
-        peakAttributed = max(peakAttributed, attributed)
-        peakResidentInRAM = max(peakResidentInRAM, residentInRAM)
         if let totalBytes = r.totalBytes {
             let total = Double(totalBytes) / mb
             if total > peakTotal {
@@ -753,9 +677,6 @@ public actor MemorySampler {
         footprintSamples.append(footprint)
         residentSamples.append(resident)
         externalSamples.append(external)
-        presentSamples.append(present)
-        attributedSamples.append(attributed)
-        residentInRAMSamples.append(residentInRAM)
     }
 
     private static func median(_ xs: [Double]) -> Double {
@@ -785,8 +706,7 @@ final class MemoryTrace: @unchecked Sendable {
         trace.line("# window start \(ISO8601DateFormatter().string(from: Date())) pid \(getpid())\n"
             + "# t_s\tresident\tfootprint\tinternal\texternal\tcompressed\tgraphics\tgraphics_c\t"
             + "neural\tneural_c\tgraphics_nofp\tneural_nofp\tmetal\tmapped_weights\twrapped_resident\t"
-            + "overlap\toverlap_ext\toverlap_fp\tgpu_only\tlocated\t"
-            + "accel_present\taccel_attributed\tresident_in_ram\ttotal")
+            + "overlap\toverlap_ext\toverlap_fp\tgpu_only\tlocated\ttotal")
         return trace
     }
 
@@ -809,8 +729,7 @@ final class MemoryTrace: @unchecked Sendable {
             r.overlap.map { mb($0.residentBytes) } ?? "", r.overlapCountedBytes.map(mb) ?? "",
             r.overlap.map { mb($0.externalBytes) } ?? "", r.overlap.map { mb($0.footprintBytes) } ?? "",
             r.overlap.map { mb($0.gpuOnlyBytes) } ?? "", r.overlap.map { mb($0.locatedBytes) } ?? "",
-            mb(r.acceleratorPresentBytes), mb(r.acceleratorAttributedBytes),
-            mb(r.residentInRAMBytes), r.totalBytes.map(mb) ?? "",
+            r.totalBytes.map(mb) ?? "",
         ]
         line(fields.joined(separator: "\t"))
     }

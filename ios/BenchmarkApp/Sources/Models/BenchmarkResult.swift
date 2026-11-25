@@ -290,24 +290,17 @@ public struct Metrics: Codable, Sendable {
     public let memoryMedianResidentMB: Double?
     public let memoryFinalResidentMB: Double?
     /// Memory in three places over the same window as
-    /// `memoryPeakDuringDecodeMB` (`methodology/memory.md` "Three places",
-    /// `MemoryMonitor`), MiB, nil on records from an older binary: the peak and median of
-    /// LiteRT memory_profiling's figures (accelerator present / attributed, resident in RAM =
-    /// host resident + accelerator present), of `external` (mapped file pages in the page
-    /// table) and of the total that counts each page once (phys_footprint + external + GPU-wrapped
-    /// pages in RAM - their two measured overlaps); the whole reading at the total's peak; the
-    /// definition's name; and the overlap queries the window ran.
+    /// `memoryPeakDuringDecodeMB` (`methodology/memory.md` "Three places and a total",
+    /// `MemoryMonitor`), MiB, nil on iOS and on records from an older binary: the peak
+    /// and median of the total that counts each page once (phys_footprint + external +
+    /// the pages in RAM of the regions that look wrapped by the GPU - their two measured
+    /// overlaps) and of `external` (mapped file pages in the page table); the reading at
+    /// the total's peak; the definition's name; and the overlap queries the window ran.
     public let memoryAccountingBasis: String?
     public let memoryPeakTotalMB: Double?
     public let memoryMedianTotalMB: Double?
     public let memoryPeakExternalMB: Double?
     public let memoryMedianExternalMB: Double?
-    public let memoryPeakAcceleratorPresentMB: Double?
-    public let memoryMedianAcceleratorPresentMB: Double?
-    public let memoryPeakAcceleratorAttributedMB: Double?
-    public let memoryMedianAcceleratorAttributedMB: Double?
-    public let memoryPeakResidentInRAMRecomputedMB: Double?
-    public let memoryMedianResidentInRAMRecomputedMB: Double?
     public let memoryAtTotalPeak: MemoryBreakdown?
     public let memoryOverlapQueries: Int?
     public let memoryOverlapQueryMS: Double?
@@ -457,12 +450,6 @@ public struct Metrics: Codable, Sendable {
         self.memoryMedianTotalMB = memoryAccounting?.medianTotalMB
         self.memoryPeakExternalMB = memoryAccounting?.peakExternalMB
         self.memoryMedianExternalMB = memoryAccounting?.medianExternalMB
-        self.memoryPeakAcceleratorPresentMB = memoryAccounting?.peakAcceleratorPresentMB
-        self.memoryMedianAcceleratorPresentMB = memoryAccounting?.medianAcceleratorPresentMB
-        self.memoryPeakAcceleratorAttributedMB = memoryAccounting?.peakAcceleratorAttributedMB
-        self.memoryMedianAcceleratorAttributedMB = memoryAccounting?.medianAcceleratorAttributedMB
-        self.memoryPeakResidentInRAMRecomputedMB = memoryAccounting?.peakResidentInRAMMB
-        self.memoryMedianResidentInRAMRecomputedMB = memoryAccounting?.medianResidentInRAMMB
         self.memoryAtTotalPeak = memoryAccounting?.atTotalPeak
         self.memoryOverlapQueries = memoryAccounting?.overlapQueries
         self.memoryOverlapQueryMS = memoryAccounting?.overlapQueryMS
@@ -487,25 +474,13 @@ public struct NativeBenchmarkRecord: Encodable, Sendable {
         public let memoryMedianResidentMB: Double?
         public let memorySampleCount: Int
         public let memoryPostTeardownFootprintMB: Double
-        /// Memory in three places over the same window as
-        /// `memoryPeakDuringDecodeMB` (`methodology/memory.md` "Three places",
-        /// `MemoryMonitor`), MiB, nil on records from an older binary: the peak and median of
-        /// LiteRT memory_profiling's figures (accelerator present / attributed, resident in RAM =
-        /// host resident + accelerator present), of `external` (mapped file pages in the page
-        /// table) and of the total that counts each page once (phys_footprint + external + GPU-wrapped
-        /// pages in RAM - their two measured overlaps); the whole reading at the total's peak; the
-        /// definition's name; and the overlap queries the window ran.
+        /// Memory in three places: the same fields as in `Metrics`, whose note on
+        /// `memoryAccountingBasis` says what they hold.
         public let memoryAccountingBasis: String?
         public let memoryPeakTotalMB: Double?
         public let memoryMedianTotalMB: Double?
         public let memoryPeakExternalMB: Double?
         public let memoryMedianExternalMB: Double?
-        public let memoryPeakAcceleratorPresentMB: Double?
-        public let memoryMedianAcceleratorPresentMB: Double?
-        public let memoryPeakAcceleratorAttributedMB: Double?
-        public let memoryMedianAcceleratorAttributedMB: Double?
-        public let memoryPeakResidentInRAMRecomputedMB: Double?
-        public let memoryMedianResidentInRAMRecomputedMB: Double?
         public let memoryAtTotalPeak: MemoryBreakdown?
         public let memoryOverlapQueries: Int?
         public let memoryOverlapQueryMS: Double?
@@ -560,12 +535,6 @@ public struct NativeBenchmarkRecord: Encodable, Sendable {
             self.memoryMedianTotalMB = memoryAccounting?.medianTotalMB
             self.memoryPeakExternalMB = memoryAccounting?.peakExternalMB
             self.memoryMedianExternalMB = memoryAccounting?.medianExternalMB
-            self.memoryPeakAcceleratorPresentMB = memoryAccounting?.peakAcceleratorPresentMB
-            self.memoryMedianAcceleratorPresentMB = memoryAccounting?.medianAcceleratorPresentMB
-            self.memoryPeakAcceleratorAttributedMB = memoryAccounting?.peakAcceleratorAttributedMB
-            self.memoryMedianAcceleratorAttributedMB = memoryAccounting?.medianAcceleratorAttributedMB
-            self.memoryPeakResidentInRAMRecomputedMB = memoryAccounting?.peakResidentInRAMMB
-            self.memoryMedianResidentInRAMRecomputedMB = memoryAccounting?.medianResidentInRAMMB
             self.memoryAtTotalPeak = memoryAccounting?.atTotalPeak
             self.memoryOverlapQueries = memoryAccounting?.overlapQueries
             self.memoryOverlapQueryMS = memoryAccounting?.overlapQueryMS
