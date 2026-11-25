@@ -243,6 +243,7 @@ def main():
     dj.add_argument("--release-by", metavar="HH:MM|none",
                     help="give the hold back by this local time instead of schedule.json's release_by; "
                          "none: no such time (docs/dashboard-recurring-job-v1.md section 11)")
+    dj.add_argument("--no-retake", action="store_true", help="run no pending retake of the device before its weekly set (scripts/dashboard_job.py --no-retake)")
 
     au = sub.add_parser("autopilot", help="one DDP lab-unit sitting by hand, end to end: the sitting, the "
                                           "check and local commit, DASHBOARD.md, the red points, the requests")
@@ -291,6 +292,8 @@ def main():
             cmd += ["--part", args.part]
         if args.release_by:
             cmd += ["--release-by", args.release_by]
+        if args.no_retake:
+            cmd.append("--no-retake")
 
         return run(cmd)
     if args.cmd == "autopilot":
