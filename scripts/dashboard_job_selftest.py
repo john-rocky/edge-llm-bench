@@ -627,11 +627,17 @@ def main():
         return out
 
     real_load_rows, real_load_admission = dj.load_rows, dj.load_admission
+    tracked_fixture_dirs = {"lane-b10903-android", "pin-b8999-android", "prev1-android", "lane-near-android"}
 
-    def judge(rows, admitted=None):
+    def judge(rows, admitted=None, sitting=()):
         dj.load_rows = lambda path=None: rows
         dj.load_admission = lambda: admitted or {}
-        verdict, reason, details = dj.admit(adm_schedule, pixel, own, "android")
+        real_tracked_campaign_dirs = dj.tracked_campaign_dirs
+        dj.tracked_campaign_dirs = lambda: tracked_fixture_dirs
+        try:
+            verdict, reason, details = dj.admit(adm_schedule, pixel, own, "android", sitting=sitting)
+        finally:
+            dj.tracked_campaign_dirs = real_tracked_campaign_dirs
         return verdict, reason, details["anchors"][0], details
 
     # the 2026-09-13 Pixel 8a numbers: the sitting on the pin b8999 (median 28.2),
@@ -695,6 +701,15 @@ def main():
     ok(verdict is False and reason == "anchor-thermal" and p["reference_nominal"] is None
        and p["reference_any_version"]["campaign"] == "results/raw/lane-near-android",
        f"hot start with an all-nominal session on another build only (28.5, within 5%): {reason}")
+
+    held_campaign = "results/raw/held-b8999-android"
+    held = anchor_rows(held_campaign, (29.0, 29.5, 30.0), "b8999", hours=2)
+    verdict, reason, p, _ = judge(mine + pin + held)
+    ok(verdict and (p["reference"] or {}).get("campaign") == "results/raw/pin-b8999-android",
+       f"an untracked campaign outside the sitting leaves the pin as the reference: {reason}")
+    verdict, reason, p, _ = judge(mine + pin + held, sitting=(held_campaign, own))
+    ok(verdict and (p["reference"] or {}).get("campaign") == held_campaign,
+       f"the untracked campaign is the reference when listed in the sitting: {reason}")
     dj.load_rows, dj.load_admission = real_load_rows, real_load_admission
 
     print("--- side builds: a cells file whose engine-build=<tag> build is not on the phone is skipped by "
@@ -1809,7 +1824,7 @@ def release_by_cases(tmp, dj):
         return out
     real = (dj.ROOT, dj.load_rows, dj.load_admission, dj.admit)
     dj.ROOT, dj.load_rows, dj.load_admission = froot, rows_now, (lambda: {})
-    dj.admit = lambda schedule, dev, rel, platform: (True, "anchor nominal (selftest)", {"anchors": []})
+    dj.admit = lambda schedule, dev, rel, platform, sitting=(): (True, "anchor nominal (selftest)", {"anchors": []})
     try:
         code1, lines1 = job(sched_real, "sx", "--once", "--no-post", "--no-retake", "--release-by", at_hhmm(hours=2))
         dj._unlock(".job.lock.sx")      # main() keeps its device lock to the process's end
@@ -2097,7 +2112,7 @@ def gate_deadline_cases(tmp, dj):
         return code, buf.getvalue().splitlines()
     real = (dj.ROOT, dj.load_rows, dj.load_admission, dj.admit, dj.pgrep)
     dj.ROOT, dj.load_rows, dj.load_admission = froot, rows_now, (lambda: {})
-    dj.admit = lambda schedule, dev, rel, platform: (True, "anchor nominal (selftest)", {"anchors": []})
+    dj.admit = lambda schedule, dev, rel, platform, sitting=(): (True, "anchor nominal (selftest)", {"anchors": []})
     dj.pgrep = lambda pattern: []
     os.environ["FAKE_DEFER_ROW"] = rowA
     try:

@@ -1574,9 +1574,23 @@ def reference_note(p):
     return "first session on this device"
 
 
-def admit(schedule, dev, campaign_rel_path, platform):
+def tracked_campaign_dirs():
+    """Campaign dir names from the Git index, or None if Git cannot list them."""
+    try:
+        out = subprocess.run(["git", "-C", ROOT, "ls-files", "-z", "-c", "--", "results/raw"],
+                             check=True, capture_output=True, timeout=60).stdout
+    except (OSError, subprocess.SubprocessError):
+        log("WARN could not list tracked campaigns in results/raw; using unfiltered admission references")
+        return None
+    return {os.fsdecode(path.split(b"/", 3)[2]) for path in out.split(b"\0")
+            if path.count(b"/") >= 3}
+
+
+def admit(schedule, dev, campaign_rel_path, platform, sitting=()):
     """Compare this session's primary anchor with the newest admitted
     session's on the same device whose anchor ran the same engine build.
+    `sitting`: the campaign dirs this sitting has written (the post commits them together);
+    when git can list the index, a reference is a committed dir or one of these.
     Returns (admitted, reason, details)."""
     adm = schedule.get("admission", {})
     min_runs = int(adm.get("min_anchor_runs", 2))
@@ -1584,6 +1598,8 @@ def admit(schedule, dev, campaign_rel_path, platform):
     tol = float(adm.get("thermal_tolerance_pct", 5.0)) / 100.0
     rows = load_rows()
     admitted_map = load_admission()
+    tracked = tracked_campaign_dirs()
+    sitting_dirs = set(sitting)
     plat = CSV_PLATFORM[PLATFORM_TOKEN[platform]]
     regime = REGIME[PLATFORM_TOKEN[platform]]
     ident = dev["identifier"]
@@ -1605,6 +1621,8 @@ def admit(schedule, dev, campaign_rel_path, platform):
             if (r["platform"] == plat and r["device"] == ident and r["runtime"] == c["arm"]
                     and r["model_id"] == c["model_id"] and r["task"] == c["task"]
                     and r["campaign"] != campaign_rel_path
+                    and (tracked is None or os.path.basename(r["campaign"]) in tracked
+                         or r["campaign"] in sitting_dirs)
                     and admitted_map.get(r["campaign"], True)):
                 by_camp.setdefault(r["campaign"], []).append(r)
         newest_first = sorted(by_camp, key=lambda k: max(x["timestamp"] or "" for x in by_camp[k]),
@@ -1938,7 +1956,7 @@ def attempt(schedule, key, dev, attempt_no, args):
                                            "device_key": key, "started": started,
                                            "ended": time.strftime("%F %T")})
                 return EXIT_TIMEOUT, "anchor phase timed out", anchor_rel, sitting_dirs()
-            admitted, reason, details = admit(schedule, dev, anchor_rel, platform)
+            admitted, reason, details = admit(schedule, dev, anchor_rel, platform, sitting=created)
             write_session(anchor_rel, {"campaign": anchor_rel, "phase": "anchor",
                                        "cells": schedule["anchors"], "device_key": key,
                                        "device_display": dev["display"],
@@ -2076,7 +2094,7 @@ def attempt(schedule, key, dev, attempt_no, args):
                     f"{'s' if len(deferred) > 1 else ''} left for a later firing this week (the rerun run)")
             # the payload session runs its own anchor row first; re-judge it
             # so a contention that began after phase A is not admitted blindly
-            own_ok, own_reason, own_details = admit(schedule, dev, rel_path, platform)
+            own_ok, own_reason, own_details = admit(schedule, dev, rel_path, platform, sitting=created)
             verdict = "TIMEOUT" if rc == 124 else "COMPLETED"
             # the iPhone runner ends a session whose phone stopped accepting
             # launches (two refusals in a row) and says so in DEVICE_LOST.txt:
